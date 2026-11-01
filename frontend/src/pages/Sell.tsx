@@ -165,7 +165,7 @@ export default function Sell() {
         <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[15px]">
           <li>Listing is <b>free</b>.</li>
           <li>
-            • Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}% + GST</b>, only when the sale closes through Nilayam.
+            Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}% + GST</b>, only when the sale closes through Nilayam.
           </li>
           <li>Buyers pay {config?.brokerage.buyer_pct ?? 1}% + GST separately.</li>
           <li>Your name, phone and exact address stay private. Buyers contact Nilayam.</li>
