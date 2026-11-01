@@ -144,8 +144,8 @@ def create_draft(
     title = f"{kind} · {sub['land_area_cents'].normalize():f} cents · {sub['location']}"[:120]
     listing = conn.execute(
         """insert into listings (submission_id, title, property_type, land_area_cents, location,
-               description, price, negotiable, documents_note, photo_ids)
-           values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) returning *""",
+               description, price, negotiable, documents_available, documents_note, photo_ids)
+           values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) returning *""",
         (
             submission_id,
             title,
@@ -156,6 +156,7 @@ def create_draft(
             sub["expected_price"],
             sub["negotiable"],
             sub["documents_available"],
+            sub["documents_note"],
             photo_ids,
         ),
     ).fetchone()
@@ -173,7 +174,7 @@ def list_listings(
     conn: psycopg.Connection = Depends(get_conn),
 ) -> list[dict]:
     return conn.execute(
-        """select id, submission_id, state, title, property_type, location, price, current_version,
+        """select id, number, submission_id, state, title, property_type, location, price, current_version,
                   published_at, sold_at, updated_at
            from listings where (%(s)s::listing_state is null or state = %(s)s::listing_state)
            order by updated_at desc limit 500""",
@@ -309,6 +310,7 @@ def publish_listing(
 
     version = listing["current_version"] + 1
     snapshot = {
+        "number": listing["number"],
         "title": listing["title"],
         "property_type": listing["property_type"],
         "land_area_cents": float(listing["land_area_cents"]),
@@ -316,6 +318,7 @@ def publish_listing(
         "description": listing["description"],
         "price": listing["price"],
         "negotiable": listing["negotiable"],
+        "documents_available": listing["documents_available"],
         "documents_note": listing["documents_note"],
         "photos": photos,
     }
@@ -363,7 +366,8 @@ def list_visits(
     conn: psycopg.Connection = Depends(get_conn),
 ) -> list[dict]:
     return conn.execute(
-        """select v.*, l.title as listing_title from visit_requests v join listings l on l.id = v.listing_id
+        """select v.*, l.number as listing_number, l.title as listing_title
+           from visit_requests v join listings l on l.id = v.listing_id
            where (%(st)s::visit_status is null or v.status = %(st)s::visit_status)
              and (%(lid)s::uuid is null or v.listing_id = %(lid)s::uuid)
            order by v.created_at desc limit 500""",

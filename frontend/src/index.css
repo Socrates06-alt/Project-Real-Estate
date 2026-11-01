@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-ink: var(--ink);
+  --color-sub: var(--sub);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-sold: var(--sold);
+  --color-wa: #22c55e;
+  --shadow-card: 0 1px 2px rgb(16 24 22 / 0.04), 0 8px 24px -8px rgb(16 24 22 / 0.12);
+  --shadow-float: 0 12px 32px -8px rgb(16 24 22 / 0.28);
+}
+
+:root {
+  --bg: #f6f7f7;
+  --surface: #ffffff;
+  --muted: #eef1f0;
+  --ink: #0f1716;
+  --sub: #66726f;
+  --line: #e4e8e7;
+  --brand: #0d7a6f;
+  --brand-ink: #ffffff;
+  --brand-soft: #e3f3f0;
+  --sold: #d4573b;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b1211;
+    --surface: #131c1b;
+    --muted: #1b2625;
+    --ink: #eef4f3;
+    --sub: #91a19d;
+    --line: #233130;
+    --brand: #3cc6b5;
+    --brand-ink: #04211e;
+    --brand-soft: #143331;
+    --sold: #f08a70;
+    color-scheme: dark;
+  }
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-sheet { animation: sheet-up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
+.animate-fade { animation: fade-in 0.2s ease-out; }
+.animate-pop { animation: pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sheet, .animate-fade, .animate-pop { animation: none; }
+}

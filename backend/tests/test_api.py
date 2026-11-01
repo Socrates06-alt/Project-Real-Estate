@@ -54,6 +54,7 @@ def test_full_journey(client, admin_headers):
     assert "Ravi" not in body and "9847012345" not in body
     data = public.json()
     assert data["status"] == "live" and len(data["photos"]) == 1
+    assert data["number"] >= 1001 and data["documents_available"] is True
     assert client.get(data["photos"][0]).status_code == 200  # served from public bucket
 
     feed = client.get("/api/listings", params={"q": "land under 40 lakh mulakuzha"}).json()
@@ -63,13 +64,13 @@ def test_full_journey(client, admin_headers):
     assert client.get("/api/my/submissions", headers=DEVICE).json()[0]["listing_id"] == lid
 
     # Buyer requests a visit (deduplicated per phone)
-    visit = {"name": "Anu", "phone": "9000000001", "preferred_time": "Saturday morning"}
+    visit = {"name": "Anu", "phone": "9000000001", "preferred_time": "Saturday morning", "budget": "₹30–35 L"}
     v1 = client.post(f"/api/listings/{lid}/visit-requests", json=visit)
     v2 = client.post(f"/api/listings/{lid}/visit-requests", json=visit)
     assert v1.status_code == 201 and v1.json()["id"] == v2.json()["id"]
 
     visits = client.get("/api/admin/visits", headers=admin_headers).json()
-    assert len(visits) == 1
+    assert len(visits) == 1 and visits[0]["budget"] == "₹30–35 L"
     r = client.patch(f"/api/admin/visits/{visits[0]['id']}", json={"status": "scheduled"}, headers=admin_headers)
     assert r.json()["status"] == "scheduled"
 

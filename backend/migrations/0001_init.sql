@@ -25,7 +25,8 @@ create table submissions (
     description         text not null,
     expected_price      bigint not null check (expected_price > 0),
     negotiable          boolean not null,
-    documents_available text not null,
+    documents_available boolean not null,
+    documents_note      text not null default '',
     consent_version     text not null,
     consent_at          timestamptz not null,
     ip_hash             text,
@@ -39,6 +40,7 @@ create index submissions_status_idx on submissions (status, created_at desc);
 
 create table listings (
     id                  uuid primary key default gen_random_uuid(),
+    number              int generated always as identity (start with 1001) unique,
     submission_id       uuid not null unique references submissions (id),
     state               listing_state not null default 'draft',
     title               text not null,
@@ -48,6 +50,7 @@ create table listings (
     description         text not null,
     price               bigint not null check (price > 0),
     negotiable          boolean not null,
+    documents_available boolean not null,
     documents_note      text not null default '',
     photo_ids           uuid[] not null default '{}',
     confirmed_price     bigint,
@@ -103,6 +106,7 @@ create table visit_requests (
     name            text not null,
     phone           text not null,
     preferred_time  text not null default '',
+    budget          text not null default '',
     message         text not null default '',
     status          visit_status not null default 'new',
     admin_notes     text not null default '',

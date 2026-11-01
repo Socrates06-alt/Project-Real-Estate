@@ -30,8 +30,9 @@ def _public_listing(row: dict) -> dict:
         "status": "sold" if row["state"] == "sold" else "live",
         "version": row["version"],
         **{
-            k: snap[k]
+            k: snap.get(k)
             for k in (
+                "number",
                 "title",
                 "property_type",
                 "land_area_cents",
@@ -39,6 +40,7 @@ def _public_listing(row: dict) -> dict:
                 "description",
                 "price",
                 "negotiable",
+                "documents_available",
                 "documents_note",
                 "photos",
             )
@@ -155,8 +157,16 @@ def request_visit(
         return VisitRequestCreated(id=existing["id"], status=existing["status"])
 
     row = conn.execute(
-        "insert into visit_requests (listing_id, listing_version, name, phone, preferred_time, message)"
-        " values (%s, %s, %s, %s, %s, %s) returning id, status",
-        (listing_id, listing["current_version"], body.name, body.phone, body.preferred_time, body.message),
+        "insert into visit_requests (listing_id, listing_version, name, phone, preferred_time, budget, message)"
+        " values (%s, %s, %s, %s, %s, %s, %s) returning id, status",
+        (
+            listing_id,
+            listing["current_version"],
+            body.name,
+            body.phone,
+            body.preferred_time,
+            body.budget,
+            body.message,
+        ),
     ).fetchone()
     return VisitRequestCreated(id=row["id"], status=row["status"])

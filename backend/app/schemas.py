@@ -60,7 +60,8 @@ class SubmissionForm(BaseModel):
     description: Description
     expected_price: Price
     negotiable: bool
-    documents_available: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=500)]
+    documents_available: bool
+    documents_note: ShortText = ""
     consent: bool
     consent_version: str
     turnstile_token: str | None = None
@@ -90,6 +91,7 @@ class VisitRequestIn(Strict):
     name: Name
     phone: Phone
     preferred_time: ShortText = ""
+    budget: Annotated[str, StringConstraints(strip_whitespace=True, max_length=60)] = ""
     message: ShortText = ""
     turnstile_token: str | None = None
 
@@ -114,6 +116,7 @@ class ListingUpdate(Strict):
     description: Description | None = None
     price: Price | None = None
     negotiable: bool | None = None
+    documents_available: bool | None = None
     documents_note: ShortText | None = None
     photo_ids: Annotated[list[UUID], Field(max_length=3)] | None = None
 

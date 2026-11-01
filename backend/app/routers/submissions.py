@@ -62,8 +62,8 @@ def create_submission(
     conn.execute(
         """insert into submissions (id, ref_code, device_token_hash, seller_name, seller_phone,
                property_type, land_area_cents, location, description, expected_price, negotiable,
-               documents_available, consent_version, consent_at, ip_hash)
-           values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), %s)""",
+               documents_available, documents_note, consent_version, consent_at, ip_hash)
+           values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, now(), %s)""",
         (
             submission_id,
             ref_code,
@@ -77,6 +77,7 @@ def create_submission(
             form.expected_price,
             form.negotiable,
             form.documents_available,
+            form.documents_note,
             form.consent_version,
             ip_hash(request),
         ),

@@ -91,7 +91,8 @@ def submission_form(**overrides) -> dict:
         "description": "Flat residential land with road access and good water.",
         "expected_price": "3000000",
         "negotiable": "true",
-        "documents_available": "Title deed, tax receipt",
+        "documents_available": "true",
+        "documents_note": "Title deed, tax receipt",
         "consent": "true",
         "consent_version": "test-v1",
     }

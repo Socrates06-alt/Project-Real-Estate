@@ -36,7 +36,7 @@ docs/                this plan
 | Table | Purpose |
 |---|---|
 | `submissions` | Original seller submission. **Immutable** (trigger) — only the workflow `status` columns may change. Stores consent version + timestamp, device-token hash, salted IP hash. |
-| `listings` | Admin-managed sanitized draft (title, general location, price, photos…) and lifecycle state: `draft → published → sold / withdrawn`. |
+| `listings` | Public number (`#1001`…), admin-managed sanitized draft (title, general location, price, photos…) and lifecycle state: `draft → published → sold / withdrawn`. |
 | `published_versions` | Insert-only JSON snapshot per publish (trigger blocks UPDATE/DELETE). Public pages read the latest version. |
 | `listing_photos` | Storage references. `original` photos (private bucket) belong to a submission; `public` copies belong to a listing. |
 | `visit_requests` | Buyer visit requests and their manual-coordination status. |
@@ -123,10 +123,10 @@ alone would exceed budget; fallback is self-hosted Postgres on the VPS.
 
 ## 8. Milestones
 
-1. **Backend foundation:** schema, RLS, triggers, public, submission and admin APIs, tests, CI.
-2. Seller flow UI (submission + Profile).
-3. Admin UI.
-4. Buyer UI (Explore, Details, visits).
+1. ✅ **Backend foundation:** schema, RLS, triggers, public, submission and admin APIs, tests, CI.
+2. ✅ Seller flow UI (submission + Profile).
+3. ✅ Admin UI.
+4. ✅ Buyer UI (Explore, Details, visits).
 5. Hardening: Turnstile, backups, cleanup cron, E2E tests.
 6. Deploy (VPS + Cloudflare) and soft launch.
 
@@ -136,10 +136,10 @@ alone would exceed budget; fallback is self-hosted Postgres on the VPS.
 2. Is in-app consent enough for the brokerage agreement, or is a signed or WhatsApp-confirmed copy also needed?
 3. Language: English only, or English + Malayalam?
 4. Threshold for a "material" price change (default 5%).
-5. General location: a fixed list of villages/wards, or free text?
+5. ~~General location~~ — free text in V1 (per prototype).
 6. VPS provider and plan size.
 
 ## 10. Out of scope for V1
 
-Customer login/OTP, online payments, automated valuation, AI semantic search,
+Flat/commercial property types, customer login/OTP, online payments, automated valuation, AI semantic search,
 marketing/maintenance services, automated visit scheduling, expansion beyond the taluk.
