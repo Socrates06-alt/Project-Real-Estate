@@ -112,22 +112,22 @@ export default function ListingDetail() {
       </section>
 
       <div className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
-        <div className="glass flex w-full max-w-md items-center gap-1.5 rounded-full p-1.5 shadow-float">
+        <div className="glass flex w-full max-w-sm items-center gap-1 rounded-full p-1 shadow-float">
           {sold ? (
-            <a href={waLink(l.contact)} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "primary" }), "h-12 flex-1 rounded-full")}>
+            <a href={waLink(l.contact)} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "primary" }), "h-11 flex-1 rounded-full")}>
               <MessageCircle size={19} /> Ask about similar properties
             </a>
           ) : (
             <>
               <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
-                <MessageCircle size={21} className="text-wa" />
+                <MessageCircle size={19} className="text-wa" />
                 WhatsApp
               </a>
               <a href={telLink(l.contact)} className={pillAction}>
-                <Phone size={20} className="text-brand" />
+                <Phone size={18} className="text-brand" />
                 Call
               </a>
-              <Button className="h-14 flex-[1.6] rounded-full text-[15px]" onClick={() => setParams({ visit: "1" }, { replace: true })}>
+              <Button className="h-11 flex-[1.6] rounded-full text-sm" onClick={() => setParams({ visit: "1" }, { replace: true })}>
                 <CalendarDays size={19} /> Request visit
               </Button>
             </>
@@ -141,7 +141,7 @@ export default function ListingDetail() {
 }
 
 const pillAction =
-  "flex h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[13px] font-medium text-ink transition-colors hover:bg-[var(--glass-active)]";
+  "flex h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium text-ink transition-colors hover:bg-[var(--glass-active)]";
 
 function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (

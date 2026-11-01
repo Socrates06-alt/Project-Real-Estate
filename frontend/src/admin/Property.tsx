@@ -234,8 +234,8 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       {/* Main action */}
       {mainLabel && (
         <div className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
-          <div className="glass w-full max-w-md rounded-full p-1.5 shadow-float">
-            <Button className="h-13 w-full rounded-full text-base" disabled={mainDisabled} onClick={publish}>
+          <div className="glass w-full max-w-sm rounded-full p-1 shadow-float">
+            <Button className="h-11 w-full rounded-full text-[15px]" disabled={mainDisabled} onClick={publish}>
               {busy ? "Saving…" : mainLabel}
             </Button>
           </div>

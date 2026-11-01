@@ -39,20 +39,20 @@ function AdminNav() {
   const { signOut } = useAdmin();
   const item = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-full text-[13px] font-medium transition-colors",
+      "flex h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-colors",
       isActive ? "bg-[var(--glass-active)] text-ink" : "text-sub",
     );
   return (
     <nav className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
-      <div className="glass flex w-full max-w-md items-center gap-1 rounded-full p-1.5 shadow-float">
+      <div className="glass flex w-full max-w-sm items-center gap-1 rounded-full p-1 shadow-float">
         <NavLink to="/admin" end className={item}>
-          <InboxIcon size={22} /> Inbox
+          <InboxIcon size={19} /> Inbox
         </NavLink>
         <NavLink to="/admin/properties" className={item}>
-          <Building2 size={22} /> Properties
+          <Building2 size={19} /> Properties
         </NavLink>
         <button onClick={() => window.confirm("Sign out?") && signOut()} className={item({ isActive: false })}>
-          <LogOut size={21} /> Sign out
+          <LogOut size={18} /> Sign out
         </button>
       </div>
     </nav>
