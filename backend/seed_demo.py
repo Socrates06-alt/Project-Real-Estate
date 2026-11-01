@@ -146,15 +146,15 @@ def main() -> None:
         resp.raise_for_status()
         if action == "new":
             continue
-        listing = httpx.post(f"{API}/api/admin/submissions/{resp.json()['id']}/draft", headers=admin).json()
-        lid = listing["id"]
-        httpx.patch(f"{API}/api/admin/listings/{lid}", json={"title": title}, headers=admin).raise_for_status()
-        httpx.post(f"{API}/api/admin/listings/{lid}/publish", headers=admin).raise_for_status()
+        sid = resp.json()["id"]
+        form = httpx.get(f"{API}/api/admin/properties/{sid}", headers=admin).json()["form"]
+        res = httpx.post(f"{API}/api/admin/properties/{sid}/publish", json={**form, "title": title}, headers=admin)
+        res.raise_for_status()
         if action == "sold":
-            httpx.post(f"{API}/api/admin/listings/{lid}/sold", headers=admin).raise_for_status()
+            httpx.post(f"{API}/api/admin/properties/{sid}/sold", headers=admin).raise_for_status()
         else:
             visit = {"name": "Anil Kumar", "phone": "9048012345", "preferred_time": "Sat 10 am", "budget": "₹60–70 L"}
-            httpx.post(f"{API}/api/listings/{lid}/visit-requests", json=visit)
+            httpx.post(f"{API}/api/listings/{res.json()['listing_id']}/visit-requests", json=visit)
     print("Seeded demo listings.")
 
 

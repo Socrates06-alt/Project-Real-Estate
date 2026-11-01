@@ -1,13 +1,11 @@
-import { NavLink, Route, Routes } from "react-router-dom";
-import { LogOut } from "lucide-react";
+import { NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { Building2, Inbox as InboxIcon, LogOut } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { AdminAuthProvider, useAdmin } from "./auth";
 import Login from "./Login";
-import Queue from "./Queue";
-import Listings from "./Listings";
-import Visits from "./Visits";
-import Editor from "./Editor";
-import { cn } from "@/lib/utils";
-import { Logo } from "@/components/Logo";
+import Inbox from "./Inbox";
+import Properties from "./Properties";
+import PropertyPage from "./Property";
 
 export default function AdminApp() {
   return (
@@ -18,40 +16,45 @@ export default function AdminApp() {
 }
 
 function Gate() {
-  const { token, signOut } = useAdmin();
+  const { token } = useAdmin();
+  const { pathname } = useLocation();
   if (!token) return <Login />;
-
-  const tab = ({ isActive }: { isActive: boolean }) =>
-    cn("rounded-full px-4 py-2 text-[15px] font-medium transition-colors", isActive ? "bg-[var(--glass-active)] text-brand" : "text-sub hover:text-ink");
+  const onPropertyPage = pathname.startsWith("/admin/p/");
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16">
-      <header className="sticky top-0 z-30 -mx-4 mb-5 flex flex-wrap items-center gap-3 bg-bg/85 px-4 py-3 backdrop-blur-xl">
-        <span className="flex items-center gap-2">
-          <Logo />
-          <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-medium text-brand">Admin</span>
-        </span>
-        <nav className="order-last flex w-full gap-1 overflow-x-auto glass rounded-full p-1 shadow-card sm:order-none sm:ml-6 sm:w-auto">
-          <NavLink to="/admin" end className={tab}>
-            Submissions
-          </NavLink>
-          <NavLink to="/admin/listings" className={tab}>
-            Listings
-          </NavLink>
-          <NavLink to="/admin/visits" className={tab}>
-            Visits
-          </NavLink>
-        </nav>
-        <button onClick={signOut} className="ml-auto flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-sub hover:bg-surface">
-          <LogOut size={16} /> Sign out
+    <>
+      <main className="mx-auto min-h-dvh max-w-xl px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-32">
+        <Routes>
+          <Route index element={<Inbox />} />
+          <Route path="properties" element={<Properties />} />
+          <Route path="p/:id" element={<PropertyPage />} />
+        </Routes>
+      </main>
+      {!onPropertyPage && <AdminNav />}
+    </>
+  );
+}
+
+function AdminNav() {
+  const { signOut } = useAdmin();
+  const item = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      "flex h-14 flex-1 flex-col items-center justify-center gap-1 rounded-full text-[13px] font-medium transition-colors",
+      isActive ? "bg-[var(--glass-active)] text-ink" : "text-sub",
+    );
+  return (
+    <nav className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
+      <div className="glass flex w-full max-w-md items-center gap-1 rounded-full p-1.5 shadow-float">
+        <NavLink to="/admin" end className={item}>
+          <InboxIcon size={22} /> Inbox
+        </NavLink>
+        <NavLink to="/admin/properties" className={item}>
+          <Building2 size={22} /> Properties
+        </NavLink>
+        <button onClick={() => window.confirm("Sign out?") && signOut()} className={item({ isActive: false })}>
+          <LogOut size={21} /> Sign out
         </button>
-      </header>
-      <Routes>
-        <Route index element={<Queue />} />
-        <Route path="listings" element={<Listings />} />
-        <Route path="visits" element={<Visits />} />
-        <Route path="s/:id" element={<Editor />} />
-      </Routes>
-    </div>
+      </div>
+    </nav>
   );
 }

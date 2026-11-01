@@ -51,58 +51,82 @@ def submit(client, **overrides):
     return client.post("/api/submissions", data=form, files=files, headers=DEVICE)
 
 
+def publish(client, admin, sid: str, **changes):
+    form = {**client.get(f"/api/admin/properties/{sid}", headers=admin).json()["form"], **changes}
+    return client.post(f"/api/admin/properties/{sid}/publish", json=form, headers=admin)
+
+
 def publish_new(client, admin) -> str:
     sid = submit(client).json()["id"]
-    lid = client.post(f"/api/admin/submissions/{sid}/draft", headers=admin).json()["id"]
-    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).status_code == 200
-    return lid
+    assert publish(client, admin, sid).status_code == 200
+    return sid
 
 
 def test_full_journey(client, admin):
     sub = submit(client).json()
+    sid = sub["id"]
     assert sub["ref_code"].startswith("NLY-")
     assert client.get("/api/my/submissions", headers=DEVICE).json()[0]["status"] == "received"
+    inbox = client.get("/api/admin/inbox", headers=admin).json()
+    assert sid in [p["id"] for p in inbox["new"]]
 
-    lid = client.post(f"/api/admin/submissions/{sub['id']}/draft", headers=admin).json()["id"]
-    assert client.get(f"/api/listings/{lid}").status_code == 404  # drafts are not public
-    client.patch(f"/api/admin/listings/{lid}", json={"title": "Plot near Mulakuzha"}, headers=admin)
-    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).json()["version"] == 1
+    # Property page: seller details for the founder, a ready form without seller identity.
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    assert prop["seller"]["seller_phone"] == "+919847012345" and prop["group"] == "new"
+    assert "Ravi" not in str(prop["form"])
+
+    res = publish(client, admin, sid, title="Plot near Mulakuzha").json()
+    lid = res["listing_id"]
+    assert res["group"] == "live" and res["number"] >= 1001
 
     page = client.get(f"/api/listings/{lid}")
     assert "Ravi" not in page.text and "9847012345" not in page.text  # seller stays private
     data = page.json()
-    assert data["number"] >= 1001 and data["negotiable"] is True
+    assert data["title"] == "Plot near Mulakuzha" and data["negotiable"] is True
     assert client.get(data["photos"][0]).status_code == 200
-    assert lid in [
-        i["id"] for i in client.get("/api/listings", params={"q": "land under 40 lakh mulakuzha"}).json()["items"]
-    ]
+    found = client.get("/api/listings", params={"q": "land under 40 lakh mulakuzha"}).json()["items"]
+    assert lid in [i["id"] for i in found]
     assert lid not in [i["id"] for i in client.get("/api/listings", params={"q": "house"}).json()["items"]]
 
     visit = {"name": "Anu", "phone": "9000000001", "budget": "₹30 L"}
     assert client.post(f"/api/listings/{lid}/visit-requests", json=visit).status_code == 201
-    assert any(v["budget"] == "₹30 L" for v in client.get("/api/admin/visits", headers=admin).json())
+    visits = client.get("/api/admin/inbox", headers=admin).json()["visits"]
+    v = next(v for v in visits if v["property_id"] == sid)
+    assert client.patch(f"/api/admin/visits/{v['id']}", json={"status": "scheduled"}, headers=admin).status_code == 200
 
-    assert client.post(f"/api/admin/listings/{lid}/sold", headers=admin).json()["state"] == "sold"
+    assert client.post(f"/api/admin/properties/{sid}/sold", headers=admin).json()["group"] == "sold"
     assert client.get(f"/api/listings/{lid}").json()["status"] == "sold"
     assert client.post(f"/api/listings/{lid}/visit-requests", json=visit).status_code == 404
 
 
 def test_admin_requires_login(client):
     assert client.post("/api/admin/login", json={"password": "wrong"}).status_code == 401
-    assert client.get("/api/admin/submissions").status_code == 401
-    assert client.get("/api/admin/submissions", headers={"Authorization": "Bearer 9999999999.fake"}).status_code == 401
+    assert client.get("/api/admin/inbox").status_code == 401
+    assert client.get("/api/admin/inbox", headers={"Authorization": "Bearer 9999999999.fake"}).status_code == 401
 
 
 def test_price_change_needs_seller_confirmation(client, admin):
-    lid = publish_new(client, admin)
-    client.patch(f"/api/admin/listings/{lid}", json={"price": 2_500_000}, headers=admin)
-    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).status_code == 409
-    client.post(f"/api/admin/listings/{lid}/price-confirmation", headers=admin)
-    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).json()["version"] == 2
+    sid = publish_new(client, admin)
+    assert publish(client, admin, sid, price=2_950_000).status_code == 200  # small change is fine
+    res = publish(client, admin, sid, price=2_500_000)
+    assert res.status_code == 409 and res.json()["detail"] == "PRICE_NEEDS_SELLER_CONFIRMATION"
+    assert publish(client, admin, sid, price=2_500_000, seller_confirmed=True).status_code == 200
+
+
+def test_not_listed_and_take_down(client, admin):
+    sid = submit(client).json()["id"]
+    assert (
+        client.post(f"/api/admin/properties/{sid}/not-listed", json={}, headers=admin).json()["group"] == "not_listed"
+    )
+    sid2 = publish_new(client, admin)
+    assert client.post(f"/api/admin/properties/{sid2}/take-down", headers=admin).json()["group"] == "not_listed"
+    counts = client.get("/api/admin/inbox", headers=admin).json()["counts"]
+    assert counts["not_listed"] >= 2
 
 
 def test_originals_and_snapshots_are_immutable(client, admin):
-    lid = publish_new(client, admin)
+    sid = publish_new(client, admin)
+    lid = client.get(f"/api/admin/properties/{sid}", headers=admin).json()["listing_id"]
     db = sqlite3.connect(os.environ["DATABASE_PATH"])
     for sql in (
         "update submissions set seller_phone = 'x'",

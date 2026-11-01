@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PATCH"],
         allow_headers=["Authorization", "Content-Type", "X-Device-Token"],
     )
+
     @app.get("/", include_in_schema=False)
     def root() -> RedirectResponse:
         # The web app runs on the frontend (http://localhost:5173); this server is the API.

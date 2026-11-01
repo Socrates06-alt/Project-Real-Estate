@@ -68,6 +68,7 @@ export function usePrivateImage(path: string) {
   const [url, setUrl] = useState<string>();
   useEffect(() => {
     let objectUrl: string | undefined;
+    if (!path) return;
     call<Blob>(path.replace(/^\/api\/admin/, "")).then(
       (blob) => setUrl((objectUrl = URL.createObjectURL(blob))),
       () => setUrl(undefined),

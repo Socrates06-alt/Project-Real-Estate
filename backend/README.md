@@ -10,7 +10,7 @@ app/
   db.py       SQLite schema + immutability triggers + helpers
   models.py   request validation (phone, price, …)
   public.py   browse, property, visit requests, seller submission, My listings
-  admin.py    password login, review queue, drafts, publish, sold/withdraw, visits
+  admin.py    password login, inbox, one-step publish, sold/take down, visits
   photos.py   strip metadata (incl. GPS), resize, save; private originals, public copies
   search.py   "house under 40 lakh Mulakuzha" → filters
 seed_demo.py  sample listings

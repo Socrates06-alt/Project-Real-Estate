@@ -69,17 +69,20 @@ class NoteIn(Strict):
     note: Short = ""
 
 
-class ListingUpdate(Strict):
-    title: Annotated[str, text(5, 120)] | None = None
-    property_type: PropertyType | None = None
-    land_area_cents: Cents | None = None
-    location: Location | None = None
-    description: Description | None = None
-    price: Price | None = None
-    negotiable: bool | None = None
-    documents_available: bool | None = None
-    documents_note: Short | None = None
-    photo_ids: Annotated[list[str], Field(max_length=3)] | None = None
+class PublishIn(Strict):
+    """What buyers will see. Seller identity is never part of this."""
+
+    title: Annotated[str, text(5, 120)]
+    property_type: PropertyType
+    land_area_cents: Cents
+    location: Location
+    description: Description
+    price: Price
+    negotiable: bool
+    documents_available: bool
+    documents_note: Short = ""
+    photo_ids: Annotated[list[str], Field(max_length=3)]
+    seller_confirmed: bool = False  # seller agreed to this price (needed for big price changes)
 
 
 class VisitUpdate(Strict):
