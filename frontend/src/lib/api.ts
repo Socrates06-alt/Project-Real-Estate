@@ -104,7 +104,7 @@ export interface PublicConfig {
 
 export interface MySubmission {
   id: string;
-  ref_code: string;
+  number: number;
   property_type: PropertyType;
   location: string;
   expected_price: number;

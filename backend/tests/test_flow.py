@@ -65,7 +65,7 @@ def publish_new(client, admin) -> str:
 def test_full_journey(client, admin):
     sub = submit(client).json()
     sid = sub["id"]
-    assert sub["ref_code"].startswith("NLY-")
+    assert sub["number"] >= 1001
     assert client.get("/api/my/submissions", headers=DEVICE).json()[0]["status"] == "received"
     inbox = client.get("/api/admin/inbox", headers=admin).json()
     assert sid in [p["id"] for p in inbox["new"]]
@@ -77,12 +77,13 @@ def test_full_journey(client, admin):
 
     res = publish(client, admin, sid, title="Plot near Mulakuzha").json()
     lid = res["listing_id"]
-    assert res["group"] == "live" and res["number"] >= 1001
+    assert res["group"] == "live" and res["number"] == sub["number"]
 
     page = client.get(f"/api/listings/{lid}")
     assert "Ravi" not in page.text and "9847012345" not in page.text  # seller stays private
     data = page.json()
     assert data["title"] == "Plot near Mulakuzha" and data["negotiable"] is True
+    assert data["number"] == sub["number"]  # one number from submission to buyer
     assert client.get(data["photos"][0]).status_code == 200
     found = client.get("/api/listings", params={"q": "land under 40 lakh mulakuzha"}).json()["items"]
     assert lid in [i["id"] for i in found]
@@ -97,6 +98,19 @@ def test_full_journey(client, admin):
     assert client.post(f"/api/admin/properties/{sid}/sold", headers=admin).json()["group"] == "sold"
     assert client.get(f"/api/listings/{lid}").json()["status"] == "sold"
     assert client.post(f"/api/listings/{lid}/visit-requests", json=visit).status_code == 404
+
+
+def test_admin_search_by_number_phone_or_name(client, admin):
+    sub = submit(client, seller_name="Meera Nair", seller_phone="94470 55555").json()
+
+    def found(q):
+        rows = client.get("/api/admin/properties", params={"q": q}, headers=admin).json()
+        return sub["id"] in [r["id"] for r in rows]
+
+    assert found(str(sub["number"])) and found(f"#{sub['number']}")
+    assert found("9447055555") and found("+91 94470 55555") and found("094470-55555")
+    assert found("meera")
+    assert not found("nobody-like-this")
 
 
 def test_admin_requires_login(client):

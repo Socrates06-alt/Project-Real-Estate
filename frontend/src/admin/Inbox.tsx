@@ -51,7 +51,7 @@ export default function Inbox() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{p.seller_name}</p>
                   <p className="truncate text-sm text-sub">
-                    {typeLabel(p.property_type)} · {p.location}
+                    #{p.number} · {typeLabel(p.property_type)} · {p.location}
                   </p>
                   <p className="text-sm">
                     <span className="font-medium">{inr(p.price)}</span>

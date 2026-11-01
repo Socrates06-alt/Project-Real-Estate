@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     buyer_brokerage_pct: float = 1.0
     material_price_change_pct: float = 5.0
 
+    first_property_number: int = 1001
     max_photos: int = 3
     max_photo_bytes: int = 8 * 1024 * 1024
 

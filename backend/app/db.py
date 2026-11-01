@@ -15,7 +15,7 @@ NOW = "(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
 SCHEMA = f"""
 create table if not exists submissions (
     id                  text primary key,
-    ref_code            text not null unique,
+    number              integer not null unique,  -- the one property number (#1001), shared by everyone
     device_hash         text not null,
     seller_name         text not null,
     seller_phone        text not null,
@@ -91,7 +91,7 @@ create table if not exists visit_requests (
 
 -- The seller's original submission never changes (only its workflow status).
 create trigger if not exists submissions_immutable
-before update of ref_code, device_hash, seller_name, seller_phone, property_type, land_area_cents, location,
+before update of number, device_hash, seller_name, seller_phone, property_type, land_area_cents, location,
     description, expected_price, negotiable, documents_available, documents_note, consent_version, consent_at
 on submissions begin select raise(abort, 'submission original fields are immutable'); end;
 

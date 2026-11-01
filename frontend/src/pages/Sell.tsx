@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Camera, Check, Copy, ImagePlus, MessageCircle, X } from "lucide-react";
+import { Camera, Check, ImagePlus, MessageCircle, X } from "lucide-react";
 import { api, ApiError, getConfig, type PropertyType } from "@/lib/api";
 import { useAsync } from "@/lib/useAsync";
 import { AffixInput, Field, Input, Textarea } from "@/components/ui/field";
@@ -25,7 +25,7 @@ export default function Sell() {
   const [termsOpen, setTermsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [refCode, setRefCode] = useState<string | null>(null);
+  const [number, setNumber] = useState<number | null>(null);
   const picker = useRef<HTMLInputElement>(null);
   const max = config?.max_photos ?? 3;
 
@@ -66,8 +66,8 @@ export default function Sell() {
     setBusy(true);
     setError(null);
     try {
-      const res = await api<{ ref_code: string }>("/api/submissions", { form: f, device: true });
-      setRefCode(res.ref_code);
+      const res = await api<{ number: number }>("/api/submissions", { form: f, device: true });
+      setNumber(res.number);
       window.scrollTo({ top: 0 });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
@@ -76,7 +76,7 @@ export default function Sell() {
     }
   }
 
-  if (refCode) return <Done refCode={refCode} contactWa={config ? waLink(config.contact) : undefined} />;
+  if (number) return <Done number={number} contactWa={config ? waLink(config.contact) : undefined} />;
 
   return (
     <form onSubmit={submit} className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
@@ -227,25 +227,18 @@ function Card({ title, hint, children }: { title: string; hint?: string; childre
   );
 }
 
-function Done({ refCode, contactWa }: { refCode: string; contactWa?: string }) {
-  const toast = useToast();
+function Done({ number, contactWa }: { number: number; contactWa?: string }) {
   return (
     <div className="flex min-h-[80dvh] flex-col items-center justify-center text-center">
       <div className="mb-5 grid h-16 w-16 place-items-center rounded-full bg-brand-soft text-brand">
         <Check size={30} strokeWidth={2.5} />
       </div>
       <h1 className="text-2xl font-semibold">Submission received</h1>
-      <p className="mt-1 max-w-xs text-sub">We'll call you within 24 hours to confirm the details.</p>
-      <button
-        onClick={() => navigator.clipboard?.writeText(refCode).then(() => toast("Reference copied"))}
-        className="mt-6 flex items-center gap-3 rounded-2xl border border-line bg-surface px-5 py-3.5"
-      >
-        <span className="text-left">
-          <span className="block text-xs text-sub">Your reference</span>
-          <span className="font-mono text-lg font-bold tracking-wider">{refCode}</span>
-        </span>
-        <Copy size={18} className="text-sub" />
-      </button>
+      <div className="mt-6 rounded-3xl border border-line bg-surface px-8 py-4">
+        <p className="text-sm text-sub">Your property number</p>
+        <p className="text-4xl font-semibold tracking-tight text-brand">#{number}</p>
+      </div>
+      <p className="mt-4 max-w-xs text-sub">We'll call you within 24 hours to confirm. Mention #{number} when you contact us.</p>
       <div className="mt-8 w-full max-w-sm space-y-2.5">
         {contactWa && (
           <a href={contactWa} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "wa", size: "lg" })}>

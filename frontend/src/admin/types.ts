@@ -4,14 +4,13 @@ export type Group = "new" | "live" | "sold" | "not_listed";
 
 export interface PropertyRow {
   id: string;
-  ref_code: string;
+  number: number;
   seller_name: string;
   seller_phone: string;
   property_type: PropertyType;
   location: string;
   title: string;
   price: number;
-  number: number | null;
   listing_id: string | null;
   group: Group;
   cover_url: string | null;
@@ -55,11 +54,10 @@ export interface PublicForm {
 export interface Property {
   id: string;
   group: Group;
-  number: number | null;
+  number: number;
   listing_id: string | null;
   reference_price: number;
   seller: {
-    ref_code: string;
     seller_name: string;
     seller_phone: string;
     property_type: PropertyType;

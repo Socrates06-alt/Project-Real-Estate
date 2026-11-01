@@ -2,7 +2,6 @@
 
 import hashlib
 import re
-import secrets
 import uuid
 from typing import Annotated, Literal
 
@@ -16,7 +15,6 @@ from app.search import parse_query
 
 router = APIRouter(prefix="/api")
 
-_REF_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
 _STATES = {"live": ("published",), "sold": ("sold",), "all": ("published", "sold")}
 _SNAPSHOT_FIELDS = (
     "number", "title", "property_type", "land_area_cents", "location", "description",
@@ -182,13 +180,15 @@ def create_submission(
             raise HTTPException(422, str(exc)) from exc
 
     sub_id = str(uuid.uuid4())
-    ref_code = "NLY-" + "".join(secrets.choice(_REF_ALPHABET) for _ in range(6))
+    number = db.execute("select coalesce(max(number) + 1, ?) from submissions", (s.first_property_number,)).fetchone()[
+        0
+    ]
     db.execute(
-        """insert into submissions (id, ref_code, device_hash, seller_name, seller_phone, property_type,
+        """insert into submissions (id, number, device_hash, seller_name, seller_phone, property_type,
                land_area_cents, location, description, expected_price, negotiable, documents_available,
                documents_note, consent_version)
            values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (sub_id, ref_code, device, form.seller_name, form.seller_phone, form.property_type,
+        (sub_id, number, device, form.seller_name, form.seller_phone, form.property_type,
          form.land_area_cents, form.location, form.description, form.expected_price, form.negotiable,
          form.documents_available, form.documents_note, form.consent_version),
     )  # fmt: skip
@@ -205,14 +205,14 @@ def create_submission(
         photos.delete_files(saved)
         raise HTTPException(503, "Could not save photos, please try again") from exc
 
-    return {"id": sub_id, "ref_code": ref_code, "status": "received"}
+    return {"id": sub_id, "number": number, "status": "received"}
 
 
 @router.get("/my/submissions")
 def my_submissions(device: Annotated[str, Depends(device_hash)], db: DB) -> list[dict]:
     return many(
         db,
-        """select s.id, s.ref_code, s.property_type, s.location, s.expected_price, s.status, s.created_at,
+        """select s.id, s.number, s.property_type, s.location, s.expected_price, s.status, s.created_at,
                   case when l.state in ('published', 'sold') then l.id end as listing_id
            from submissions s left join listings l on l.submission_id = s.id
            where s.device_hash = ? order by s.created_at desc limit 50""",

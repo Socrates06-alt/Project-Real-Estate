@@ -89,7 +89,7 @@ function MyListings() {
               </div>
             )}
             <p className="mt-3 flex items-center justify-between text-xs text-sub">
-              Ref <span className="font-mono font-semibold text-ink">{s.ref_code}</span>
+              Property <span className="font-semibold text-ink">#{s.number}</span>
               {s.listing_id && (
                 <span className="ml-auto flex items-center font-semibold text-brand">
                   View listing <ChevronRight size={14} />

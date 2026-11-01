@@ -87,7 +87,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         </button>
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">{f.title}</p>
-          <p className="text-xs text-sub">{p.number ? `#${p.number} · ` : ""}{s.ref_code}</p>
+          <p className="text-xs text-sub">#{p.number}</p>
         </div>
         <GroupBadge group={p.group} />
         {p.listing_id && p.group !== "not_listed" && (

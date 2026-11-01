@@ -3,12 +3,13 @@
 import hashlib
 import hmac
 import json
+import re
 import sqlite3
 import time
 import uuid
 from typing import Literal
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 
 from app import photos
 from app.config import get_settings
@@ -87,8 +88,8 @@ def get_submission(db: sqlite3.Connection, submission_id: str) -> dict:
 
 
 _ROW = """
-    select s.id, s.ref_code, s.seller_name, s.seller_phone, s.property_type, s.location, s.status, s.created_at,
-           coalesce(l.price, s.expected_price) as price, l.id as listing_id, l.number,
+    select s.id, s.number, s.seller_name, s.seller_phone, s.property_type, s.location, s.status, s.created_at,
+           coalesce(l.price, s.expected_price) as price, l.id as listing_id,
            coalesce(l.title, '') as title,
            (select id from photos p where p.submission_id = s.id order by position limit 1) as cover_photo_id,
            (select count(*) from visit_requests v
@@ -124,13 +125,28 @@ def inbox(db: DB) -> dict:
 
 
 @guarded.get("/properties")
-def list_properties(db: DB, group: Group = "live") -> list[dict]:
-    statuses = GROUPS[group]
-    rows = many(
-        db,
-        f"{_ROW} where s.status in ({','.join('?' * len(statuses))}) order by s.status_updated_at desc limit 500",
-        *statuses,
-    )
+def list_properties(db: DB, group: Group = "live", q: str = Query("", max_length=60)) -> list[dict]:
+    """A group's properties, or, with q, a search across all of them."""
+    q = q.strip().lstrip("#")
+    if not q:
+        statuses = GROUPS[group]
+        rows = many(
+            db,
+            f"{_ROW} where s.status in ({','.join('?' * len(statuses))}) order by s.status_updated_at desc limit 500",
+            *statuses,
+        )
+        return [_row(r) for r in rows]
+
+    digits = re.sub(r"\D", "", q)
+    conditions, args = ["lower(s.seller_name) like ?"], [f"%{q.lower()}%"]
+    if digits and len(digits) <= 6:  # a property number like 1001
+        conditions.append("s.number = ?")
+        args.append(int(digits))
+    if len(digits) >= 4:  # (part of) a phone number, any format: +91, spaces, leading 0
+        phone = digits[2:] if len(digits) == 12 and digits.startswith("91") else digits.lstrip("0")
+        conditions.append("s.seller_phone like ?")
+        args.append(f"%{phone}%")
+    rows = many(db, f"{_ROW} where {' or '.join(conditions)} order by s.created_at desc limit 50", *args)
     return [_row(r) for r in rows]
 
 
@@ -169,7 +185,7 @@ def get_property(submission_id: str, db: DB) -> dict:
         "seller": sub,
         "photos": [{"id": p["id"], "url": f"/api/admin/photos/{p['id']}"} for p in photo_rows],
         "listing_id": listing["id"] if listing else None,
-        "number": listing["number"] if listing else None,
+        "number": sub["number"],
         "reference_price": _reference_price(db, sub, listing),
         "form": form,
         "visits": visits,
@@ -231,7 +247,7 @@ def publish(submission_id: str, body: PublishIn, db: DB) -> dict:
     values["photo_ids"] = json.dumps(body.photo_ids)
     if listing is None:
         listing_id = str(uuid.uuid4())
-        number = db.execute("select coalesce(max(number), 1000) + 1 from listings").fetchone()[0]
+        number = sub["number"]  # the listing keeps the property's number from submission
         db.execute(
             f"insert into listings (id, number, submission_id, {', '.join(values)})"
             f" values (?, ?, ?, {', '.join('?' * len(values))})",
