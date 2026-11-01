@@ -99,7 +99,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
 
       {/* Seller */}
       <section className="rounded-3xl border border-line bg-surface p-4">
-        <p className="text-xs text-sub">Seller · private</p>
+        <p className="text-xs text-sub">Seller</p>
         <p className="text-lg font-semibold">{s.seller_name}</p>
         <p className="mb-3 text-sm text-sub">{s.seller_phone}</p>
         <ContactButtons phone={s.seller_phone} size="lg" />
@@ -136,7 +136,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         <p className="text-xs text-sub">What buyers see</p>
 
         <div>
-          <p className="mb-1.5 text-sm font-semibold">Photos <span className="font-normal text-sub">· tap to show or hide</span></p>
+          <p className="mb-1.5 text-sm font-semibold">Photos</p>
           <div className="grid grid-cols-3 gap-2">
             {p.photos.map((ph) => {
               const on = f.photo_ids.includes(ph.id);
