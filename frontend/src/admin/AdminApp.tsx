@@ -39,12 +39,12 @@ function AdminNav() {
   const { signOut } = useAdmin();
   const item = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex h-11 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[11px] font-medium transition-colors",
+      "flex h-11 min-w-[76px] flex-col items-center justify-center gap-0.5 rounded-full px-4 text-[11px] font-medium transition-colors",
       isActive ? "bg-[var(--glass-active)] text-ink" : "text-sub",
     );
   return (
     <nav className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
-      <div className="glass flex w-full max-w-sm items-center gap-1 rounded-full p-1 shadow-float">
+      <div className="glass flex items-center gap-1 rounded-full p-1 shadow-float">
         <NavLink to="/admin" end className={item}>
           <InboxIcon size={19} /> Inbox
         </NavLink>
