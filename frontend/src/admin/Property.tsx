@@ -118,13 +118,13 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
               ["Location", s.location],
               ["Submitted", shortDate(s.created_at)],
               ["Agreed to terms", `${s.consent_version} · ${shortDate(s.consent_at)}`],
+              ["Description", s.description],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between gap-4 px-4 py-2.5">
                 <dt className="text-sub">{k}</dt>
-                <dd className="text-right font-medium">{v}</dd>
+                <dd className="text-right font-medium whitespace-pre-line">{v}</dd>
               </div>
             ))}
-            <p className="px-4 py-3 whitespace-pre-line">{s.description}</p>
             {s.status_note && <p className="px-4 py-3 text-sub">Note: {s.status_note}</p>}
           </dl>
         )}
