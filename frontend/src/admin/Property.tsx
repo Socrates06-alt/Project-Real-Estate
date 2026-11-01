@@ -114,7 +114,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
               ["Area", cents(s.land_area_cents)],
               ["Asked price", inr(s.expected_price)],
               ["Negotiable", s.negotiable ? "Yes" : "No"],
-              ["Documents", s.documents_available ? `Yes${s.documents_note ? ` — ${s.documents_note}` : ""}` : "Not yet"],
+              ["Documents", s.documents_available ? `Yes${s.documents_note ? ` — ${s.documents_note}` : ""}` : "Not yet uploaded"],
               ["Location", s.location],
               ["Submitted", shortDate(s.created_at)],
               ["Agreed to terms", `${s.consent_version} · ${shortDate(s.consent_at)}`],

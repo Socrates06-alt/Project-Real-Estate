@@ -87,7 +87,7 @@ export default function ListingDetail() {
         <Fact
           icon={l.documents_available ? <FileCheck2 size={18} /> : <FileClock size={18} />}
           label="Documents"
-          value={l.documents_available ? "Available" : "Not yet"}
+          value={l.documents_available ? "Available" : "Not yet uploaded"}
         />
       </section>
 
