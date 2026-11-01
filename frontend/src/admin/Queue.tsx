@@ -34,12 +34,12 @@ export default function Queue() {
         ]}
       />
       {error && <ErrorState message={error.message} retry={reload} />}
-      {data && !data.length && <p className="py-10 text-center text-sub">Nothing here 🎉</p>}
+      {data && !data.length && <p className="py-10 text-center text-sub">Nothing to review</p>}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {data?.map((s) => {
           const Icon = s.property_type === "house" ? Home : Trees;
           return (
-            <Link key={s.id} to={`/admin/s/${s.id}`} className="rounded-[24px] bg-surface p-4 shadow-card transition hover:-translate-y-0.5">
+            <Link key={s.id} to={`/admin/s/${s.id}`} className="rounded-3xl border border-line bg-surface p-4 shadow-card transition hover:-translate-y-0.5">
               <div className="flex items-start gap-3">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
                   <Icon size={20} />

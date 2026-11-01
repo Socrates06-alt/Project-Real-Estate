@@ -29,7 +29,7 @@ export default function Login() {
           <Lock size={24} />
         </div>
         <div>
-          <h1 className="text-2xl font-extrabold">Nilayam admin</h1>
+          <h1 className="text-2xl font-semibold">Nilayam admin</h1>
           <p className="text-sm text-sub">Founders only.</p>
         </div>
         {!supabase ? (

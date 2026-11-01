@@ -58,7 +58,7 @@ export function PhotoCarousel({
 function Placeholder({ type, onClick }: { type: PropertyType; onClick?: () => void }) {
   const Icon = type === "house" ? Home : Trees;
   return (
-    <div onClick={onClick} className="grid h-full w-full shrink-0 place-items-center bg-gradient-to-br from-brand/70 to-brand text-white/80">
+    <div onClick={onClick} className="grid h-full w-full shrink-0 place-items-center bg-brand-soft text-brand/60">
       <Icon size={56} strokeWidth={1.4} />
     </div>
   );

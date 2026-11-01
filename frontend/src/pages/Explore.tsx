@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Search, SearchX, X } from "lucide-react";
+import { ChevronRight, House, MapPin, Search, SearchX, X } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { api, getConfig, type Feed, type Listing, type Parsed } from "@/lib/api";
 import { inr } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -57,25 +58,25 @@ export default function Explore() {
 
   return (
     <div>
-      <header className="sticky top-0 z-30 -mx-4 bg-bg/85 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur-xl">
+      <header className="sticky top-0 z-30 -mx-4 bg-bg/80 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur-xl">
         <div className="mb-3 flex items-center justify-between">
-          <h1 className="text-[26px] font-extrabold tracking-tight">
-            nilayam<span className="text-brand">.</span>
-          </h1>
-          <span className="rounded-full bg-surface px-3 py-1.5 text-xs font-semibold text-sub shadow-card">Chengannur</span>
+          <Logo />
+          <span className="flex items-center gap-1 text-sm text-sub">
+            <MapPin size={15} /> Chengannur
+          </span>
         </div>
-        <div className="flex h-12 items-center gap-2.5 rounded-2xl bg-surface px-4 shadow-card focus-within:ring-4 focus-within:ring-brand/15">
-          <Search size={19} className="shrink-0 text-sub" />
+        <div className="glass flex h-[52px] items-center gap-3 rounded-full px-5 shadow-card focus-within:border-brand/50">
+          <Search size={20} className="shrink-0 text-sub" />
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder='Try "land under 40 lakh Puliyoor"'
+            placeholder="Search area, budget or type"
             aria-label="Search properties"
-            className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-sub/70"
+            className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-sub"
           />
           {input && (
-            <button aria-label="Clear search" onClick={() => setInput("")} className="grid h-7 w-7 place-items-center rounded-full bg-muted">
-              <X size={14} />
+            <button aria-label="Clear search" onClick={() => setInput("")} className="grid h-8 w-8 place-items-center rounded-full text-sub hover:bg-muted">
+              <X size={16} />
             </button>
           )}
         </div>
@@ -87,7 +88,7 @@ export default function Explore() {
           ))}
           <span className="mx-1 h-5 w-px shrink-0 bg-line" />
           <Chip on={status === "live"} onClick={() => setStatus("live")}>
-            Available
+            For sale
           </Chip>
           <Chip on={status === "sold"} onClick={() => setStatus("sold")}>
             Sold
@@ -96,7 +97,7 @@ export default function Explore() {
         {data && <ParsedChips parsed={data.parsed} />}
       </header>
 
-      <div className="space-y-5 pt-2">
+      <div className="space-y-4 pt-2">
         {!q && status === "live" && type === "all" && <SellBanner />}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
@@ -124,8 +125,8 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       onClick={onClick}
       aria-pressed={on}
       className={cn(
-        "h-9 shrink-0 rounded-full px-4 text-sm font-semibold transition",
-        on ? "bg-ink text-bg" : "bg-surface text-sub shadow-card hover:text-ink",
+        "h-10 shrink-0 rounded-full border px-4 text-[15px] font-medium transition-colors",
+        on ? "border-brand/40 bg-brand-soft text-brand" : "border-line bg-surface text-sub hover:text-ink",
       )}
     >
       {children}
@@ -144,9 +145,9 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
   if (!chips.length) return null;
   return (
     <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
-      <span className="text-sub">Searching</span>
+      <span className="text-sub">Showing</span>
       {chips.map((c) => (
-        <span key={c as string} className="rounded-full bg-brand-soft px-2.5 py-1 font-semibold text-brand">
+        <span key={c as string} className="rounded-full border border-line bg-surface px-2.5 py-1 font-medium text-ink">
           {c}
         </span>
       ))}
@@ -156,17 +157,15 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
 
 function SellBanner() {
   return (
-    <Link
-      to="/sell"
-      className="flex items-center gap-4 rounded-[28px] bg-gradient-to-br from-brand to-emerald-500 p-5 text-white shadow-card transition active:scale-[0.99]"
-    >
-      <div className="flex-1">
-        <p className="text-xs font-semibold tracking-wide text-white/75 uppercase">Selling?</p>
-        <p className="mt-0.5 text-lg leading-snug font-bold">List your property free. Pay only when it sells.</p>
-      </div>
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/20">
-        <ArrowRight size={20} />
+    <Link to="/sell" className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 shadow-card transition-colors hover:border-brand/40">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
+        <House size={22} />
       </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold">Selling a property?</p>
+        <p className="text-sm text-sub">List it free. Pay only when it sells.</p>
+      </div>
+      <ChevronRight size={20} className="shrink-0 text-sub" />
     </Link>
   );
 }

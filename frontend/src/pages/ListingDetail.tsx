@@ -46,14 +46,14 @@ export default function ListingDetail() {
   if (!l) return <div className="-mx-4 aspect-square animate-pulse bg-muted" />;
 
   const sold = l.status === "sold";
-  const roundBtn = "grid h-10 w-10 place-items-center rounded-full bg-black/35 text-white backdrop-blur-md";
+  const roundBtn = "glass grid h-11 w-11 place-items-center rounded-full text-ink shadow-card";
 
   return (
     <div className="pb-28">
       <PhotoCarousel
         photos={l.photos}
         type={l.property_type}
-        className="-mx-4 aspect-square rounded-b-[36px] sm:mt-4 sm:rounded-[36px]"
+        className="-mx-4 aspect-[4/3.6] sm:mx-0 sm:mt-4 sm:rounded-3xl"
         overlay={
           <div className="absolute inset-x-0 top-0 flex justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
             <button onClick={back} aria-label="Back" className={roundBtn}>
@@ -73,10 +73,10 @@ export default function ListingDetail() {
           <span className="ml-auto text-xs text-sub">#{l.number}</span>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
-          <h1 className="text-[32px] leading-none font-extrabold tracking-tight">{inr(l.price)}</h1>
+          <h1 className="text-[30px] leading-none font-semibold tracking-tight">{inr(l.price)}</h1>
           {l.negotiable && !sold && <span className="text-sm font-semibold text-brand">Negotiable</span>}
         </div>
-        <p className="mt-2 text-[17px] font-semibold">{l.title}</p>
+        <p className="mt-2 text-lg font-medium">{l.title}</p>
         <p className="mt-1 flex items-center gap-1 text-sm text-sub">
           <MapPin size={15} /> {l.location}
         </p>
@@ -91,8 +91,8 @@ export default function ListingDetail() {
         />
       </section>
 
-      <section className="mt-3 rounded-[24px] bg-surface p-5 shadow-card">
-        <h2 className="mb-2 text-sm font-bold text-sub">About this property</h2>
+      <section className="mt-3 rounded-3xl border border-line bg-surface p-5">
+        <h2 className="mb-2 text-sm font-medium text-sub">About this property</h2>
         <p className="leading-relaxed whitespace-pre-line">{l.description}</p>
         {l.documents_note && (
           <p className="mt-3 rounded-2xl bg-muted px-4 py-3 text-sm">
@@ -103,30 +103,32 @@ export default function ListingDetail() {
         <p className="mt-3 text-xs text-sub">Listed {shortDate(l.published_at)} · Exact address shared before the visit.</p>
       </section>
 
-      <section className="mt-3 flex gap-3 rounded-[24px] bg-brand-soft p-5 text-sm">
+      <section className="mt-3 flex gap-3 rounded-3xl bg-brand-soft p-5 text-sm">
         <Info size={18} className="mt-0.5 shrink-0 text-brand" />
         <p>
-          <span className="font-bold">Buyer brokerage: {l.brokerage.buyer_pct}% + GST</span>
+          <span className="font-semibold">Buyer brokerage: {l.brokerage.buyer_pct}% + GST</span>
           <span className="block text-sub">Paid only when the sale closes. Nilayam arranges and joins every visit.</span>
         </p>
       </section>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface/90 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
-        <div className="mx-auto flex max-w-xl gap-2">
+      <div className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
+        <div className="glass flex w-full max-w-md items-center gap-1.5 rounded-full p-1.5 shadow-float">
           {sold ? (
-            <a href={waLink(l.contact)} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "wa", size: "lg" }))}>
+            <a href={waLink(l.contact)} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "primary" }), "h-12 flex-1 rounded-full")}>
               <MessageCircle size={19} /> Ask about similar properties
             </a>
           ) : (
             <>
-              <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" aria-label="WhatsApp" className={cn(buttonVariants({ variant: "wa" }), "h-13 w-13 shrink-0 px-0")}>
-                <MessageCircle size={21} />
+              <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
+                <MessageCircle size={21} className="text-wa" />
+                WhatsApp
               </a>
-              <a href={telLink(l.contact)} aria-label="Call" className={cn(buttonVariants({ variant: "outline" }), "h-13 w-13 shrink-0 px-0")}>
-                <Phone size={20} />
+              <a href={telLink(l.contact)} className={pillAction}>
+                <Phone size={20} className="text-brand" />
+                Call
               </a>
-              <Button size="lg" onClick={() => setParams({ visit: "1" }, { replace: true })}>
-                <CalendarDays size={19} /> Request a visit
+              <Button className="h-14 flex-[1.6] rounded-full text-[15px]" onClick={() => setParams({ visit: "1" }, { replace: true })}>
+                <CalendarDays size={19} /> Request visit
               </Button>
             </>
           )}
@@ -138,12 +140,15 @@ export default function ListingDetail() {
   );
 }
 
+const pillAction =
+  "flex h-14 flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[13px] font-medium text-ink transition-colors hover:bg-[var(--glass-active)]";
+
 function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-[24px] bg-surface p-4 shadow-card">
+    <div className="rounded-3xl border border-line bg-surface p-4">
       <span className="grid h-9 w-9 place-items-center rounded-2xl bg-brand-soft text-brand">{icon}</span>
       <p className="mt-3 text-xs text-sub">{label}</p>
-      <p className="font-bold">{value}</p>
+      <p className="font-semibold">{value}</p>
     </div>
   );
 }

@@ -25,7 +25,7 @@ export default function Profile() {
   const [tab, setTab] = useState<"mine" | "how">("mine");
   return (
     <div className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <h1 className="px-1 text-[26px] font-extrabold tracking-tight">Profile</h1>
+      <h1 className="px-1 text-2xl font-semibold tracking-tight">Profile</h1>
       <Segmented
         value={tab}
         onChange={setTab}
@@ -42,7 +42,7 @@ export default function Profile() {
 function MyListings() {
   const { data, error, loading, reload } = useAsync(() => api<MySubmission[]>("/api/my/submissions", { device: true }), []);
   if (error) return <ErrorState message={error.message} retry={reload} />;
-  if (loading && !data) return <div className="h-32 animate-pulse rounded-[28px] bg-surface" />;
+  if (loading && !data) return <div className="h-32 animate-pulse rounded-3xl border border-line bg-surface" />;
   if (!data?.length)
     return (
       <EmptyState
@@ -96,7 +96,7 @@ function MyListings() {
             </p>
           </>
         );
-        const cls = "block rounded-[28px] bg-surface p-4 shadow-card";
+        const cls = "block rounded-3xl border border-line bg-surface p-4 shadow-card";
         return s.listing_id ? (
           <Link key={s.id} to={`/p/${s.listing_id}`} className={cls}>
             {body}
@@ -121,7 +121,7 @@ function HowItWorks() {
   ];
   return (
     <div className="space-y-4">
-      <div className="rounded-[28px] bg-surface p-5 shadow-card">
+      <div className="rounded-3xl border border-line bg-surface p-5 shadow-card">
         <ol className="space-y-4">
           {steps.map(([t, d], i) => (
             <li key={t} className="flex gap-3.5">
@@ -155,8 +155,8 @@ function HowItWorks() {
 
 function Fee({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] bg-surface p-4 text-center shadow-card">
-      <p className="text-3xl font-extrabold text-brand">{value}</p>
+    <div className="rounded-3xl border border-line bg-surface p-4 text-center shadow-card">
+      <p className="text-3xl font-semibold text-brand">{value}</p>
       <p className="text-sm text-sub">{label} brokerage + GST</p>
     </div>
   );

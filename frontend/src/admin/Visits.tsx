@@ -53,7 +53,7 @@ function VisitCard({ visit, onChange }: { visit: Visit; onChange: () => void }) 
 
   const phone = visit.phone.replace(/\D/g, "");
   return (
-    <div className="rounded-[24px] bg-surface p-4 shadow-card">
+    <div className="rounded-3xl border border-line bg-surface p-4 shadow-card">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-bold">{visit.name}</p>

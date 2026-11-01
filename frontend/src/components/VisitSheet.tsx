@@ -41,7 +41,7 @@ export function VisitSheet({ listingId, open, onClose }: { listingId: string; op
     <Sheet open={open} onClose={close} title={done ? "Request sent" : "Request a visit"}>
       {done ? (
         <div className="py-6 text-center">
-          <CheckCircle2 className="animate-pop mx-auto mb-3 text-brand" size={56} />
+          <CheckCircle2 className="mx-auto mb-3 text-brand" size={56} />
           <p className="font-semibold">We'll message you on WhatsApp</p>
           <p className="mt-1 text-sm text-sub">Our team confirms a time and comes with you to the visit.</p>
           <Button size="lg" className="mt-6" onClick={close}>

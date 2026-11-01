@@ -79,7 +79,7 @@ export default function Sell() {
   return (
     <form onSubmit={submit} className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
       <header className="px-1 pb-1">
-        <h1 className="text-[26px] font-extrabold tracking-tight">List your property</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">List your property</h1>
         <p className="text-sub">Free listing · takes about two minutes · we call to confirm.</p>
       </header>
 
@@ -119,8 +119,8 @@ export default function Sell() {
           value={type}
           onChange={setType}
           options={[
-            { value: "house", label: "🏠  House" },
-            { value: "land", label: "🌿  Land" },
+            { value: "house", label: "House" },
+            { value: "land", label: "Land" },
           ]}
         />
         <div className="grid grid-cols-2 gap-3">
@@ -160,16 +160,16 @@ export default function Sell() {
         </Field>
       </Card>
 
-      <section className="rounded-[28px] bg-brand-soft p-5">
-        <h2 className="font-bold">Brokerage terms</h2>
-        <ul className="mt-2 space-y-1.5 text-sm">
-          <li>• Listing is <b>free</b>.</li>
+      <section className="rounded-3xl bg-brand-soft p-5">
+        <h2 className="font-semibold">Brokerage terms</h2>
+        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[15px]">
+          <li>Listing is <b>free</b>.</li>
           <li>
             • Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}% + GST</b>, only when the sale closes through Nilayam.
           </li>
-          <li>• Buyers pay {config?.brokerage.buyer_pct ?? 1}% + GST separately.</li>
-          <li>• Your name, phone and exact address stay private. Buyers contact Nilayam.</li>
-          <li>• We confirm any price change with you before updating the listing.</li>
+          <li>Buyers pay {config?.brokerage.buyer_pct ?? 1}% + GST separately.</li>
+          <li>Your name, phone and exact address stay private. Buyers contact Nilayam.</li>
+          <li>We confirm any price change with you before updating the listing.</li>
         </ul>
         <button type="button" role="checkbox" aria-checked={agree} onClick={() => setAgree(!agree)} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-surface p-3.5 text-left text-sm font-semibold">
           <span className={cn("grid h-6 w-6 shrink-0 place-items-center rounded-lg border-2 transition", agree ? "border-brand bg-brand text-brand-ink" : "border-line")}>
@@ -189,9 +189,9 @@ export default function Sell() {
 
 function Card({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <section className="space-y-3.5 rounded-[28px] bg-surface p-5 shadow-card">
+    <section className="space-y-3.5 rounded-3xl border border-line bg-surface p-5">
       <div className="flex items-baseline justify-between">
-        <h2 className="font-bold">{title}</h2>
+        <h2 className="font-semibold">{title}</h2>
         {hint && <span className="text-xs text-sub">{hint}</span>}
       </div>
       {children}
@@ -203,14 +203,14 @@ function Done({ refCode, contactWa }: { refCode: string; contactWa?: string }) {
   const toast = useToast();
   return (
     <div className="flex min-h-[80dvh] flex-col items-center justify-center text-center">
-      <div className="animate-pop mb-5 grid h-20 w-20 place-items-center rounded-full bg-brand text-brand-ink shadow-float">
-        <Check size={40} strokeWidth={3} />
+      <div className="mb-5 grid h-16 w-16 place-items-center rounded-full bg-brand-soft text-brand">
+        <Check size={30} strokeWidth={2.5} />
       </div>
-      <h1 className="text-2xl font-extrabold">Received!</h1>
+      <h1 className="text-2xl font-semibold">Submission received</h1>
       <p className="mt-1 max-w-xs text-sub">We'll call you within 24 hours to confirm the details.</p>
       <button
         onClick={() => navigator.clipboard?.writeText(refCode).then(() => toast("Reference copied"))}
-        className="mt-6 flex items-center gap-3 rounded-[22px] bg-surface px-5 py-3.5 shadow-card"
+        className="mt-6 flex items-center gap-3 rounded-2xl border border-line bg-surface px-5 py-3.5"
       >
         <span className="text-left">
           <span className="block text-xs text-sub">Your reference</span>

@@ -31,7 +31,7 @@ export default function Editor() {
   }, [id]);
 
   if (error) return <ErrorState message={error.message} retry={reload} />;
-  if (!data) return <div className="h-96 animate-pulse rounded-[28px] bg-surface" />;
+  if (!data) return <div className="h-96 animate-pulse rounded-3xl border border-line bg-surface" />;
   const { sub, listing } = data;
 
   return (
@@ -54,7 +54,7 @@ function Original({ sub }: { sub: AdminSubmission }) {
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold tracking-wide text-sub uppercase">Original submission · read only</p>
-          <h1 className="mt-1 text-xl font-extrabold">{sub.seller_name}</h1>
+          <h1 className="mt-1 text-xl font-semibold">{sub.seller_name}</h1>
           <p className="text-sm text-sub">
             {sub.ref_code} · {shortDate(sub.created_at)}
           </p>
@@ -216,7 +216,7 @@ function ListingForm({ sub, listing, reload }: { sub: AdminSubmission; listing: 
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold tracking-wide text-sub uppercase">Public listing · shown to buyers</p>
-          <p className="mt-1 text-xl font-extrabold">
+          <p className="mt-1 text-xl font-semibold">
             #{listing.number} {listing.current_version ? <span className="text-sm font-semibold text-sub">v{listing.current_version}</span> : null}
           </p>
         </div>

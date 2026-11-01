@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import type { ListingState } from "./types";
 
 export function Panel({ className, children }: { className?: string; children: ReactNode }) {
-  return <section className={cn("rounded-[28px] bg-surface p-5 shadow-card", className)}>{children}</section>;
+  return <section className={cn("rounded-3xl border border-line bg-surface p-5 shadow-card", className)}>{children}</section>;
 }
 
 export function FilterChips<T extends string>({ value, options, onChange }: { value: T; options: [T, string][]; onChange: (v: T) => void }) {
@@ -15,7 +15,7 @@ export function FilterChips<T extends string>({ value, options, onChange }: { va
         <button
           key={v}
           onClick={() => onChange(v)}
-          className={cn("h-9 shrink-0 rounded-full px-4 text-sm font-semibold", value === v ? "bg-brand text-brand-ink" : "bg-surface text-sub shadow-card")}
+          className={cn("h-10 shrink-0 rounded-full border px-4 text-[15px] font-medium", value === v ? "border-brand/40 bg-brand-soft text-brand" : "border-line bg-surface text-sub")}
         >
           {label}
         </button>

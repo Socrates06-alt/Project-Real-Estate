@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-muted: var(--muted);
@@ -14,39 +14,53 @@
   --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
   --color-sold: var(--sold);
-  --color-wa: #22c55e;
-  --shadow-card: 0 1px 2px rgb(16 24 22 / 0.04), 0 8px 24px -8px rgb(16 24 22 / 0.12);
-  --shadow-float: 0 12px 32px -8px rgb(16 24 22 / 0.28);
+  --color-wa: #1fa855;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.05), 0 6px 20px -6px rgb(15 23 42 / 0.10);
+  --shadow-float: 0 10px 40px -10px rgb(15 23 42 / 0.35);
 }
 
 :root {
-  --bg: #f6f7f7;
+  --bg: #f4f6fa;
   --surface: #ffffff;
-  --muted: #eef1f0;
-  --ink: #0f1716;
-  --sub: #66726f;
-  --line: #e4e8e7;
-  --brand: #0d7a6f;
+  --muted: #eef1f6;
+  --ink: #0f172a;
+  --sub: #5b6578;
+  --line: #e1e6ee;
+  --brand: #1d5bd8;
   --brand-ink: #ffffff;
-  --brand-soft: #e3f3f0;
-  --sold: #d4573b;
+  --brand-soft: #e8f0fe;
+  --sold: #c2410c;
+  --glass: rgb(255 255 255 / 0.9);
+  --glass-line: rgb(15 23 42 / 0.08);
+  --glass-active: rgb(29 91 216 / 0.10);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0b1211;
-    --surface: #131c1b;
-    --muted: #1b2625;
-    --ink: #eef4f3;
-    --sub: #91a19d;
-    --line: #233130;
-    --brand: #3cc6b5;
-    --brand-ink: #04211e;
-    --brand-soft: #143331;
-    --sold: #f08a70;
+    --bg: #0b0f17;
+    --surface: #141a24;
+    --muted: #1c2330;
+    --ink: #eef2f8;
+    --sub: #9aa5b8;
+    --line: #262f3d;
+    --brand: #5b9bff;
+    --brand-ink: #06122b;
+    --brand-soft: #16233b;
+    --sold: #fb923c;
+    --glass: rgb(26 31 40 / 0.9);
+    --glass-line: rgb(255 255 255 / 0.10);
+    --glass-active: rgb(255 255 255 / 0.10);
     color-scheme: dark;
   }
+}
+
+/* Frosted surface that stays readable over photos and content. */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--glass-line);
 }
 
 html,
@@ -59,6 +73,7 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  font-size: 16px;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -76,15 +91,9 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes pop {
-  0% { transform: scale(0.6); opacity: 0; }
-  70% { transform: scale(1.08); }
-  100% { transform: scale(1); opacity: 1; }
-}
 .animate-sheet { animation: sheet-up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
 .animate-fade { animation: fade-in 0.2s ease-out; }
-.animate-pop { animation: pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-sheet, .animate-fade, .animate-pop { animation: none; }
+  .animate-sheet, .animate-fade { animation: none; }
 }

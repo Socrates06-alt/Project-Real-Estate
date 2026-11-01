@@ -13,7 +13,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       {msg && (
         <div role="status" className="animate-fade fixed inset-x-0 top-4 z-[60] flex justify-center px-4">
-          <div className="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-bg shadow-float">{msg}</div>
+          <div className="glass rounded-full px-5 py-3 text-[15px] font-medium text-ink shadow-float">{msg}</div>
         </div>
       )}
     </Ctx.Provider>
