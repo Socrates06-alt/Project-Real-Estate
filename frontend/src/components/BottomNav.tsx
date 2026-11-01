@@ -20,14 +20,14 @@ export function BottomNav() {
             end={end}
             className={({ isActive }) =>
               cn(
-                "flex h-11 min-w-[76px] flex-col items-center justify-center gap-0.5 rounded-full px-4 text-[11px] font-medium transition-colors",
+                "flex h-[52px] min-w-[76px] flex-col items-center justify-center gap-0.5 rounded-full px-3 text-[12px] font-medium transition-colors",
                 isActive ? "bg-[var(--glass-active)] text-ink" : "text-sub hover:text-ink",
               )
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} className={isActive ? "text-brand" : undefined} />
+                <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} className={isActive ? "text-brand" : undefined} />
                 {label}
               </>
             )}
