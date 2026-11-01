@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { Camera, Check, Copy, ImagePlus, MessageCircle, X } from "lucide-react";
 import { api, ApiError, getConfig, type PropertyType } from "@/lib/api";
 import { useAsync } from "@/lib/useAsync";
-import { Field, Input, Textarea } from "@/components/ui/field";
+import { AffixInput, Field, Input, Textarea } from "@/components/ui/field";
+import { Sheet } from "@/components/ui/sheet";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export default function Sell() {
   const [negotiable, setNegotiable] = useState(true);
   const [docs, setDocs] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refCode, setRefCode] = useState<string | null>(null);
@@ -111,7 +113,7 @@ export default function Sell() {
           )}
         </div>
         <input ref={picker} type="file" accept={ACCEPT.join(",")} multiple hidden onChange={(e) => (addPhotos(e.target.files), (e.target.value = ""))} />
-        <p className="mt-2 text-xs text-sub">Up to {max} clear photos. Location data in photos is removed automatically.</p>
+        <p className="mt-2 text-xs text-sub">Up to {max} clear photos.</p>
       </Card>
 
       <Card title="Property">
@@ -124,8 +126,8 @@ export default function Sell() {
           ]}
         />
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Area" hint="cents">
-            <Input name="land_area_cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
+          <Field label="Area">
+            <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
           </Field>
           <Field label="Location">
             <Input name="location" required minLength={2} maxLength={120} placeholder="Puliyoor" />
@@ -143,8 +145,8 @@ export default function Sell() {
       </Card>
 
       <Card title="Price & documents">
-        <Field label="Expected price" hint="₹">
-          <Input name="expected_price" required inputMode="numeric" placeholder="55,00,000" />
+        <Field label="Expected price">
+          <AffixInput name="expected_price" prefix="₹" required inputMode="numeric" placeholder="55,00,000" />
         </Field>
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
@@ -160,10 +162,33 @@ export default function Sell() {
         </Field>
       </Card>
 
-      <section className="rounded-3xl bg-brand-soft p-5">
-        <h2 className="font-semibold">Brokerage terms</h2>
-        <ul className="mt-2 list-disc space-y-1.5 pl-5 text-[15px]">
-          <li>Listing is <b>free</b>.</li>
+      <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5">
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={agree}
+          aria-label="I agree to the brokerage terms"
+          onClick={() => setAgree(!agree)}
+          className={cn(
+            "grid h-6 w-6 shrink-0 place-items-center rounded-lg border-2 transition",
+            agree ? "border-brand bg-brand text-brand-ink" : "border-line",
+          )}
+        >
+          {agree && <Check size={15} strokeWidth={3} />}
+        </button>
+        <p className="text-[15px]">
+          I agree to the{" "}
+          <button type="button" onClick={() => setTermsOpen(true)} className="font-semibold text-brand underline underline-offset-2">
+            brokerage terms
+          </button>
+        </p>
+      </div>
+
+      <Sheet open={termsOpen} onClose={() => setTermsOpen(false)} title="Brokerage terms">
+        <ul className="list-disc space-y-2 pl-5 text-[15px]">
+          <li>
+            Listing is <b>free</b>.
+          </li>
           <li>
             Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}% + GST</b>, only when the sale closes through Nilayam.
           </li>
@@ -171,13 +196,17 @@ export default function Sell() {
           <li>Your name, phone and exact address stay private. Buyers contact Nilayam.</li>
           <li>We confirm any price change with you before updating the listing.</li>
         </ul>
-        <button type="button" role="checkbox" aria-checked={agree} onClick={() => setAgree(!agree)} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-surface p-3.5 text-left text-sm font-semibold">
-          <span className={cn("grid h-6 w-6 shrink-0 place-items-center rounded-lg border-2 transition", agree ? "border-brand bg-brand text-brand-ink" : "border-line")}>
-            {agree && <Check size={15} strokeWidth={3} />}
-          </span>
-          I agree to the brokerage terms
-        </button>
-      </section>
+        <Button
+          size="lg"
+          className="mt-6"
+          onClick={() => {
+            setAgree(true);
+            setTermsOpen(false);
+          }}
+        >
+          I agree
+        </Button>
+      </Sheet>
 
       {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm font-medium text-sold">{error}</p>}
       <Button type="submit" size="lg" disabled={busy || !config}>

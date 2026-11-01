@@ -23,3 +23,21 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
     </label>
   );
 }
+
+/** Input with a fixed prefix/suffix shown inside the box (e.g. ₹ or "cents"). */
+export function AffixInput({
+  prefix,
+  suffix,
+  className,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { prefix?: string; suffix?: string }) {
+  return (
+    <div className="relative">
+      {prefix && <span className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sub">{prefix}</span>}
+      <input className={cn(base, "h-12", prefix && "pl-9", suffix && "pr-16", className)} {...props} />
+      {suffix && (
+        <span className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-sm text-sub">{suffix}</span>
+      )}
+    </div>
+  );
+}
