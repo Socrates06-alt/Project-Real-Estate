@@ -23,8 +23,8 @@
 
 :root {
   /* Calm, light blue palette: trust without shouting. Blue spectrum only. */
-  --bg: #eef4fb;
-  --bg-top: #f7fafe;
+  --bg: #eff3f8;
+  --bg-top: #eff3f8;
   --surface: #ffffff;
   --muted: #edf3fa;
   --ink: #12263f;
@@ -102,8 +102,8 @@ body,
   min-height: 100%;
 }
 body {
-  /* Soft blue-white wash */
-  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg) 60%) fixed;
+  /* Flat, clean cool grey-blue (Facebook-like), white cards on top */
+  background: var(--bg);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
