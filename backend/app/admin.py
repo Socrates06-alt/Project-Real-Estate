@@ -162,7 +162,7 @@ def get_property(submission_id: str, db: DB) -> dict:
         {k: listing[k] for k in PUBLIC_FIELDS}
         if listing
         else {
-            "title": f"{kind} · {sub['land_area_cents']:g} cents · {sub['location']}"[:120],
+            "title": f"{kind} for sale",  # area and place are shown separately
             "property_type": sub["property_type"],
             "land_area_cents": sub["land_area_cents"],
             "location": sub["location"],
