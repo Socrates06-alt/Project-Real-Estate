@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { CalendarDays, MapPin, MessageCircle, Phone } from "lucide-react";
 import type { Contact, Listing } from "@/lib/api";
-import { cents, inr, timeAgo, typeLabel } from "@/lib/format";
+import { cents, inr, typeLabel } from "@/lib/format";
 import { PhotoCarousel } from "./PhotoCarousel";
 import { telLink, waLink } from "./contact";
 
@@ -39,7 +39,7 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
         <p className="mt-1 flex items-center gap-1.5 text-sm text-sub">
           <MapPin size={15} className="shrink-0" />
           <span className="truncate">
-            {listing.location} · {cents(listing.land_area_cents)} · {timeAgo(listing.published_at)} ago
+            {listing.location} · {cents(listing.land_area_cents)}
           </span>
         </p>
       </button>

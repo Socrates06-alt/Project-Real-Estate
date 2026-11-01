@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ChevronRight, PartyPopper } from "lucide-react";
-import { inr, timeAgo, typeLabel } from "@/lib/format";
+import { inr, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { ErrorState } from "@/components/States";
 import { Logo } from "@/components/Logo";
@@ -55,7 +55,6 @@ export default function Inbox() {
                   </p>
                   <p className="text-sm">
                     <span className="font-medium">{inr(p.price)}</span>
-                    <span className="text-sub"> · {timeAgo(p.created_at)} ago</span>
                   </p>
                 </div>
                 <ChevronRight size={20} className="shrink-0 text-sub" />
