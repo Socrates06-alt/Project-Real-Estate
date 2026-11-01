@@ -2,6 +2,14 @@
 
 No database, Docker or cloud account needed.
 
+## Quick start
+
+After installing Python and Node (step 1), just **double-click `start.bat`** in the project folder.
+It sets everything up on first run, opens the backend and frontend in two windows, and opens
+http://localhost:5173. Keep both windows open while you use the app.
+
+Set your admin password in `backend\.env` (`ADMIN_PASSWORD=...`) and run `start.bat` again.
+
 ## 1. Install once
 
 - **Python 3.12+**: https://www.python.org/downloads/ (tick **"Add python.exe to PATH"**)
@@ -24,8 +32,10 @@ If PowerShell blocks `activate`, run once: `Set-ExecutionPolicy -Scope CurrentUs
 
 ## 3. Frontend (second PowerShell window)
 
+Open a **new** PowerShell window (keep the backend one running), from the project folder:
+
 ```powershell
-cd frontend
+cd frontend          # if you are inside backend, use: cd ..\frontend
 npm install
 npm run dev
 ```
