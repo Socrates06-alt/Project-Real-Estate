@@ -1,9 +1,11 @@
 """SQLite storage: one file, schema created on startup."""
 
 import json
+import logging
 import sqlite3
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends
@@ -116,10 +118,32 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
+# Bump when SCHEMA changes in a way old database files can't use.
+SCHEMA_VERSION = 2
+
+log = logging.getLogger("nilayam")
+
+
 def init_db() -> None:
+    """Create the database. An older prototype database is set aside (renamed) and a fresh one created."""
+    path = Path(get_settings().database_path)
+    if path.exists():
+        conn = sqlite3.connect(path)
+        version = conn.execute("pragma user_version").fetchone()[0]
+        has_tables = conn.execute("select count(*) from sqlite_master where type = 'table'").fetchone()[0] > 0
+        conn.close()
+        if has_tables and version < SCHEMA_VERSION:
+            backup = path.with_name(f"{path.stem}-old-{datetime.now():%Y%m%d-%H%M%S}{path.suffix}")
+            for suffix in ("", "-wal", "-shm"):
+                f = Path(str(path) + suffix)
+                if f.exists():
+                    f.rename(Path(str(backup) + suffix))
+            log.warning("Old prototype database moved to %s; starting with a fresh one.", backup.name)
+
     conn = connect()
     conn.execute("pragma journal_mode = wal")
     conn.executescript(SCHEMA)
+    conn.execute(f"pragma user_version = {SCHEMA_VERSION}")
     conn.close()
 
 
