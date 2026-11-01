@@ -1,30 +1,32 @@
 import { useState } from "react";
 
-export type ThemeChoice = "auto" | "light" | "dark";
 const KEY = "nilayam.theme";
 
-export function storedTheme(): ThemeChoice {
+/** Light is the default; dark only if the user turned it on (remembered on this phone). */
+export function isDark(): boolean {
   try {
-    const v = localStorage.getItem(KEY);
-    return v === "light" || v === "dark" ? v : "auto";
+    return localStorage.getItem(KEY) === "dark";
   } catch {
-    return "auto";
+    return false;
   }
 }
 
-export function applyTheme(choice: ThemeChoice) {
-  const root = document.documentElement;
-  if (choice === "auto") root.removeAttribute("data-theme");
-  else root.setAttribute("data-theme", choice);
+function apply(dark: boolean) {
+  if (dark) document.documentElement.setAttribute("data-theme", "dark");
+  else document.documentElement.removeAttribute("data-theme");
   try {
-    if (choice === "auto") localStorage.removeItem(KEY);
-    else localStorage.setItem(KEY, choice);
+    if (dark) localStorage.setItem(KEY, "dark");
+    else localStorage.removeItem(KEY);
   } catch {
-    /* storage blocked: still applies for this visit */
+    /* storage blocked: applies for this visit only */
   }
 }
 
-export function useTheme() {
-  const [theme, setTheme] = useState<ThemeChoice>(storedTheme);
-  return [theme, (t: ThemeChoice) => (applyTheme(t), setTheme(t))] as const;
+export function useDarkMode() {
+  const [dark, setDark] = useState(isDark);
+  const toggle = () => {
+    apply(!dark);
+    setDark(!dark);
+  };
+  return [dark, toggle] as const;
 }

@@ -26,7 +26,10 @@ export default function Profile() {
   const [tab, setTab] = useState<"mine" | "how">("mine");
   return (
     <div className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <h1 className="px-1 text-2xl font-semibold tracking-tight">Profile</h1>
+      <div className="flex items-center justify-between px-1">
+        <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
+        <ThemeSwitch />
+      </div>
       <Segmented
         value={tab}
         onChange={setTab}
@@ -36,7 +39,6 @@ export default function Profile() {
         ]}
       />
       {tab === "mine" ? <MyListings /> : <HowItWorks />}
-      <ThemeSwitch />
     </div>
   );
 }

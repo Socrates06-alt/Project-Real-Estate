@@ -1,21 +1,17 @@
-import { useTheme, type ThemeChoice } from "@/lib/theme";
-import { Segmented } from "./ui/segmented";
+import { Moon, Sun } from "lucide-react";
+import { useDarkMode } from "@/lib/theme";
 
-/** Appearance: Auto (follow phone) / Light / Dark — remembered on this phone. */
+/** Small icon button: tap to switch between light (default) and dark. */
 export function ThemeSwitch() {
-  const [theme, setTheme] = useTheme();
+  const [dark, toggle] = useDarkMode();
   return (
-    <section className="rounded-3xl border border-line bg-surface p-4">
-      <p className="mb-2.5 font-semibold">Appearance</p>
-      <Segmented<ThemeChoice>
-        value={theme}
-        onChange={setTheme}
-        options={[
-          { value: "auto", label: "Auto" },
-          { value: "light", label: "Light" },
-          { value: "dark", label: "Dark" },
-        ]}
-      />
-    </section>
+    <button
+      onClick={toggle}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      title={dark ? "Light mode" : "Dark mode"}
+      className="grid h-11 w-11 place-items-center rounded-full border border-line bg-surface text-sub transition-colors hover:text-brand"
+    >
+      {dark ? <Sun size={20} /> : <Moon size={20} />}
+    </button>
   );
 }

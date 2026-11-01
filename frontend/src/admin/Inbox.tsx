@@ -20,7 +20,10 @@ export default function Inbox() {
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <Logo />
-        <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">Admin</span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">Admin</span>
+          <ThemeSwitch />
+        </div>
       </header>
 
       <div className="grid grid-cols-3 gap-2">
@@ -75,7 +78,6 @@ export default function Inbox() {
         </section>
       )}
 
-      <ThemeSwitch />
     </div>
   );
 }

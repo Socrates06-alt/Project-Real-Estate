@@ -12,10 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>Nilayam</title>
     <script>
-      // Apply the saved Light/Dark choice before the page paints (no flash).
+      // Light by default; apply dark before the page paints if the user chose it.
       try {
         var t = localStorage.getItem("nilayam.theme");
-        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        if (t === "dark") document.documentElement.setAttribute("data-theme", "dark");
       } catch (e) {}
     </script>
   </head>

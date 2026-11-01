@@ -43,30 +43,7 @@
   color-scheme: light;
 }
 
-/* Dark: follows the device unless the user picked a theme (data-theme on <html>). */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0d1b2c;
-    --bg-top: #10233a;
-    --surface: #132840;
-    --muted: #19324d;
-    --ink: #e7f0fa;
-    --sub: #9bb2cb;
-    --line: #23405f;
-    --brand: #7db6ec;
-    --brand-ink: #0a1d31;
-    --brand-soft: #18375a;
-    --sky: #17344f;
-    --sky-ink: #a9d2f5;
-    --sold: #8ea6c2;
-    --wa: #7db6ec;
-    --glass: rgb(19 40 64 / 0.88);
-    --glass-line: rgb(125 182 236 / 0.18);
-    --glass-active: rgb(125 182 236 / 0.14);
-    color-scheme: dark;
-  }
-}
-
+/* Light is the default. Dark only when the user turns it on (data-theme="dark" on <html>). */
 :root[data-theme="dark"] {
   --bg: #0d1b2c;
   --bg-top: #10233a;
