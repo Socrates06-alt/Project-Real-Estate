@@ -82,7 +82,6 @@ export default function Sell() {
     <form onSubmit={submit} className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
       <header className="px-1 pb-1">
         <h1 className="text-2xl font-semibold tracking-tight">List your property</h1>
-        <p className="text-sub">Free listing · takes about two minutes · we call to confirm.</p>
       </header>
 
       <Card title="Photos" hint={`${photos.length}/${max}`}>
@@ -153,7 +152,7 @@ export default function Sell() {
         {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey sketch" />}
       </Card>
 
-      <Card title="Your details" hint="Never shown publicly">
+      <Card title="Your details">
         <Field label="Name">
           <Input name="seller_name" required minLength={2} maxLength={80} autoComplete="name" />
         </Field>
