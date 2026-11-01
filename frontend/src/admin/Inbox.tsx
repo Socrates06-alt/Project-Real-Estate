@@ -4,6 +4,7 @@ import { inr, timeAgo, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { ErrorState } from "@/components/States";
 import { Logo } from "@/components/Logo";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 import { useAdmin } from "./auth";
 import { PrivatePhoto, VisitCard } from "./ui";
 import type { Group, Inbox as InboxData } from "./types";
@@ -74,6 +75,8 @@ export default function Inbox() {
           </div>
         </section>
       )}
+
+      <ThemeSwitch />
     </div>
   );
 }
