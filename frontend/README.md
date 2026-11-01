@@ -7,7 +7,7 @@ single password in the prototype (Supabase Auth planned for V1).
 ```
 src/
   pages/         Explore · ListingDetail · Sell · Profile   (public, no login)
-  admin/         lazy-loaded admin app at /admin (Supabase login + backend admin check)
+  admin/         lazy-loaded admin app at /admin (password login, checked on every API call)
   components/    ListingCard, PhotoCarousel, VisitSheet, BottomNav, ui/*
   lib/           api client + types, formatting, device token, data hook
 ```
