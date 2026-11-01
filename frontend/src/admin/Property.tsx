@@ -162,7 +162,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
             role="checkbox"
             aria-checked={sellerConfirmed}
             onClick={() => setSellerConfirmed(!sellerConfirmed)}
-            className="flex w-full items-center gap-3 rounded-2xl bg-amber-100 p-3.5 text-left text-[15px] text-amber-900 dark:bg-amber-400/15 dark:text-amber-200"
+            className="flex w-full items-center gap-3 rounded-2xl bg-sky p-3.5 text-left text-[15px] text-sky-ink"
           >
             <span className={cn("grid h-6 w-6 shrink-0 place-items-center rounded-lg border-2", sellerConfirmed ? "border-brand bg-brand text-brand-ink" : "border-current")}>
               {sellerConfirmed && <Check size={15} strokeWidth={3} />}

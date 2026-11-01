@@ -11,9 +11,9 @@ import { EmptyState, ErrorState } from "@/components/States";
 import { telLink, waLink } from "@/components/contact";
 import { cn } from "@/lib/utils";
 
-const STATUS: Record<SubmissionStatus, { label: string; tone: "amber" | "brand" | "sold" | "gray"; step: number }> = {
-  received: { label: "Submitted", tone: "amber", step: 0 },
-  under_review: { label: "Under review", tone: "amber", step: 1 },
+const STATUS: Record<SubmissionStatus, { label: string; tone: "sky" | "brand" | "sold" | "gray"; step: number }> = {
+  received: { label: "Submitted", tone: "sky", step: 0 },
+  under_review: { label: "Under review", tone: "sky", step: 1 },
   listed: { label: "Live", tone: "brand", step: 2 },
   sold: { label: "Sold", tone: "sold", step: 3 },
   withdrawn: { label: "Not listed", tone: "gray", step: -1 },

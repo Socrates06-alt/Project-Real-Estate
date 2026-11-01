@@ -9,8 +9,8 @@ import { useAdmin, usePrivateImage } from "./auth";
 import type { Group, Visit } from "./types";
 
 export const GROUP_LABEL: Record<Group, string> = { new: "New", live: "Live", sold: "Sold", not_listed: "Not listed" };
-const GROUP_TONE: Record<Group, "amber" | "brand" | "sold" | "gray"> = {
-  new: "amber",
+const GROUP_TONE: Record<Group, "sky" | "brand" | "sold" | "gray"> = {
+  new: "sky",
   live: "brand",
   sold: "sold",
   not_listed: "gray",
