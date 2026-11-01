@@ -1,7 +1,7 @@
 __pycache__/
-*.pyc
-.env
 .venv/
+.env
+*.db
+*.db-*
 media/
 .pytest_cache/
-.ruff_cache/

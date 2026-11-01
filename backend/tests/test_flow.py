@@ -1,0 +1,127 @@
+"""Key flows against a throwaway SQLite database. Run: pytest -q"""
+
+import io
+import os
+import sqlite3
+import tempfile
+
+tmp = tempfile.mkdtemp(prefix="nilayam-test-")
+os.environ.update(
+    DATABASE_PATH=f"{tmp}/test.db", MEDIA_DIR=f"{tmp}/media", ADMIN_PASSWORD="secret", CONSENT_VERSION="test-v1"
+)
+
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from PIL import Image  # noqa: E402
+
+from app.main import app  # noqa: E402
+from app.photos import sanitize  # noqa: E402
+from app.search import parse_query  # noqa: E402
+
+DEVICE = {"X-Device-Token": "d" * 40}
+
+
+@pytest.fixture(scope="module")
+def client():
+    with TestClient(app) as c:
+        yield c
+
+
+@pytest.fixture(scope="module")
+def admin(client):
+    return {"Authorization": "Bearer " + client.post("/api/admin/login", json={"password": "secret"}).json()["token"]}
+
+
+def jpeg_with_gps() -> bytes:
+    exif = Image.Exif()
+    exif[0x8825] = {1: "N", 2: (9.0, 19.0, 0.0)}  # GPS
+    buf = io.BytesIO()
+    Image.new("RGB", (64, 48), "green").save(buf, "JPEG", exif=exif)
+    return buf.getvalue()
+
+
+def submit(client, **overrides):
+    form = {
+        "seller_name": "Ravi Kumar", "seller_phone": "98470 12345", "property_type": "land",
+        "land_area_cents": "12.5", "location": "Mulakuzha", "description": "Flat land with road access.",
+        "expected_price": "3000000", "negotiable": "true", "documents_available": "true",
+        "documents_note": "Title deed", "consent": "true", "consent_version": "test-v1", **overrides,
+    }  # fmt: skip
+    files = [("photos", ("p.jpg", jpeg_with_gps(), "image/jpeg"))]
+    return client.post("/api/submissions", data=form, files=files, headers=DEVICE)
+
+
+def publish_new(client, admin) -> str:
+    sid = submit(client).json()["id"]
+    lid = client.post(f"/api/admin/submissions/{sid}/draft", headers=admin).json()["id"]
+    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).status_code == 200
+    return lid
+
+
+def test_full_journey(client, admin):
+    sub = submit(client).json()
+    assert sub["ref_code"].startswith("NLY-")
+    assert client.get("/api/my/submissions", headers=DEVICE).json()[0]["status"] == "received"
+
+    lid = client.post(f"/api/admin/submissions/{sub['id']}/draft", headers=admin).json()["id"]
+    assert client.get(f"/api/listings/{lid}").status_code == 404  # drafts are not public
+    client.patch(f"/api/admin/listings/{lid}", json={"title": "Plot near Mulakuzha"}, headers=admin)
+    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).json()["version"] == 1
+
+    page = client.get(f"/api/listings/{lid}")
+    assert "Ravi" not in page.text and "9847012345" not in page.text  # seller stays private
+    data = page.json()
+    assert data["number"] >= 1001 and data["negotiable"] is True
+    assert client.get(data["photos"][0]).status_code == 200
+    assert lid in [
+        i["id"] for i in client.get("/api/listings", params={"q": "land under 40 lakh mulakuzha"}).json()["items"]
+    ]
+    assert lid not in [i["id"] for i in client.get("/api/listings", params={"q": "house"}).json()["items"]]
+
+    visit = {"name": "Anu", "phone": "9000000001", "budget": "₹30 L"}
+    assert client.post(f"/api/listings/{lid}/visit-requests", json=visit).status_code == 201
+    assert any(v["budget"] == "₹30 L" for v in client.get("/api/admin/visits", headers=admin).json())
+
+    assert client.post(f"/api/admin/listings/{lid}/sold", headers=admin).json()["state"] == "sold"
+    assert client.get(f"/api/listings/{lid}").json()["status"] == "sold"
+    assert client.post(f"/api/listings/{lid}/visit-requests", json=visit).status_code == 404
+
+
+def test_admin_requires_login(client):
+    assert client.post("/api/admin/login", json={"password": "wrong"}).status_code == 401
+    assert client.get("/api/admin/submissions").status_code == 401
+    assert client.get("/api/admin/submissions", headers={"Authorization": "Bearer 9999999999.fake"}).status_code == 401
+
+
+def test_price_change_needs_seller_confirmation(client, admin):
+    lid = publish_new(client, admin)
+    client.patch(f"/api/admin/listings/{lid}", json={"price": 2_500_000}, headers=admin)
+    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).status_code == 409
+    client.post(f"/api/admin/listings/{lid}/price-confirmation", headers=admin)
+    assert client.post(f"/api/admin/listings/{lid}/publish", headers=admin).json()["version"] == 2
+
+
+def test_originals_and_snapshots_are_immutable(client, admin):
+    lid = publish_new(client, admin)
+    db = sqlite3.connect(os.environ["DATABASE_PATH"])
+    for sql in (
+        "update submissions set seller_phone = 'x'",
+        "delete from submissions",
+        f"update published_versions set snapshot = '{{}}' where listing_id = '{lid}'",
+    ):
+        with pytest.raises(sqlite3.IntegrityError):
+            db.execute(sql)
+
+
+def test_submission_validation(client):
+    assert submit(client, consent="false").status_code == 422
+    assert submit(client, seller_phone="12345").status_code == 422
+    bad = [("photos", ("x.jpg", b"not an image", "image/jpeg"))]
+    assert client.post("/api/submissions", data={}, files=bad, headers=DEVICE).status_code == 422
+
+
+def test_photo_metadata_stripped_and_search_parser():
+    with Image.open(io.BytesIO(sanitize(jpeg_with_gps()))) as img:
+        assert img.format == "WEBP" and not img.getexif()
+    p = parse_query("House under 40 lakh near Mulakuzha 10 cents")
+    assert (p.property_type, p.max_price, p.min_cents, p.text) == ("house", 4_000_000, 10, "mulakuzha")

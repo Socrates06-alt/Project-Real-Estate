@@ -1,24 +1,19 @@
 """Dev only: load sample listings through the API so the app has something to show.
 
-Usage (with the API running):  python -m scripts.seed_demo
+Usage (with the API running):  python seed_demo.py
 """
 
 import io
 import os
 import random
-import time
-import uuid
 
 import httpx
-import jwt
-import psycopg
 from PIL import Image, ImageDraw, ImageFilter
 
 from app.config import get_settings
 
 S = get_settings()
 API = os.environ.get("SEED_API", "http://localhost:8000")
-ADMIN_ID = uuid.UUID("11111111-1111-1111-1111-111111111111")
 DEVICE = {"X-Device-Token": "demo_device_token_" + "x" * 30}
 
 # (seller, phone, type, cents, location, description, price, negotiable, docs, docs note, public title, action)
@@ -123,15 +118,10 @@ def placeholder_photo(seed: int, house: bool) -> bytes:
 
 
 def main() -> None:
-    if S.env == "prod":
-        raise SystemExit("seed_demo is for development only")
-    with psycopg.connect(S.database_url) as conn:
-        conn.execute(
-            "insert into admins (user_id, email) values (%s, 'demo@nilayam.local') on conflict do nothing",
-            (ADMIN_ID,),
-        )
-    claims = {"sub": str(ADMIN_ID), "aud": "authenticated", "exp": int(time.time()) + 3600}
-    admin = {"Authorization": "Bearer " + jwt.encode(claims, S.supabase_jwt_secret, algorithm="HS256")}
+    login = httpx.post(f"{API}/api/admin/login", json={"password": S.admin_password})
+    if login.status_code != 200:
+        raise SystemExit("Admin login failed: set ADMIN_PASSWORD in .env and restart the API")
+    admin = {"Authorization": f"Bearer {login.json()['token']}"}
 
     for i, (name, phone, ptype, cents, loc, desc, price, neg, docs, note, title, action) in enumerate(PROPERTIES):
         form = {

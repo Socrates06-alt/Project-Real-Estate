@@ -18,9 +18,8 @@ export default function AdminApp() {
 }
 
 function Gate() {
-  const { session, ready, signOut } = useAdmin();
-  if (!ready) return null;
-  if (!session) return <Login />;
+  const { token, signOut } = useAdmin();
+  if (!token) return <Login />;
 
   const tab = ({ isActive }: { isActive: boolean }) =>
     cn("rounded-full px-4 py-2 text-[15px] font-medium transition-colors", isActive ? "bg-[var(--glass-active)] text-brand" : "text-sub hover:text-ink");

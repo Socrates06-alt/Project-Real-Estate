@@ -1,8 +1,8 @@
 # Nilayam frontend
 
 React + Vite + TypeScript + Tailwind v4, with shadcn-style components in `src/components/ui`.
-Mobile-first, feed-style UI. All data goes through the FastAPI backend; Supabase is used
-only for admin login.
+Mobile-first, feed-style UI. All data goes through the FastAPI backend. Admin login is a
+single password in the prototype (Supabase Auth planned for V1).
 
 ```
 src/
@@ -17,7 +17,7 @@ src/
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local   # Supabase URL + anon key for admin login
+cp .env.example .env.local   # optional: VITE_API_URL
 npm run dev                  # http://localhost:5173 (proxies /api and /media to :8000)
 npm run build                # type-check + production build into dist/
 ```

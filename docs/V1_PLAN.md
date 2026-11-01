@@ -9,6 +9,20 @@ monolith costing under ₹2,000/month.
 
 ---
 
+## 0. Current stage: prototype
+
+The backend is currently a **lean prototype** (SQLite, one admin password, local photos) so it
+runs on any laptop with just Python and Node. The API is the same one V1 will use. The road to V1:
+
+1. SQLite → Supabase PostgreSQL (schema/triggers port 1:1; add RLS).
+2. Admin password → Supabase Auth + `admins` allowlist.
+3. Local photos → Supabase Storage (private originals, public published copies).
+4. Rate limiting, Turnstile captcha, request size limits.
+5. Audit log, structured logging, backups, cleanup job.
+6. CI, deployment (VPS + Cloudflare).
+
+The sections below describe the V1 target.
+
 ## 1. Architecture
 
 ```

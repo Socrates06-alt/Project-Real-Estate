@@ -1,41 +1,50 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
 import { api, ApiError } from "@/lib/api";
 
+const KEY = "nilayam.admin";
+
 type Ctx = {
-  session: Session | null;
-  ready: boolean;
+  token: string | null;
+  login: (password: string) => Promise<void>;
   call: <T>(path: string, opts?: { method?: string; body?: unknown }) => Promise<T>;
   signOut: () => void;
 };
 
 const AuthCtx = createContext<Ctx | null>(null);
 
+function stored(): string | null {
+  try {
+    return localStorage.getItem(KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Prototype admin auth: one password -> signed token from the backend. */
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [ready, setReady] = useState(false);
+  const [token, setToken] = useState<string | null>(stored);
 
-  useEffect(() => {
-    if (!supabase) return setReady(true);
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setReady(true);
-    });
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => data.subscription.unsubscribe();
-  }, []);
+  const save = (t: string | null) => {
+    setToken(t);
+    try {
+      if (t) localStorage.setItem(KEY, t);
+      else localStorage.removeItem(KEY);
+    } catch {
+      /* storage blocked */
+    }
+  };
 
-  const signOut = useCallback(() => {
-    supabase?.auth.signOut();
-    setSession(null);
+  const signOut = useCallback(() => save(null), []);
+
+  const login = useCallback(async (password: string) => {
+    const res = await api<{ token: string }>("/api/admin/login", { body: { password } });
+    save(res.token);
   }, []);
 
   const call = useCallback(
     async <T,>(path: string, opts: { method?: string; body?: unknown } = {}) => {
-      const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } };
       try {
-        return await api<T>(`/api/admin${path}`, { ...opts, token: data.session?.access_token });
+        return await api<T>(`/api/admin${path}`, { ...opts, token: stored() });
       } catch (e) {
         if (e instanceof ApiError && e.status === 401) signOut();
         throw e;
@@ -44,7 +53,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     [signOut],
   );
 
-  return <AuthCtx.Provider value={{ session, ready, call, signOut }}>{children}</AuthCtx.Provider>;
+  return <AuthCtx.Provider value={{ token, login, call, signOut }}>{children}</AuthCtx.Provider>;
 }
 
 export function useAdmin() {
