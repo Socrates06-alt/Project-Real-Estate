@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from app import admin, public
@@ -25,6 +26,11 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST", "PATCH"],
         allow_headers=["Authorization", "Content-Type", "X-Device-Token"],
     )
+    @app.get("/", include_in_schema=False)
+    def root() -> RedirectResponse:
+        # The web app runs on the frontend (http://localhost:5173); this server is the API.
+        return RedirectResponse("/docs")
+
     app.include_router(public.router)
     app.include_router(admin.router)
 
