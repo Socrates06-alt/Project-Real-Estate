@@ -6,6 +6,7 @@ import { useAsync } from "@/lib/useAsync";
 import { AffixInput, Field, Input, Textarea } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/sheet";
 import { AreaInput, type Area } from "@/components/AreaInput";
+import { PageHeader } from "@/components/PageHeader";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -85,10 +86,8 @@ export default function Sell() {
   if (number) return <Done contactWa={config ? waLink(config.contact) : undefined} />;
 
   return (
-    <form onSubmit={submit} className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <header className="px-1 pb-1">
-        <h1 className="text-2xl font-semibold tracking-tight">List your property</h1>
-      </header>
+    <form onSubmit={submit} className="space-y-4">
+      <PageHeader title="List your property" subtitle="Free listing · pay only when it sells" />
 
       <Card title="Photos" hint={`${photos.length}/${max}`}>
         <div className="grid grid-cols-3 gap-2.5">

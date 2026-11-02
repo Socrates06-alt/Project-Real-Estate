@@ -11,6 +11,7 @@ import { EmptyState, ErrorState } from "@/components/States";
 import { telLink, waLink } from "@/components/contact";
 import { cn } from "@/lib/utils";
 import { ThemeSwitch } from "@/components/ThemeSwitch";
+import { PageHeader } from "@/components/PageHeader";
 
 const STATUS: Record<SubmissionStatus, { label: string; tone: "sky" | "brand" | "sold" | "gray"; step: number }> = {
   received: { label: "Submitted", tone: "sky", step: 0 },
@@ -25,11 +26,8 @@ const STEPS = ["Submitted", "Review", "Live", "Sold"];
 export default function Profile() {
   const [tab, setTab] = useState<"mine" | "how">("mine");
   return (
-    <div className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <div className="flex items-center justify-between px-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
-        <ThemeSwitch />
-      </div>
+    <div className="space-y-4">
+      <PageHeader title="Profile" right={<ThemeSwitch />} />
       <Segmented
         value={tab}
         onChange={setTab}

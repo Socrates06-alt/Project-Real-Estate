@@ -1,0 +1,14 @@
+{
+  "name": "Nilayam",
+  "short_name": "Nilayam",
+  "description": "Verified land and homes in Chengannur",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2e3a8c",
+  "theme_color": "#2e3a8c",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

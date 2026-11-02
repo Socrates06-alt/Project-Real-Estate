@@ -28,7 +28,9 @@ export default function Properties() {
 
   return (
     <div className="space-y-4">
-      <h1 className="px-1 text-2xl font-semibold">Properties</h1>
+      <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
+        <h1 className="text-2xl font-semibold">Properties</h1>
+      </header>
       <div className="glass flex h-[52px] items-center gap-3 rounded-full px-5 shadow-card">
         <Search size={20} className="shrink-0 text-sub" />
         <input

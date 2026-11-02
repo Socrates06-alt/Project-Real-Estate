@@ -13,6 +13,7 @@
   --color-brand: var(--brand);
   --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
+  --color-brand-deep: var(--brand-deep);
   --color-sold: var(--sold);
   --color-wa: var(--wa);
   --color-sky: var(--sky);
@@ -47,10 +48,11 @@
   --ink: #1a1d29;
   --sub: #5d6170;
   --line: #e4e0d6;
-  --brand: #2e3a8c;          /* indigo */
+  --brand: #2e3a8c;          /* Nilayam Indigo - the brand colour */
+  --brand-deep: #2e3a8c;     /* brand bands: headers, splash, icon */
   --brand-ink: #ffffff;
   --brand-soft: #e9ebf7;
-  --house: #3949ab;          /* houses: indigo */
+  --house: #2e3a8c;          /* houses: Nilayam indigo */
   --house-soft: #e8eaf6;
   --land: #5b4e9e;           /* land: violet-indigo */
   --land-soft: #eeebf7;
@@ -87,6 +89,7 @@
   --sub: #a6a9b6;
   --line: #343744;
   --brand: #9aa5ef;
+  --brand-deep: #252c63;
   --brand-ink: #12152b;
   --brand-soft: #262a45;
   --house: #a5b0f2;
@@ -223,6 +226,15 @@ h1, h2, h3 {
   }
   .text-price {
     color: var(--brand); /* prices in indigo: considered, readable */
+  }
+
+  /* Indigo brand band at the top of screens (white text). */
+  .brand-header {
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 0.12), transparent 60%),
+      var(--brand-deep);
+    color: #fff;
+    border-radius: 0 0 28px 28px;
   }
 
   /* Loading placeholders that gently shimmer. */

@@ -89,9 +89,9 @@ export default function Explore() {
 
   return (
     <div>
-      <header className="sticky top-0 z-30 -mx-4 bg-bg/80 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur-xl">
+      <header className="brand-header sticky top-0 z-30 -mx-4 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-4 shadow-float">
         <div className="mb-3 flex items-center justify-between">
-          <Logo />
+          <Logo light />
           <LocationButton area={area} onClear={() => setArea(null)} />
         </div>
         <div className="search-pill flex h-[52px] min-w-0 items-center gap-3 rounded-full px-5">
@@ -112,7 +112,7 @@ export default function Explore() {
         {data && <ParsedChips parsed={data.parsed} />}
       </header>
 
-      <div className="space-y-4 pt-2">
+      <div className="space-y-4 pt-4">
         <FilterTiles
           type={type}
           text={input.trim().toLowerCase()}
@@ -157,7 +157,7 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
   if (!chips.length) return null;
   return (
     <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
-      <span className="text-sub">Showing</span>
+      <span className="text-white/75">Showing</span>
       {chips.map((c) => (
         <span key={c as string} className="rounded-full bg-surface px-2.5 py-1 font-medium text-ink shadow-[0_0_0_1px_var(--hairline)]">
           {c}

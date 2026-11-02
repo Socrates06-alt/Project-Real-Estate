@@ -7,6 +7,7 @@ import { useAsync } from "@/lib/useAsync";
 import { ListingCard, ListingCardSkeleton } from "@/components/ListingCard";
 import { EmptyState } from "@/components/States";
 import { buttonVariants } from "@/components/ui/button";
+import { PageHeader } from "@/components/PageHeader";
 
 /** Shortlist: properties saved on this phone, to compare with family. */
 export default function Saved() {
@@ -42,11 +43,8 @@ export default function Saved() {
   const contact = config.data?.contact;
 
   return (
-    <div className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
-      <div className="px-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Saved</h1>
-        {list.length > 0 && <p className="text-sm text-sub">{list.length} saved on this phone · tap ♥ to remove</p>}
-      </div>
+    <div className="space-y-4">
+      <PageHeader title="Saved" subtitle={list.length > 0 ? `${list.length} saved on this phone · tap ♥ to remove` : undefined} />
       {loading && !list.length && ids.length > 0 && <ListingCardSkeleton />}
       {!ids.length && (
         <EmptyState

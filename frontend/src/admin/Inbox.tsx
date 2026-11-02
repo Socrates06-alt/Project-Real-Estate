@@ -19,10 +19,10 @@ export default function Inbox() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
-        <Logo />
+      <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
+        <Logo light />
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-brand-soft px-3 py-1 text-xs font-medium text-brand">Admin</span>
+          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white">Admin</span>
           <ThemeSwitch />
         </div>
       </header>
