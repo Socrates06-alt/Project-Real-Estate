@@ -147,19 +147,9 @@ export default function Explore() {
   );
 }
 
-// Selected: solid colour. Not selected: soft tint of the same colour, so every chip is easy to spot.
-const CHIP_ON = {
-  brand: "bg-brand text-surface shadow-[0_6px_14px_-8px_var(--brand)]",
-  house: "bg-house text-surface shadow-[0_6px_14px_-8px_var(--house)]",
-  land: "bg-land text-surface shadow-[0_6px_14px_-8px_var(--land)]",
-  sold: "bg-sold text-surface shadow-[0_6px_14px_-8px_var(--sold)]",
-};
-const CHIP_OFF = {
-  brand: "bg-brand-soft text-brand",
-  house: "bg-house-soft text-house",
-  land: "bg-land-soft text-land",
-  sold: "bg-sold-soft text-sold",
-};
+// Selected: solid gradient. Not selected: soft gradient of the same colour, so every chip is easy to spot.
+const CHIP_ON = { brand: "chip-brand-on", house: "chip-house-on", land: "chip-land-on", sold: "chip-sold-on" };
+const CHIP_OFF = { brand: "chip-brand", house: "chip-house", land: "chip-land", sold: "chip-sold" };
 
 function Chip({
   on,

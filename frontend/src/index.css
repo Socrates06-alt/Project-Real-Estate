@@ -29,64 +29,64 @@
 }
 
 :root {
-  /* Fresh light mint, with gentle supporting colours so things are easy to tell apart. */
-  --bg: #f0f7f4;
-  --bg-top: #f0f7f4;
+  /* Calm light blue (trust), with blue-family shades so things are easy to tell apart. */
+  --bg: #eff3f8;
+  --bg-top: #eff3f8;
   --surface: #ffffff;
-  --muted: #eaf4ef;
-  --ink: #15302a;
-  --sub: #5c7169;
-  --line: #d7e9e1;
-  --brand: #1f9d74;          /* mint green: buttons, active states */
+  --muted: #edf3fa;
+  --ink: #12263f;
+  --sub: #5b7089;
+  --line: #d9e5f2;
+  --brand: #3a7fc8;          /* main blue: buttons, active states */
   --brand-ink: #ffffff;
-  --brand-soft: #def4ea;
-  --house: #1f8f6a;          /* houses: mint */
-  --house-soft: #dcf3e8;
-  --land: #a0702a;           /* land: warm sand */
-  --land-soft: #f8edd8;
-  --sky: #e2f1fb;            /* info, visits, calls: soft sky */
-  --sky-ink: #2b6f9e;
-  --peach: #c2643f;          /* selling: soft peach */
-  --peach-soft: #fde9df;
-  --sold: #b4515a;           /* sold: muted rose */
-  --sold-soft: #f9e4e6;
-  --wa: #1fa463;             /* WhatsApp green */
+  --brand-soft: #e4effa;
+  --house: #1689a8;          /* houses: teal-blue */
+  --house-soft: #dff2f8;
+  --land: #5b61c9;           /* land: indigo */
+  --land-soft: #e9eafc;
+  --sky: #e6f3fd;            /* info, calls */
+  --sky-ink: #2a6aa8;
+  --peach: #4a6fd6;          /* selling, visits: royal blue */
+  --peach-soft: #e7edfd;
+  --sold: #6f88a6;           /* sold: slate */
+  --sold-soft: #eaeff5;
+  --wa: #2f78c4;
   --glass: rgb(255 255 255 / 0.86);
-  --glass-line: rgb(31 157 116 / 0.16);
-  --glass-active: rgb(31 157 116 / 0.12);
-  --hairline: rgb(21 48 42 / 0.07);
-  --card-shadow: 0 0 0 1px var(--hairline), 0 1px 2px rgb(21 48 42 / 0.04), 0 10px 28px -14px rgb(21 48 42 / 0.16);
-  --float-shadow: 0 0 0 1px var(--hairline), 0 16px 40px -16px rgb(21 48 42 / 0.28);
+  --glass-line: rgb(58 127 200 / 0.16);
+  --glass-active: rgb(58 127 200 / 0.12);
+  --hairline: rgb(18 38 63 / 0.07);
+  --card-shadow: 0 0 0 1px var(--hairline), 0 1px 2px rgb(18 38 63 / 0.04), 0 10px 28px -14px rgb(18 38 63 / 0.16);
+  --float-shadow: 0 0 0 1px var(--hairline), 0 16px 40px -16px rgb(18 38 63 / 0.30);
   color-scheme: light;
 }
 
 /* Light is the default. Dark only when the user turns it on (data-theme="dark" on <html>). */
 :root[data-theme="dark"] {
-  /* Soft neutral dark with a mint accent; easy to read. */
-  --bg: #17191a;
-  --bg-top: #17191a;
-  --surface: #222527;
-  --muted: #2b2f31;
-  --ink: #ebefed;
-  --sub: #a7b0ac;
-  --line: #353a3c;
-  --brand: #5fd4a6;
-  --brand-ink: #0c1f18;
-  --brand-soft: #1f3a30;
-  --house: #6fd8ad;
-  --house-soft: #1f3a30;
-  --land: #e5bd7c;
-  --land-soft: #3a3020;
-  --sky: #1e3242;
-  --sky-ink: #93c9ef;
-  --peach: #f0a582;
-  --peach-soft: #3d2a22;
-  --sold: #f0a2aa;
-  --sold-soft: #3d2629;
-  --wa: #4cd38a;
-  --glass: rgb(34 37 39 / 0.92);
+  /* Soft neutral dark with a light blue accent; easy to read. */
+  --bg: #18191b;
+  --bg-top: #18191b;
+  --surface: #232427;
+  --muted: #2c2e32;
+  --ink: #ececee;
+  --sub: #a9adb4;
+  --line: #36383d;
+  --brand: #7fb3ec;
+  --brand-ink: #10161f;
+  --brand-soft: #24303d;
+  --house: #7fd0e6;
+  --house-soft: #1f3540;
+  --land: #a9adf2;
+  --land-soft: #2b2c45;
+  --sky: #24303d;
+  --sky-ink: #a8cdf3;
+  --peach: #9bb4f2;
+  --peach-soft: #262f45;
+  --sold: #a3abb5;
+  --sold-soft: #2e3136;
+  --wa: #7fb3ec;
+  --glass: rgb(35 36 39 / 0.92);
   --glass-line: rgb(255 255 255 / 0.08);
-  --glass-active: rgb(95 212 166 / 0.14);
+  --glass-active: rgb(127 179 236 / 0.14);
   --hairline: rgb(255 255 255 / 0.07);
   --card-shadow: 0 0 0 1px var(--hairline), 0 12px 28px -16px rgb(0 0 0 / 0.6);
   --float-shadow: 0 0 0 1px var(--hairline), 0 18px 40px -16px rgb(0 0 0 / 0.7);
@@ -178,6 +178,16 @@ h1, h2, h3 {
       0 0 0 2px var(--brand),
       0 0 0 6px color-mix(in srgb, var(--brand) 16%, transparent);
   }
+  /* Filter chips: each its own soft gradient (light), solid gradient when selected. */
+  .chip-brand { background: linear-gradient(135deg, var(--brand-soft), color-mix(in srgb, var(--sky) 70%, var(--surface))); color: var(--brand); }
+  .chip-house { background: linear-gradient(135deg, var(--house-soft), color-mix(in srgb, var(--brand-soft) 60%, var(--surface))); color: var(--house); }
+  .chip-land { background: linear-gradient(135deg, var(--land-soft), color-mix(in srgb, var(--brand-soft) 50%, var(--land-soft))); color: var(--land); }
+  .chip-sold { background: linear-gradient(135deg, var(--sold-soft), var(--muted)); color: var(--sold); }
+  .chip-brand-on { background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 80%, white), var(--brand)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--brand); }
+  .chip-house-on { background: linear-gradient(135deg, color-mix(in srgb, var(--house) 75%, white), var(--house)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--house); }
+  .chip-land-on { background: linear-gradient(135deg, color-mix(in srgb, var(--land) 75%, white), var(--land)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--land); }
+  .chip-sold-on { background: linear-gradient(135deg, color-mix(in srgb, var(--sold) 80%, white), var(--sold)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--sold); }
+
   /* Loading placeholders that gently shimmer. */
   .shimmer {
     background: linear-gradient(90deg, var(--muted) 0%, color-mix(in srgb, var(--muted) 60%, var(--surface)) 50%, var(--muted) 100%);
