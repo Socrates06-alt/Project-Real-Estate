@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TYPE_TONE } from "@/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { AlignLeft, BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/lib/api";
 import { cents, inr, perCent, shortDate, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
@@ -114,18 +114,16 @@ export default function ListingDetail() {
 
       <section className="mt-3 card p-5">
         <h2 className="text-base font-semibold">About this property</h2>
-        {l.description ? (
-          <p className="mt-2 text-[15px] leading-relaxed whitespace-pre-line text-ink/90">{l.description}</p>
-        ) : (
-          <p className="mt-2 text-[15px] text-sub">Call us for full details about this property.</p>
-        )}
-
-        <dl className="mt-4 divide-y divide-line rounded-2xl bg-muted/60 text-sm">
+        <dl className="mt-3 divide-y divide-line rounded-2xl bg-muted/60 text-sm">
+          <InfoRow
+            icon={<AlignLeft size={17} className="text-brand" />}
+            label="Description"
+            value={l.description || "Call us for full details"}
+          />
           {l.documents_note && (
             <InfoRow icon={<FileCheck2 size={17} className="text-verified" />} label="Documents" value={l.documents_note} />
           )}
           <InfoRow icon={<CalendarDays size={17} className="text-brand" />} label="Listed on" value={shortDate(l.listed_at)} />
-          <InfoRow icon={<MapPin size={17} className="text-brand" />} label="Exact location" value="Shared when we arrange your visit" />
           {config.data?.rera_number && (
             <InfoRow icon={<BadgeCheck size={17} className="text-verified" />} label="Kerala RERA" value={config.data.rera_number} />
           )}
@@ -194,7 +192,7 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
     <div className="flex items-start gap-3 px-4 py-3">
       <span className="mt-0.5 shrink-0">{icon}</span>
       <dt className="w-28 shrink-0 text-sub">{label}</dt>
-      <dd className="min-w-0 flex-1 font-medium">{value}</dd>
+      <dd className="min-w-0 flex-1 font-medium whitespace-pre-line">{value}</dd>
     </div>
   );
 }
