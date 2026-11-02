@@ -54,7 +54,6 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
             <span className="text-sm font-medium text-sub">{perCent(listing.price, listing.land_area_cents)}</span>
           )}
         </div>
-        <p className="mt-1 line-clamp-1 text-[15px] text-ink">{listing.title}</p>
         <p className="mt-1 flex items-center gap-1.5 text-sm text-sub">
           <MapPin size={15} className="shrink-0" />
           <span className="truncate">{listing.location}</span>

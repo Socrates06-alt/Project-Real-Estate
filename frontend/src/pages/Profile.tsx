@@ -51,7 +51,7 @@ function MyListings() {
       <EmptyState
         icon={<Home size={28} />}
         title="No listings yet"
-        text="Properties you list from this phone show up here with their status."
+        text="Properties you list from your device show up here with their status."
         action={
           <Link to="/sell" className={buttonVariants({ size: "sm" })}>
             List a property
