@@ -85,15 +85,15 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
       {sold ? (
         <div className="h-3" />
       ) : (
-        <div className="mt-3 grid grid-cols-[1.5fr_1fr_1fr] gap-1.5">
+        <div className="mt-3 grid grid-cols-3 gap-2">
           <a href={telLink(contact)} className={cn(action, "btn-accent font-semibold")}>
-            <Phone size={18} /> Call
+            <Phone size={20} /> Call
           </a>
           <a href={waLink(contact, listing)} target="_blank" rel="noreferrer" className={cn(action, "bg-muted")}>
-            <MessageCircle size={18} className="text-wa" /> WhatsApp
+            <MessageCircle size={20} className="text-wa" /> WhatsApp
           </a>
           <Link to={`/p/${listing.id}?visit=1`} className={cn(action, "bg-muted")}>
-            <CalendarDays size={17} className="text-brand" /> Visit
+            <CalendarDays size={20} className="text-brand" /> Visit
           </Link>
         </div>
       )}
@@ -101,8 +101,9 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
   );
 }
 
+// Three equal buttons; icon above the label so nothing feels cramped.
 const action =
-  "flex min-h-11 items-center justify-center gap-1.5 rounded-[16px] px-1 py-2 text-sm font-medium text-ink transition duration-200 hover:brightness-[0.97] active:scale-[0.97]";
+  "flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-[16px] px-1 py-2 text-[13px] font-medium text-ink transition duration-200 hover:brightness-[0.97] active:scale-[0.97]";
 
 export function ListingCardSkeleton() {
   return (
