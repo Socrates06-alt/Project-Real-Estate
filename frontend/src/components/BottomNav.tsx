@@ -12,7 +12,7 @@ const ITEMS = [
 export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
-      <div className="glass flex items-center gap-1 rounded-full p-1 shadow-float">
+      <div className="nav-pill flex items-center gap-1 rounded-full p-1.5">
         {ITEMS.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -21,13 +21,13 @@ export function BottomNav() {
             className={({ isActive }) =>
               cn(
                 "flex min-h-[52px] min-w-[68px] flex-col items-center justify-center gap-0.5 rounded-full px-3 text-[12px] font-medium transition-colors",
-                isActive ? "bg-[var(--glass-active)] text-ink" : "text-sub hover:text-ink",
+                isActive ? "bg-white text-[var(--brand-deep)] shadow-md" : "text-white/80 hover:text-white",
               )
             }
           >
             {({ isActive }) => (
               <>
-                <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} className={isActive ? "text-brand" : undefined} />
+                <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} />
                 {label}
               </>
             )}

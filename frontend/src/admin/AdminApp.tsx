@@ -40,11 +40,11 @@ function AdminNav() {
   const item = ({ isActive }: { isActive: boolean }) =>
     cn(
       "flex min-h-[52px] min-w-[76px] flex-col items-center justify-center gap-0.5 rounded-full px-3 text-[12px] font-medium transition-colors",
-      isActive ? "bg-[var(--glass-active)] text-ink" : "text-sub",
+      isActive ? "bg-white text-[var(--brand-deep)] shadow-md" : "text-white/80",
     );
   return (
     <nav className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
-      <div className="glass flex items-center gap-1 rounded-full p-1 shadow-float">
+      <div className="nav-pill flex items-center gap-1 rounded-full p-1.5">
         <NavLink to="/admin" end className={item}>
           <InboxIcon size={22} /> Inbox
         </NavLink>
