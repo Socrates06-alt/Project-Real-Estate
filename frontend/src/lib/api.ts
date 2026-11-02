@@ -69,6 +69,9 @@ export interface Listing {
   documents_available: boolean;
   documents_note: string;
   photos: string[];
+  lat: number | null; // approximate public spot (moved 150-500 m)
+  lng: number | null;
+  distance_km?: number; // only in area (map) search
   published_at: string;
   sold_at: string | null;
 }
@@ -90,6 +93,7 @@ export interface Parsed {
 export interface Feed {
   items: Listing[];
   has_more: boolean;
+  total: number;
   parsed: Parsed;
   contact: Contact;
 }

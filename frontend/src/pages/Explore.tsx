@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ChevronRight, House, MapPin, Search, SearchX, X } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ChevronRight, House, Map as MapIcon, MapPin, Search, SearchX, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { api, getConfig, type Feed, type Listing, type Parsed } from "@/lib/api";
 import { inr } from "@/lib/format";
@@ -22,6 +22,13 @@ export default function Explore() {
   const [extra, setExtra] = useState<Listing[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  // Area chosen on the map: /?lat=..&lng=..&r=5&place=Puliyoor
+  const [params, setParams] = useSearchParams();
+  const area =
+    params.get("lat") && params.get("lng")
+      ? { lat: params.get("lat")!, lng: params.get("lng")!, r: params.get("r") || "5", place: params.get("place") || "Selected area" }
+      : null;
+  const areaKey = area ? `${area.lat},${area.lng},${area.r}` : "";
 
   useEffect(() => {
     const t = setTimeout(() => setQ(input.trim()), 350);
@@ -31,6 +38,11 @@ export default function Explore() {
   const query = (offset: number) => {
     const p = new URLSearchParams({ q, status, limit: String(PAGE), offset: String(offset) });
     if (type !== "all") p.set("type", type);
+    if (area) {
+      p.set("lat", area.lat);
+      p.set("lng", area.lng);
+      p.set("radius_km", area.r);
+    }
     return api<Feed>(`/api/listings?${p}`);
   };
 
@@ -39,7 +51,7 @@ export default function Explore() {
     setExtra([]);
     setHasMore(feed.has_more);
     return feed;
-  }, [q, type, status]);
+  }, [q, type, status, areaKey]);
   const config = useAsync(getConfig, []);
 
   async function loadMore() {
@@ -65,7 +77,8 @@ export default function Explore() {
             <MapPin size={15} /> Chengannur
           </span>
         </div>
-        <div className="glass flex h-[52px] items-center gap-3 rounded-full px-5 shadow-card focus-within:border-brand/50">
+        <div className="flex items-center gap-2">
+        <div className="glass flex h-[52px] min-w-0 flex-1 items-center gap-3 rounded-full px-5 shadow-card focus-within:border-brand/50">
           <Search size={20} className="shrink-0 text-sub" />
           <input
             value={input}
@@ -79,6 +92,17 @@ export default function Explore() {
               <X size={16} />
             </button>
           )}
+        </div>
+        <Link
+          to={area ? `/map?lat=${area.lat}&lng=${area.lng}&r=${area.r}&place=${encodeURIComponent(area.place)}` : "/map"}
+          aria-label="Search on map"
+          className={cn(
+            "glass grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full shadow-card",
+            area ? "text-brand" : "text-sub",
+          )}
+        >
+          <MapIcon size={21} />
+        </Link>
         </div>
         <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto">
           {(["all", "house", "land"] as const).map((t) => (
@@ -94,18 +118,29 @@ export default function Explore() {
             Sold
           </Chip>
         </div>
+        {area && (
+          <div className="mt-2.5 flex items-center gap-2">
+            <span className="flex items-center gap-1.5 rounded-full border border-brand/40 bg-brand-soft py-1.5 pr-1.5 pl-3 text-sm font-medium text-brand">
+              <MapPin size={15} />
+              {area.place} · {area.r} km
+              <button aria-label="Clear area" onClick={() => setParams({}, { replace: true })} className="grid h-6 w-6 place-items-center rounded-full hover:bg-brand/10">
+                <X size={14} />
+              </button>
+            </span>
+          </div>
+        )}
         {data && <ParsedChips parsed={data.parsed} />}
       </header>
 
       <div className="space-y-4 pt-2">
-        {!q && status === "live" && type === "all" && <SellBanner />}
+        {!q && !area && status === "live" && type === "all" && <SellBanner />}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
         {data && contact && items.map((l) => <ListingCard key={l.id} listing={l} contact={contact} />)}
         {data && !items.length && (
           <EmptyState
             icon={<SearchX size={28} />}
-            title={status === "sold" ? "No sold properties yet" : "Nothing matches yet"}
+            title={area ? "No properties in this area" : status === "sold" ? "No sold properties yet" : "Nothing matches yet"}
             text="Try a nearby area or a wider budget. New properties are added every week."
           />
         )}

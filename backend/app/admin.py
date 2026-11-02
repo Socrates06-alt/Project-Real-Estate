@@ -11,7 +11,7 @@ from typing import Literal
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 
-from app import photos
+from app import geo, photos
 from app.config import get_settings
 from app.db import DB, many, now, one
 from app.models import LoginIn, NoteIn, PublishIn, VisitUpdate
@@ -159,7 +159,7 @@ def get_property(submission_id: str, db: DB) -> dict:
     kind = "House" if sub["property_type"] == "house" else "Land"
     # The editable form: current listing, or a ready-made one from the seller's submission (no seller identity).
     form = (
-        {k: listing[k] for k in PUBLIC_FIELDS}
+        {**{k: listing[k] for k in PUBLIC_FIELDS}, "lat": listing["lat"], "lng": listing["lng"]}
         if listing
         else {
             "title": f"{kind} for sale",  # area and place are shown separately
@@ -172,6 +172,8 @@ def get_property(submission_id: str, db: DB) -> dict:
             "documents_available": sub["documents_available"],
             "documents_note": sub["documents_note"],
             "photo_ids": [p["id"] for p in photo_rows],
+            "lat": None,
+            "lng": None,
         }
     )
     visits = (
@@ -260,10 +262,25 @@ def publish(submission_id: str, body: PublishIn, db: DB) -> dict:
     if body.seller_confirmed:
         db.execute("update listings set confirmed_price = ? where id = ?", (body.price, listing_id))
 
+    # Location: exact pin stays private; buyers get a spot moved 150-500 m, kept until the pin moves.
+    public_lat = public_lng = None
+    if body.lat is not None:
+        same_pin = listing is not None and (listing["lat"], listing["lng"]) == (body.lat, body.lng)
+        if same_pin and listing["public_lat"] is not None:
+            public_lat, public_lng = listing["public_lat"], listing["public_lng"]
+        else:
+            public_lat, public_lng = geo.blur(body.lat, body.lng)
+    db.execute(
+        "update listings set lat = ?, lng = ?, public_lat = ?, public_lng = ? where id = ?",
+        (body.lat, body.lng, public_lat, public_lng, listing_id),
+    )
+
     snapshot = {
         "number": number,
         **body.model_dump(include=set(PUBLIC_FIELDS) - {"photo_ids"}),
         "photos": [photos.publish_copy(valid_photos[pid], listing_id, pid) for pid in body.photo_ids],
+        "lat": public_lat,  # approximate only
+        "lng": public_lng,
     }
     version = (listing["current_version"] if listing else 0) + 1
     db.execute(

@@ -6,6 +6,9 @@ import ListingDetail from "@/pages/ListingDetail";
 import Sell from "@/pages/Sell";
 import Profile from "@/pages/Profile";
 
+// The map (and Leaflet) only loads when someone opens it.
+const MapSearch = lazy(() => import("@/pages/MapSearch"));
+
 // Admin is a separate chunk; the public app never links to it.
 const AdminApp = lazy(() => import("@/admin/AdminApp"));
 
@@ -35,6 +38,14 @@ export default function App() {
       <Route element={<PublicLayout nav={false} />}>
         <Route path="p/:id" element={<ListingDetail />} />
       </Route>
+      <Route
+        path="map"
+        element={
+          <Suspense fallback={null}>
+            <MapSearch />
+          </Suspense>
+        }
+      />
       <Route
         path="admin/*"
         element={

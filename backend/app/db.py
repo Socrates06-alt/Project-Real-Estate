@@ -61,6 +61,10 @@ create table if not exists listings (
     documents_available integer not null,
     documents_note      text not null default '',
     photo_ids           text not null default '[]',
+    lat                 real,  -- exact location: private (admin only)
+    lng                 real,
+    public_lat          real,  -- approximate location shown to buyers (moved 150-500 m)
+    public_lng          real,
     confirmed_price     integer,
     current_version     integer not null default 0,
     published_at        text,
@@ -119,7 +123,13 @@ def connect() -> sqlite3.Connection:
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
+
+# Small in-place upgrades from older versions (no data lost).
+UPGRADES = {
+    3: [f"alter table listings add column {c} real" for c in ("lat", "lng", "public_lat", "public_lng")],
+}
+OLDEST_UPGRADABLE = 2
 
 log = logging.getLogger("nilayam")
 
@@ -132,7 +142,16 @@ def init_db() -> None:
         version = conn.execute("pragma user_version").fetchone()[0]
         has_tables = conn.execute("select count(*) from sqlite_master where type = 'table'").fetchone()[0] > 0
         conn.close()
-        if has_tables and version < SCHEMA_VERSION:
+        if has_tables and OLDEST_UPGRADABLE <= version < SCHEMA_VERSION:
+            conn = sqlite3.connect(path)
+            for v in range(version + 1, SCHEMA_VERSION + 1):
+                for sql in UPGRADES.get(v, []):
+                    conn.execute(sql)
+                conn.execute(f"pragma user_version = {v}")
+            conn.commit()
+            conn.close()
+            log.warning("Database upgraded to version %s.", SCHEMA_VERSION)
+        elif has_tables and version < SCHEMA_VERSION:
             backup = path.with_name(f"{path.stem}-old-{datetime.now():%Y%m%d-%H%M%S}{path.suffix}")
             for suffix in ("", "-wal", "-shm"):
                 f = Path(str(path) + suffix)

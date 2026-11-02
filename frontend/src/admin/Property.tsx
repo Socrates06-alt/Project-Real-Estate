@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useAdmin } from "./auth";
+import { LocationPicker } from "@/components/map/LocationPicker";
 import { ContactButtons, GroupBadge, PrivatePhoto, VisitCard } from "./ui";
 import type { Property, PublicForm } from "./types";
 
@@ -199,6 +200,11 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         <Field label="Description">
           <Textarea rows={5} value={f.description} onChange={(e) => set("description", e.target.value)} />
         </Field>
+        <LocationPicker
+          value={f.lat != null && f.lng != null ? { lat: f.lat, lng: f.lng } : null}
+          onChange={(v) => setF((x) => ({ ...x, lat: v?.lat ?? null, lng: v?.lng ?? null }))}
+          disabled={readOnly}
+        />
         <Switch checked={f.negotiable} onChange={(v) => set("negotiable", v)} label="Negotiable" />
         <Switch checked={f.documents_available} onChange={(v) => set("documents_available", v)} label="Documents available" />
         {f.documents_available && <Input value={f.documents_note} placeholder="Title deed, tax receipt…" onChange={(e) => set("documents_note", e.target.value)} />}

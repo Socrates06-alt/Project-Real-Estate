@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { CalendarDays, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, type Contact, type Listing } from "@/lib/api";
@@ -11,6 +12,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { telLink, waLink } from "@/components/contact";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+
+// Leaflet only loads for properties that have a location.
+const AreaMap = lazy(() => import("@/components/map/AreaMap").then((m) => ({ default: m.AreaMap })));
 
 type Detail = Listing & { contact: Contact; brokerage: { buyer_pct: number; gst_extra: boolean } };
 
@@ -102,6 +106,16 @@ export default function ListingDetail() {
         )}
         <p className="mt-3 text-xs text-sub">Listed {shortDate(l.published_at)} · Exact address shared before the visit.</p>
       </section>
+
+      {l.lat != null && l.lng != null && (
+        <section className="mt-3 rounded-3xl border border-line bg-surface p-4">
+          <h2 className="mb-2 text-sm font-medium text-sub">Approximate area</h2>
+          <Suspense fallback={<div className="h-48 animate-pulse rounded-2xl bg-muted" />}>
+            <AreaMap lat={l.lat} lng={l.lng} />
+          </Suspense>
+          <p className="mt-2 text-xs text-sub">The exact location is shared when we arrange your visit.</p>
+        </section>
+      )}
 
       <section className="mt-3 flex gap-3 rounded-3xl bg-brand-soft p-5 text-sm">
         <Info size={18} className="mt-0.5 shrink-0 text-brand" />

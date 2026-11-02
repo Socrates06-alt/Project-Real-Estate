@@ -91,6 +91,15 @@ PROPERTIES = [
 ]
 
 
+# Rough sample positions for the demo map (not real properties).
+SAMPLE_SPOTS = {
+    "Chengannur town": (9.3176, 76.6113),
+    "Puliyoor": (9.3040, 76.5830),
+    "Mulakuzha": (9.2990, 76.6420),
+    "Budhanoor": (9.2870, 76.5640),
+}
+
+
 def placeholder_photo(seed: int, house: bool) -> bytes:
     """Simple illustrated scene (sky, trees, optional house) as a stand-in photo."""
     r = random.Random(seed)  # noqa: S311 - not security related
@@ -148,7 +157,9 @@ def main() -> None:
             continue
         sid = resp.json()["id"]
         form = httpx.get(f"{API}/api/admin/properties/{sid}", headers=admin).json()["form"]
-        res = httpx.post(f"{API}/api/admin/properties/{sid}/publish", json={**form, "title": title}, headers=admin)
+        lat, lng = SAMPLE_SPOTS.get(loc, (None, None))
+        body = {**form, "title": title, "lat": lat, "lng": lng}
+        res = httpx.post(f"{API}/api/admin/properties/{sid}/publish", json=body, headers=admin)
         res.raise_for_status()
         if action == "sold":
             httpx.post(f"{API}/api/admin/properties/{sid}/sold", headers=admin).raise_for_status()

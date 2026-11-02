@@ -49,6 +49,8 @@ export interface PublicForm {
   documents_available: boolean;
   documents_note: string;
   photo_ids: string[];
+  lat: number | null; // exact pin (private)
+  lng: number | null;
 }
 
 export interface Property {

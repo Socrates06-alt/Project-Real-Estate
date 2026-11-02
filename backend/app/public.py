@@ -7,7 +7,7 @@ from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
 
-from app import photos
+from app import geo, photos
 from app.config import get_settings
 from app.db import DB, many, one
 from app.models import SubmissionForm, VisitRequestIn
@@ -18,7 +18,7 @@ router = APIRouter(prefix="/api")
 _STATES = {"live": ("published",), "sold": ("sold",), "all": ("published", "sold")}
 _SNAPSHOT_FIELDS = (
     "number", "title", "property_type", "land_area_cents", "location", "description",
-    "price", "negotiable", "documents_available", "documents_note", "photos",
+    "price", "negotiable", "documents_available", "documents_note", "photos", "lat", "lng",
 )  # fmt: skip
 
 
@@ -84,6 +84,9 @@ def list_listings(
     status: Literal["live", "sold", "all"] = "live",
     limit: int = Query(20, ge=1, le=50),
     offset: int = Query(0, ge=0),
+    lat: float | None = Query(None, ge=-90, le=90),
+    lng: float | None = Query(None, ge=-180, le=180),
+    radius_km: float = Query(5, ge=0.5, le=50),
 ) -> dict:
     parsed = parse_query(q)
     states = _STATES[status]
@@ -111,13 +114,23 @@ def list_listings(
 
     rows = many(
         db,
-        f"{_LIVE_SELECT} where {' and '.join(where)}"
-        " order by l.state = 'published' desc, v.published_at desc limit ? offset ?",
-        *args, limit + 1, offset,
-    )  # fmt: skip
+        f"{_LIVE_SELECT} where {' and '.join(where)} order by l.state = 'published' desc, v.published_at desc",
+        *args,
+    )
+    items = [public_listing(r) for r in rows]
+    if lat is not None and lng is not None:
+        # Area search (map): keep properties whose public spot is inside the circle, nearest first.
+        near = []
+        for item in items:
+            if item["lat"] is not None:
+                d = geo.distance_km(lat, lng, item["lat"], item["lng"])
+                if d <= radius_km:
+                    near.append({**item, "distance_km": round(d, 1)})
+        items = sorted(near, key=lambda i: i["distance_km"])
     return {
-        "items": [public_listing(r) for r in rows[:limit]],
-        "has_more": len(rows) > limit,
+        "items": items[offset : offset + limit],
+        "has_more": len(items) > offset + limit,
+        "total": len(items),
         "parsed": parsed.__dict__,
         "contact": contact(),
     }

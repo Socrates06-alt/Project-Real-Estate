@@ -3,7 +3,7 @@
 import re
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 
 def normalize_indian_phone(value: str) -> str:
@@ -83,6 +83,14 @@ class PublishIn(Strict):
     documents_note: Short = ""
     photo_ids: Annotated[list[str], Field(max_length=3)]
     seller_confirmed: bool = False  # seller agreed to this price (needed for big price changes)
+    lat: Annotated[float, Field(ge=-90, le=90)] | None = None  # exact pin (private); public spot is blurred
+    lng: Annotated[float, Field(ge=-180, le=180)] | None = None
+
+    @model_validator(mode="after")
+    def _both_or_neither(self):
+        if (self.lat is None) != (self.lng is None):
+            raise ValueError("Location needs both latitude and longitude")
+        return self
 
 
 class VisitUpdate(Strict):

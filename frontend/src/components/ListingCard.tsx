@@ -40,6 +40,7 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
           <MapPin size={15} className="shrink-0" />
           <span className="truncate">
             {listing.location} · {cents(listing.land_area_cents)}
+            {listing.distance_km != null && ` · ${listing.distance_km} km away`}
           </span>
         </p>
       </button>

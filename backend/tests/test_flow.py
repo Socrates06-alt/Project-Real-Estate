@@ -141,14 +141,18 @@ def test_not_listed_and_take_down(client, admin):
 def test_originals_and_snapshots_are_immutable(client, admin):
     sid = publish_new(client, admin)
     lid = client.get(f"/api/admin/properties/{sid}", headers=admin).json()["listing_id"]
-    db = sqlite3.connect(os.environ["DATABASE_PATH"])
-    for sql in (
-        "update submissions set seller_phone = 'x'",
-        "delete from submissions",
-        f"update published_versions set snapshot = '{{}}' where listing_id = '{lid}'",
-    ):
-        with pytest.raises(sqlite3.IntegrityError):
-            db.execute(sql)
+    # Autocommit mode + close, so a blocked write never leaves a lock behind for later tests.
+    db = sqlite3.connect(os.environ["DATABASE_PATH"], isolation_level=None)
+    try:
+        for sql in (
+            "update submissions set seller_phone = 'x'",
+            "delete from submissions",
+            f"update published_versions set snapshot = '{{}}' where listing_id = '{lid}'",
+        ):
+            with pytest.raises(sqlite3.IntegrityError):
+                db.execute(sql)
+    finally:
+        db.close()
 
 
 def test_submission_validation(client):
@@ -163,3 +167,33 @@ def test_photo_metadata_stripped_and_search_parser():
         assert img.format == "WEBP" and not img.getexif()
     p = parse_query("House under 40 lakh near Mulakuzha 10 cents")
     assert (p.property_type, p.max_price, p.min_cents, p.text) == ("house", 4_000_000, 10, "mulakuzha")
+
+
+def test_map_location_is_blurred_and_searchable(client, admin):
+    from app.geo import distance_km
+
+    exact = (9.30210, 76.60450)
+    sid = submit(client).json()["id"]
+    res = publish(client, admin, sid, lat=exact[0], lng=exact[1]).json()
+    lid = res["listing_id"]
+
+    page = client.get(f"/api/listings/{lid}").json()
+    public = (page["lat"], page["lng"])
+    assert public != exact and 0.1 < distance_km(*exact, *public) < 0.6  # moved 150-500 m
+    # The exact pin is never in any public response.
+    feed = client.get("/api/listings").json()["items"]
+    assert all((i["lat"], i["lng"]) != exact for i in [page, *feed])
+
+    # Same pin on republish keeps the same public spot (can't be averaged out).
+    publish(client, admin, sid, title="Plot with good road access", lat=exact[0], lng=exact[1])
+    assert (
+        client.get(f"/api/listings/{lid}").json()["lat"],
+        client.get(f"/api/listings/{lid}").json()["lng"],
+    ) == public
+
+    # Radius search: inside 2 km of the spot, not inside 2 km of a point ~11 km away.
+    near = client.get("/api/listings", params={"lat": exact[0], "lng": exact[1], "radius_km": 2}).json()
+    hit = next(i for i in near["items"] if i["id"] == lid)
+    assert hit["distance_km"] <= 0.6 and near["total"] >= 1
+    far = client.get("/api/listings", params={"lat": 9.40, "lng": 76.60, "radius_km": 2}).json()
+    assert lid not in [i["id"] for i in far["items"]]
