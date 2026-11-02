@@ -24,7 +24,6 @@ export default function Explore() {
   const [q, setQ] = useState("");
   const [type, setType] = useState<TypeFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("live");
-  const [docs, setDocs] = useState(false);
   const [extra, setExtra] = useState<Listing[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -58,7 +57,6 @@ export default function Explore() {
   const query = (offset: number) => {
     const p = new URLSearchParams({ q, status, limit: String(PAGE), offset: String(offset) });
     if (type !== "all") p.set("type", type);
-    if (docs) p.set("docs", "true");
     if (area) {
       p.set("lat", area.lat);
       p.set("lng", area.lng);
@@ -72,7 +70,7 @@ export default function Explore() {
     setExtra([]);
     setHasMore(feed.has_more);
     return feed;
-  }, [q, type, status, areaKey, docs]);
+  }, [q, type, status, areaKey]);
   const config = useAsync(getConfig, []);
 
   async function loadMore() {
@@ -89,7 +87,7 @@ export default function Explore() {
   const items = [...(data?.items ?? []), ...extra];
   const contact = data?.contact ?? config.data?.contact;
   // The welcome sections show only on the plain Home view (no search, area or filters).
-  const isHome = !q && !area && !docs && status === "live" && type === "all";
+  const isHome = !q && !area && status === "live" && type === "all";
 
   return (
     <div>
@@ -120,17 +118,14 @@ export default function Explore() {
         <FilterTiles
           type={type}
           status={status}
-          docs={docs}
           text={input.trim().toLowerCase()}
           onAll={() => {
             setType("all");
             setStatus("live");
-            setDocs(false);
             setInput("");
           }}
           onType={(t) => setType(type === t ? "all" : t)}
           onSold={() => setStatus(status === "sold" ? "live" : "sold")}
-          onDocs={() => setDocs(!docs)}
           onText={(t) => setInput(input.trim().toLowerCase() === t ? "" : t)}
         />
         {!area && <NearYouPopup onArea={setArea} />}
