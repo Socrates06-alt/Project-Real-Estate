@@ -24,7 +24,6 @@ def text(min_length: int = 0, max_length: int = 500):
 Phone = Annotated[str, AfterValidator(normalize_indian_phone)]
 Name = Annotated[str, text(2, 80)]
 Location = Annotated[str, text(2, 120)]
-Description = Annotated[str, text(10, 4000)]
 Short = Annotated[str, text(0, 500)]
 Cents = Annotated[float, Field(gt=0, le=100_000)]
 Price = Annotated[int, Field(gt=0, le=10**11)]
@@ -47,8 +46,8 @@ class SubmissionForm(BaseModel):
     location: Location  # area name, shown to buyers
     area_lat: Annotated[float, Field(ge=-90, le=90)] | None = None  # from the place suggestion
     area_lng: Annotated[float, Field(ge=-180, le=180)] | None = None
-    address: Annotated[str, text(5, 300)]  # full address: private
-    description: Description
+    address: Annotated[str, text(0, 300)] = ""  # full address: private, optional
+    description: Annotated[str, text(0, 4000)] = ""  # optional
     expected_price: Price
     negotiable: bool
     documents_available: bool
@@ -79,7 +78,7 @@ class PublishIn(Strict):
     property_type: PropertyType
     land_area_cents: Cents
     location: Location
-    description: Description
+    description: Annotated[str, text(0, 4000)] = ""
     price: Price
     negotiable: bool
     documents_available: bool

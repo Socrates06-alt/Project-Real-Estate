@@ -133,17 +133,15 @@ export default function Sell() {
         <Field label="Land size">
           <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
         </Field>
-        <Field label="Area" hint="Shown to buyers">
+        <Field label="Location" hint="Shown to buyers">
           <AreaInput name="location" required value={area} onChange={setArea} />
         </Field>
-        <Field label="Full address" hint="Only for Nilayam">
-          <Textarea name="address" required minLength={5} maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, landmark, PIN" />
+        <Field label="Full address" hint="Optional · only for Nilayam">
+          <Textarea name="address" maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, landmark, PIN" />
         </Field>
-        <Field label="Description">
+        <Field label="Description" hint="Optional">
           <Textarea
             name="description"
-            required
-            minLength={10}
             maxLength={4000}
             placeholder={type === "house" ? "Bedrooms, built-up area, road access, water…" : "Road access, shape of plot, trees, water…"}
           />

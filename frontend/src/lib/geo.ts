@@ -17,8 +17,52 @@ export function getMyLocation(): Promise<LatLng> {
 
 export type Place = { name: string; detail: string; lat: number; lng: number };
 
-/** Place search via OpenStreetMap (free). Prefers results around Chengannur, works for all of India. */
+/**
+ * Place suggestions as you type (free, OpenStreetMap data).
+ * Photon matches partial words ("Puliy" → Puliyoor) and is biased to Chengannur;
+ * Nominatim (whole words) is the backup.
+ */
 export async function searchPlaces(q: string, signal?: AbortSignal): Promise<Place[]> {
+  try {
+    const found = await searchPhoton(q, signal);
+    if (found.length) return found;
+  } catch (e) {
+    if (signal?.aborted) throw e;
+  }
+  return searchNominatim(q, signal);
+}
+
+async function searchPhoton(q: string, signal?: AbortSignal): Promise<Place[]> {
+  const url = new URL("https://photon.komoot.io/api/");
+  url.search = new URLSearchParams({
+    q,
+    lat: String(CHENGANNUR.lat),
+    lon: String(CHENGANNUR.lng),
+    limit: "8",
+    lang: "en",
+  }).toString();
+  const res = await fetch(url, { signal });
+  if (!res.ok) return [];
+  type Feature = {
+    geometry: { coordinates: [number, number] };
+    properties: { name?: string; city?: string; district?: string; county?: string; state?: string; countrycode?: string };
+  };
+  const data: { features: Feature[] } = await res.json();
+  return data.features
+    .filter((f) => f.properties.countrycode === "IN" && f.properties.name)
+    .slice(0, 6)
+    .map((f) => ({
+      name: f.properties.name!,
+      detail: [f.properties.city ?? f.properties.district, f.properties.county, f.properties.state]
+        .filter((x, i, all) => x && x !== f.properties.name && all.indexOf(x) === i)
+        .slice(0, 2)
+        .join(", "),
+      lat: f.geometry.coordinates[1],
+      lng: f.geometry.coordinates[0],
+    }));
+}
+
+async function searchNominatim(q: string, signal?: AbortSignal): Promise<Place[]> {
   const url = new URL("https://nominatim.openstreetmap.org/search");
   url.search = new URLSearchParams({
     q,

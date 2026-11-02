@@ -156,6 +156,13 @@ def test_originals_and_snapshots_are_immutable(client, admin):
         db.close()
 
 
+def test_address_and_description_are_optional_but_basics_required(client):
+    assert submit(client, address="", description="").status_code == 201
+    assert submit(client, location="").status_code == 422
+    assert submit(client, land_area_cents="").status_code == 422
+    assert submit(client, property_type="").status_code == 422
+
+
 def test_submission_validation(client):
     assert submit(client, consent="false").status_code == 422
     assert submit(client, seller_phone="12345").status_code == 422

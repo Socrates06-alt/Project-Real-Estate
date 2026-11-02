@@ -118,7 +118,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
               ["Asked price", inr(s.expected_price)],
               ["Negotiable", s.negotiable ? "Yes" : "No"],
               ["Documents", s.documents_available ? `Yes${s.documents_note ? ` — ${s.documents_note}` : ""}` : "Not yet uploaded"],
-              ["Area", s.location],
+              ["Location", s.location],
               ["Full address", s.address || "—"],
               ["Submitted", shortDate(s.created_at)],
               ["Agreed to terms", `${s.consent_version} · ${shortDate(s.consent_at)}`],
@@ -195,7 +195,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
               set("land_area_cents", Number(e.target.value) || 0);
             }} />
         </Field>
-        <Field label="Area" hint={f.lat != null ? "On map search" : "Pick a suggestion to include in map search"}>
+        <Field label="Location" hint={f.lat != null ? "On map search" : "Pick a suggestion to include in map search"}>
           <AreaInput
             value={{ name: f.location, lat: f.lat, lng: f.lng }}
             onChange={(a) => setF((x) => ({ ...x, location: a.name, lat: a.lat, lng: a.lng }))}
