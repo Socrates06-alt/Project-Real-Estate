@@ -251,8 +251,3 @@ def test_home_badges_and_documents_filter(client, admin):
     nodocs_lid = publish(client, admin, nodocs).json()["listing_id"]
     with_docs = [i["id"] for i in client.get("/api/listings", params={"docs": True, "limit": 50}).json()["items"]]
     assert lid in with_docs and nodocs_lid not in with_docs
-
-    home = client.get("/api/home").json()
-    assert home["stats"]["live"] >= 2
-    assert {"name": "Ennakkad", "count": 2} in home["areas"]
-    assert home["tagline"]  # from content.json

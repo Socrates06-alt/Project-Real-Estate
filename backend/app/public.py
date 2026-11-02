@@ -1,10 +1,8 @@
 """Public API: browse, property details, visit requests, seller submission, My listings."""
 
 import hashlib
-import json
 import re
 import uuid
-from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, Request, UploadFile
@@ -21,7 +19,6 @@ area_search_limiter = RateLimiter(limit=300, window_seconds=3600)
 
 router = APIRouter(prefix="/api")
 
-CONTENT_FILE = Path(__file__).resolve().parent.parent / "content.json"
 
 _STATES = {"live": ("published",), "sold": ("sold",), "all": ("published", "sold")}
 _SNAPSHOT_FIELDS = (
@@ -86,31 +83,6 @@ def public_config() -> dict:
         "consent_version": s.consent_version,
         "max_photos": s.max_photos,
         "max_photo_bytes": s.max_photo_bytes,
-    }
-
-
-def _content() -> dict:
-    """Editable Home-page content (backend/content.json). Missing or broken file -> nothing extra shown."""
-    try:
-        data = json.loads(CONTENT_FILE.read_text(encoding="utf-8"))
-    except (OSError, ValueError):
-        return {}
-    return {k: data.get(k) for k in ("tagline", "office", "founders", "testimonials") if data.get(k)}
-
-
-@router.get("/home")
-def home(db: DB) -> dict:
-    """Everything the Home page shows above the listings: about, real counts, popular areas."""
-    counts = dict(db.execute("select state, count(*) from listings group by state").fetchall())
-    areas = db.execute(
-        """select json_extract(v.snapshot, '$.location') as name, count(*) as n
-            from listings l join published_versions v on v.listing_id = l.id and v.version = l.current_version
-            where l.state = 'published' group by lower(name) order by n desc, name limit 8"""
-    ).fetchall()
-    return {
-        **_content(),
-        "stats": {"live": counts.get("published", 0), "sold": counts.get("sold", 0)},
-        "areas": [{"name": r[0], "count": r[1]} for r in areas],
     }
 
 

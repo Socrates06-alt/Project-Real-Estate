@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { CategoryTiles, FloatingWhatsApp, NewThisWeek, PopularAreas, TrustStrip, WelcomeBanner, type HomeInfo } from "@/components/HomeSections";
+import { FilterTiles, FloatingWhatsApp } from "@/components/HomeSections";
+import { Sheet } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
 import { getMyLocation, isNearTaluk } from "@/lib/geo";
 import { loadArea, markNearMeAsked, nearMeAsked, saveArea, type SavedArea } from "@/lib/savedArea";
@@ -72,7 +73,6 @@ export default function Explore() {
     setHasMore(feed.has_more);
     return feed;
   }, [q, type, status, areaKey, docs]);
-  const homeInfo = useAsync(() => api<HomeInfo>("/api/home"), []);
   const config = useAsync(getConfig, []);
 
   async function loadMore() {
@@ -113,41 +113,27 @@ export default function Explore() {
             </button>
           )}
         </div>
-        <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto">
-          {(["all", "house", "land"] as const).map((t) => (
-            <Chip key={t} on={type === t} tone={t === "house" ? "house" : t === "land" ? "land" : "brand"} onClick={() => setType(t)}>
-              {t === "all" ? "All" : t === "house" ? "Houses" : "Land"}
-            </Chip>
-          ))}
-          <span className="mx-1 h-5 w-px shrink-0 bg-line" />
-          <Chip on={status === "live"} onClick={() => setStatus("live")}>
-            For sale
-          </Chip>
-          <Chip on={status === "sold"} tone="sold" onClick={() => setStatus("sold")}>
-            Sold
-          </Chip>
-          {docs && (
-            <Chip on tone="house" onClick={() => setDocs(false)}>
-              Documents ready ✕
-            </Chip>
-          )}
-        </div>
         {data && <ParsedChips parsed={data.parsed} />}
       </header>
 
       <div className="space-y-4 pt-2">
-        {isHome && <WelcomeBanner tagline={homeInfo.data?.tagline} />}
-        {isHome && (
-          <CategoryTiles
-            onType={(t) => setType(t)}
-            onSearch={(text) => setInput(text)}
-            onDocs={() => setDocs(true)}
-          />
-        )}
-        {!area && <NearYouCard onArea={setArea} />}
-        {isHome && homeInfo.data && <PopularAreas areas={homeInfo.data.areas} onPick={(name) => setInput(name)} />}
-        {isHome && data && <NewThisWeek items={data.items} />}
-        {isHome && homeInfo.data && <TrustStrip info={homeInfo.data} />}
+        <FilterTiles
+          type={type}
+          status={status}
+          docs={docs}
+          text={input.trim().toLowerCase()}
+          onAll={() => {
+            setType("all");
+            setStatus("live");
+            setDocs(false);
+            setInput("");
+          }}
+          onType={(t) => setType(type === t ? "all" : t)}
+          onSold={() => setStatus(status === "sold" ? "live" : "sold")}
+          onDocs={() => setDocs(!docs)}
+          onText={(t) => setInput(input.trim().toLowerCase() === t ? "" : t)}
+        />
+        {!area && <NearYouPopup onArea={setArea} />}
         {isHome && <SellBanner />}
         {isHome && data && items.length > 0 && <h2 className="px-1 pt-1 font-semibold">All properties</h2>}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
@@ -168,35 +154,6 @@ export default function Explore() {
       </div>
       {contact && <FloatingWhatsApp contact={contact} />}
     </div>
-  );
-}
-
-// Selected: solid gradient. Not selected: soft gradient of the same colour, so every chip is easy to spot.
-const CHIP_ON = { brand: "chip-brand-on", house: "chip-house-on", land: "chip-land-on", sold: "chip-sold-on" };
-const CHIP_OFF = { brand: "chip-brand", house: "chip-house", land: "chip-land", sold: "chip-sold" };
-
-function Chip({
-  on,
-  onClick,
-  children,
-  tone = "brand",
-}: {
-  on: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  tone?: keyof typeof CHIP_ON;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-pressed={on}
-      className={cn(
-        "h-10 shrink-0 rounded-full px-4 text-[15px] font-medium transition duration-200 active:scale-95",
-        on ? CHIP_ON[tone] : `${CHIP_OFF[tone]} hover:brightness-[0.97]`,
-      )}
-    >
-      {children}
-    </button>
   );
 }
 
@@ -264,61 +221,53 @@ function LocationButton({ area, onClear }: { area: SavedArea | null; onClear: ()
   );
 }
 
-/** One-time, gentle offer to show properties near the buyer (only useful near the taluk). */
-function NearYouCard({ onArea }: { onArea: (a: SavedArea) => void }) {
+/** One-time, gentle popup offering to show properties near the buyer (only useful near the taluk). */
+function NearYouPopup({ onArea }: { onArea: (a: SavedArea) => void }) {
   const toast = useToast();
-  const [show, setShow] = useState(false);
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (nearMeAsked()) return;
-    const t = setTimeout(() => setShow(true), 2500);
+    const t = setTimeout(() => setOpen(true), 2500);
     return () => clearTimeout(t);
   }, []);
 
-  if (!show) return null;
-
-  const done = () => {
+  const close = () => {
     markNearMeAsked();
-    setShow(false);
+    setOpen(false);
   };
 
   async function useLocation() {
     setBusy(true);
     try {
       const me = await getMyLocation();
-      if (isNearTaluk(me)) {
-        onArea({ lat: me.lat.toFixed(5), lng: me.lng.toFixed(5), r: "5", place: "Near you" });
-      } else {
-        toast("You're outside Chengannur — showing all areas");
-      }
+      if (isNearTaluk(me)) onArea({ lat: me.lat.toFixed(5), lng: me.lng.toFixed(5), r: "5", place: "Near you" });
+      else toast("You're outside Chengannur — showing all areas");
     } catch {
       toast("Location not available — showing all areas");
     } finally {
       setBusy(false);
-      done();
+      close();
     }
   }
 
   return (
-    <div className="animate-fade card p-4">
+    <Sheet open={open} onClose={close} title="Looking near where you are?">
       <div className="flex items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
-          <LocateFixed size={20} />
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
+          <LocateFixed size={22} />
         </span>
-        <div>
-          <p className="font-semibold">Looking near where you are?</p>
-          <p className="text-sm text-sub">Show properties around you.</p>
-        </div>
+        <p className="text-[15px] text-sub">We can show properties around you. You can change the area any time from the top right.</p>
       </div>
-      <div className="mt-3 flex gap-2">
-        <Button size="sm" className="flex-1" disabled={busy} onClick={useLocation}>
+      <div className="mt-5 grid gap-2">
+        <Button size="lg" disabled={busy} onClick={useLocation}>
           {busy ? "Finding you…" : "Use my location"}
         </Button>
-        <Button size="sm" variant="ghost" className="flex-1" onClick={done}>
+        <Button size="lg" variant="ghost" onClick={close}>
           No thanks
         </Button>
       </div>
-    </div>
+    </Sheet>
   );
 }
