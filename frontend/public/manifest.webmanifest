@@ -1,7 +1,7 @@
 {
   "name": "LandFinder",
   "short_name": "LandFinder",
-  "description": "Verified land, homes and commercial property",
+  "description": "Find it. Trust it. Every property, personally verified.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#2e3a8c",
