@@ -190,12 +190,28 @@ export default function ListingDetail() {
 const pillAction =
   "flex h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[12px] font-medium text-ink transition-colors hover:bg-[var(--glass-active)]";
 
+/**
+ * One row of property details. Short values sit at the right edge (label left, value right);
+ * long text (like a description) goes under its label, full width, so it reads naturally.
+ */
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  const long = value.length > 28 || value.includes("\n");
+  if (long) {
+    return (
+      <div className="px-4 py-3">
+        <dt className="flex items-center gap-2.5 text-sub">
+          {icon}
+          {label}
+        </dt>
+        <dd className="mt-1.5 pl-[27px] text-[15px] leading-relaxed font-medium whitespace-pre-line">{value}</dd>
+      </div>
+    );
+  }
   return (
-    <div className="flex items-start gap-3 px-4 py-3">
-      <span className="mt-0.5 shrink-0">{icon}</span>
-      <dt className="w-28 shrink-0 text-sub">{label}</dt>
-      <dd className="min-w-0 flex-1 font-medium whitespace-pre-line">{value}</dd>
+    <div className="flex items-center gap-2.5 px-4 py-3">
+      {icon}
+      <dt className="flex-1 text-sub">{label}</dt>
+      <dd className="text-right font-semibold">{value}</dd>
     </div>
   );
 }
