@@ -60,7 +60,9 @@ export default function ListingDetail() {
   if (!l) return <div className="-mx-4 aspect-square animate-pulse bg-muted" />;
 
   const sold = l.status === "sold";
-  const roundBtn = "glass grid h-11 w-11 place-items-center rounded-full text-ink shadow-card";
+  // Solid white buttons + a soft dark fade at the top: visible on any photo (bright sky, white walls, dark trees).
+  const overBtn =
+    "pointer-events-auto flex h-11 items-center justify-center rounded-full bg-white text-[#1a1d2e] shadow-[0_2px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/5 transition active:scale-95";
 
   return (
     <div className="pb-28">
@@ -69,12 +71,13 @@ export default function ListingDetail() {
         type={l.property_type}
         className="-mx-4 aspect-[4/3.6] sm:mx-0 sm:mt-4 sm:rounded-3xl"
         overlay={
-          <div className="absolute inset-x-0 top-0 flex justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-            <button onClick={back} aria-label="Back" className={roundBtn}>
-              <ChevronLeft size={22} />
+          <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between bg-gradient-to-b from-black/45 via-black/15 to-transparent p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-10">
+            <button onClick={back} aria-label="Back" className={`${overBtn} w-11`}>
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
-            <button onClick={share} aria-label="Share" className={roundBtn}>
-              <Share2 size={18} />
+            <button onClick={share} aria-label="Share" className={`${overBtn} gap-2 px-4 text-[15px] font-semibold`}>
+              <Share2 size={18} strokeWidth={2.5} className="text-brand" />
+              Share
             </button>
           </div>
         }
