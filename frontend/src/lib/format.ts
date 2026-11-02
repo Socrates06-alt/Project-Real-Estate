@@ -26,3 +26,12 @@ export function timeAgo(iso: string) {
 }
 
 export const typeLabel = (t: string) => (t === "house" ? "House" : "Land");
+
+/** Kerala buyers compare land by price per cent: "₹1.8 L/cent". */
+export function perCent(price: number, cents: number): string | null {
+  if (!cents) return null;
+  return `${inr(price / cents)}/cent`;
+}
+
+/** Listed within the last 7 days. */
+export const isNew = (iso: string) => Date.now() - new Date(iso).getTime() < 7 * 86400 * 1000;

@@ -36,3 +36,10 @@ published versions, versioned publishing, seller confirmation for big price chan
 
 Dropped for now (planned for V1, see `docs/V1_PLAN.md`): PostgreSQL/Supabase, Supabase admin
 login, cloud photo storage, rate limiting, captcha, audit log, Docker, CI.
+
+## Home page content (founders, office, testimonials)
+
+Edit `backend/content.json` (see `content.example.json`) and restart the backend.
+Empty lists are hidden, so nothing placeholder ever shows. Counts on Home
+("Properties for sale", "Sold through Nilayam") come from the real database.
+Founder photos: put files in `backend/media/public/team/` and use `/media/public/team/<file>`.

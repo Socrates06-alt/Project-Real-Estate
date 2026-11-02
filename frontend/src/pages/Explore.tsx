@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { CategoryTiles, FloatingWhatsApp, NewThisWeek, PopularAreas, TrustStrip, WelcomeBanner, type HomeInfo } from "@/components/HomeSections";
 import { useToast } from "@/components/ui/toast";
 import { getMyLocation, isNearTaluk } from "@/lib/geo";
 import { loadArea, markNearMeAsked, nearMeAsked, saveArea, type SavedArea } from "@/lib/savedArea";
@@ -22,6 +23,7 @@ export default function Explore() {
   const [q, setQ] = useState("");
   const [type, setType] = useState<TypeFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("live");
+  const [docs, setDocs] = useState(false);
   const [extra, setExtra] = useState<Listing[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -55,6 +57,7 @@ export default function Explore() {
   const query = (offset: number) => {
     const p = new URLSearchParams({ q, status, limit: String(PAGE), offset: String(offset) });
     if (type !== "all") p.set("type", type);
+    if (docs) p.set("docs", "true");
     if (area) {
       p.set("lat", area.lat);
       p.set("lng", area.lng);
@@ -68,7 +71,8 @@ export default function Explore() {
     setExtra([]);
     setHasMore(feed.has_more);
     return feed;
-  }, [q, type, status, areaKey]);
+  }, [q, type, status, areaKey, docs]);
+  const homeInfo = useAsync(() => api<HomeInfo>("/api/home"), []);
   const config = useAsync(getConfig, []);
 
   async function loadMore() {
@@ -84,6 +88,8 @@ export default function Explore() {
 
   const items = [...(data?.items ?? []), ...extra];
   const contact = data?.contact ?? config.data?.contact;
+  // The welcome sections show only on the plain Home view (no search, area or filters).
+  const isHome = !q && !area && !docs && status === "live" && type === "all";
 
   return (
     <div>
@@ -120,13 +126,30 @@ export default function Explore() {
           <Chip on={status === "sold"} tone="sold" onClick={() => setStatus("sold")}>
             Sold
           </Chip>
+          {docs && (
+            <Chip on tone="house" onClick={() => setDocs(false)}>
+              Documents ready ✕
+            </Chip>
+          )}
         </div>
         {data && <ParsedChips parsed={data.parsed} />}
       </header>
 
       <div className="space-y-4 pt-2">
+        {isHome && <WelcomeBanner tagline={homeInfo.data?.tagline} />}
+        {isHome && (
+          <CategoryTiles
+            onType={(t) => setType(t)}
+            onSearch={(text) => setInput(text)}
+            onDocs={() => setDocs(true)}
+          />
+        )}
         {!area && <NearYouCard onArea={setArea} />}
-        {!q && !area && status === "live" && type === "all" && <SellBanner />}
+        {isHome && homeInfo.data && <PopularAreas areas={homeInfo.data.areas} onPick={(name) => setInput(name)} />}
+        {isHome && data && <NewThisWeek items={data.items} />}
+        {isHome && homeInfo.data && <TrustStrip info={homeInfo.data} />}
+        {isHome && <SellBanner />}
+        {isHome && data && items.length > 0 && <h2 className="px-1 pt-1 font-semibold">All properties</h2>}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
         {data && contact && items.map((l) => <ListingCard key={l.id} listing={l} contact={contact} />)}
@@ -143,6 +166,7 @@ export default function Explore() {
           </Button>
         )}
       </div>
+      {contact && <FloatingWhatsApp contact={contact} />}
     </div>
   );
 }
@@ -199,8 +223,8 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
 
 function SellBanner() {
   return (
-    <Link to="/sell" className="card card-hover flex items-center gap-4 bg-peach-soft p-5">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-surface text-peach shadow-sm">
+    <Link to="/sell" className="card card-hover flex items-center gap-4 bg-accent-soft p-5">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-ink shadow-sm">
         <House size={22} />
       </span>
       <div className="min-w-0 flex-1">

@@ -236,3 +236,23 @@ def test_grid_flag_is_shared_within_an_area():
     from app.geo import flag
 
     assert flag(9.30401, 76.58302) == flag(9.30455, 76.58377)  # two spots in the same ~1 km square
+
+
+def test_home_badges_and_documents_filter(client, admin):
+    sid = submit(client, location="Ennakkad", documents_available="true").json()["id"]
+    lid = publish(client, admin, sid).json()["listing_id"]
+    item = client.get(f"/api/listings/{lid}").json()
+    assert item["listed_at"] and item["price_reduced"] is False
+
+    publish(client, admin, sid, price=2_900_000)  # small drop, no confirmation needed
+    assert client.get(f"/api/listings/{lid}").json()["price_reduced"] is True
+
+    nodocs = submit(client, location="Ennakkad", documents_available="false").json()["id"]
+    nodocs_lid = publish(client, admin, nodocs).json()["listing_id"]
+    with_docs = [i["id"] for i in client.get("/api/listings", params={"docs": True, "limit": 50}).json()["items"]]
+    assert lid in with_docs and nodocs_lid not in with_docs
+
+    home = client.get("/api/home").json()
+    assert home["stats"]["live"] >= 2
+    assert {"name": "Ennakkad", "count": 2} in home["areas"]
+    assert home["tagline"]  # from content.json

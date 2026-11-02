@@ -70,6 +70,8 @@ export interface Listing {
   documents_note: string;
   photos: string[];
   published_at: string;
+  listed_at: string;
+  price_reduced: boolean;
   sold_at: string | null;
 }
 

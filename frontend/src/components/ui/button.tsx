@@ -8,6 +8,7 @@ const button = cva(
     variants: {
       variant: {
         primary: "btn-primary",
+        accent: "btn-accent",
         soft: "bg-brand-soft text-brand hover:brightness-[0.97]",
         ghost: "text-ink hover:bg-muted",
         outline: "bg-surface text-ink shadow-[0_0_0_1px_var(--hairline)] hover:bg-muted",

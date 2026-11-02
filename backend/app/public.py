@@ -1,8 +1,10 @@
 """Public API: browse, property details, visit requests, seller submission, My listings."""
 
 import hashlib
+import json
 import re
 import uuid
+from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, Request, UploadFile
@@ -18,6 +20,8 @@ from app.search import parse_query
 area_search_limiter = RateLimiter(limit=300, window_seconds=3600)
 
 router = APIRouter(prefix="/api")
+
+CONTENT_FILE = Path(__file__).resolve().parent.parent / "content.json"
 
 _STATES = {"live": ("published",), "sold": ("sold",), "all": ("published", "sold")}
 _SNAPSHOT_FIELDS = (
@@ -47,12 +51,17 @@ def public_listing(row: dict) -> dict:
         "version": row["version"],
         **{k: snap.get(k) for k in _SNAPSHOT_FIELDS},
         "published_at": row["published_at"],
+        "listed_at": row["listed_at"],
+        "price_reduced": row["prev_price"] is not None and snap["price"] < row["prev_price"],
         "sold_at": row["sold_at"],
     }
 
 
 _LIVE_SELECT = """
-    select l.id, l.state, l.sold_at, l.public_lat, l.public_lng, v.version, v.snapshot, v.published_at
+    select l.id, l.state, l.sold_at, l.public_lat, l.public_lng, v.version, v.snapshot, v.published_at,
+           (select min(published_at) from published_versions f where f.listing_id = l.id) as listed_at,
+           (select json_extract(p.snapshot, '$.price') from published_versions p
+             where p.listing_id = l.id and p.version = l.current_version - 1) as prev_price
     from listings l
     join published_versions v on v.listing_id = l.id and v.version = l.current_version
 """
@@ -80,6 +89,31 @@ def public_config() -> dict:
     }
 
 
+def _content() -> dict:
+    """Editable Home-page content (backend/content.json). Missing or broken file -> nothing extra shown."""
+    try:
+        data = json.loads(CONTENT_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {k: data.get(k) for k in ("tagline", "office", "founders", "testimonials") if data.get(k)}
+
+
+@router.get("/home")
+def home(db: DB) -> dict:
+    """Everything the Home page shows above the listings: about, real counts, popular areas."""
+    counts = dict(db.execute("select state, count(*) from listings group by state").fetchall())
+    areas = db.execute(
+        """select json_extract(v.snapshot, '$.location') as name, count(*) as n
+            from listings l join published_versions v on v.listing_id = l.id and v.version = l.current_version
+            where l.state = 'published' group by lower(name) order by n desc, name limit 8"""
+    ).fetchall()
+    return {
+        **_content(),
+        "stats": {"live": counts.get("published", 0), "sold": counts.get("sold", 0)},
+        "areas": [{"name": r[0], "count": r[1]} for r in areas],
+    }
+
+
 @router.get("/listings")
 def list_listings(
     db: DB,
@@ -92,12 +126,15 @@ def list_listings(
     lat: float | None = Query(None, ge=-90, le=90),
     lng: float | None = Query(None, ge=-180, le=180),
     radius_km: float = Query(5, ge=0.5, le=50),
+    docs: bool = False,
 ) -> dict:
     parsed = parse_query(q)
     states = _STATES[status]
     where = [f"l.state in ({','.join('?' * len(states))})"]
     args: list = list(states)
 
+    if docs:
+        where.append("json_extract(v.snapshot, '$.documents_available') = 1")
     if ptype := (type or parsed.property_type):
         where.append("json_extract(v.snapshot, '$.property_type') = ?")
         args.append(ptype)

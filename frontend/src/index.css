@@ -24,6 +24,9 @@
   --color-land-soft: var(--land-soft);
   --color-peach: var(--peach);
   --color-peach-soft: var(--peach-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
   --shadow-card: var(--card-shadow);
   --shadow-float: var(--float-shadow);
 }
@@ -50,7 +53,11 @@
   --peach-soft: #e7edfd;
   --sold: #6f88a6;           /* sold: slate */
   --sold-soft: #eaeff5;
-  --wa: #2f78c4;
+  --wa: #1fa463;             /* WhatsApp green (instantly recognised) */
+  --accent: #f2b316;         /* warm Kerala gold: prices, key actions, badges */
+  --accent-strong: #a86b00;  /* gold for text on white (readable) */
+  --accent-soft: #fdf3d4;
+  --accent-ink: #2b1d00;
   --glass: rgb(255 255 255 / 0.86);
   --glass-line: rgb(58 127 200 / 0.16);
   --glass-active: rgb(58 127 200 / 0.12);
@@ -83,7 +90,11 @@
   --peach-soft: #262f45;
   --sold: #a3abb5;
   --sold-soft: #2e3136;
-  --wa: #7fb3ec;
+  --wa: #4cd38a;
+  --accent: #f5c04a;
+  --accent-strong: #f5c04a;
+  --accent-soft: #3a3120;
+  --accent-ink: #231800;
   --glass: rgb(35 36 39 / 0.92);
   --glass-line: rgb(255 255 255 / 0.08);
   --glass-active: rgb(127 179 236 / 0.14);
@@ -187,6 +198,21 @@ h1, h2, h3 {
   .chip-house-on { background: linear-gradient(135deg, color-mix(in srgb, var(--house) 75%, white), var(--house)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--house); }
   .chip-land-on { background: linear-gradient(135deg, color-mix(in srgb, var(--land) 75%, white), var(--land)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--land); }
   .chip-sold-on { background: linear-gradient(135deg, color-mix(in srgb, var(--sold) 80%, white), var(--sold)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--sold); }
+
+  /* Warm gold action button (Request visit, List property). */
+  .btn-accent {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, white), var(--accent));
+    color: var(--accent-ink);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.4),
+      0 8px 18px -10px color-mix(in srgb, var(--accent) 90%, transparent);
+  }
+  .btn-accent:hover {
+    filter: brightness(1.03);
+  }
+  .text-price {
+    color: var(--accent-strong);
+  }
 
   /* Loading placeholders that gently shimmer. */
   .shimmer {

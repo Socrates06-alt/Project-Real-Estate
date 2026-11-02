@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { CalendarDays, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { BadgeCheck, CalendarDays, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, type Contact, type Listing } from "@/lib/api";
-import { cents, inr, shortDate, typeLabel } from "@/lib/format";
+import { cents, inr, perCent, shortDate, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
 import { VisitSheet } from "@/components/VisitSheet";
@@ -69,12 +69,19 @@ export default function ListingDetail() {
       <section className="pt-5">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={sold ? "sold" : "brand"}>{sold ? "Sold" : "Available"}</Badge>
+          {!sold && (
+            <Badge tone="brand">
+              <BadgeCheck size={13} /> Verified by Nilayam
+            </Badge>
+          )}
+          {!sold && l.price_reduced && <Badge tone="accent">Price reduced</Badge>}
           <Badge tone={l.property_type === "house" ? "house" : "land"}>{typeLabel(l.property_type)}</Badge>
           <span className="ml-auto text-xs text-sub">#{l.number}</span>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
-          <h1 className="text-[30px] leading-none font-semibold tracking-tight">{inr(l.price)}</h1>
+          <h1 className={cn("text-[32px] leading-none font-bold tracking-tight", sold ? "text-sub" : "text-price")}>{inr(l.price)}</h1>
           {l.negotiable && !sold && <span className="text-sm font-semibold text-brand">Negotiable</span>}
+          {l.property_type === "land" && !sold && <span className="ml-auto text-sm font-medium text-sub">{perCent(l.price, l.land_area_cents)}</span>}
         </div>
         <p className="mt-2 text-lg font-medium">{l.title}</p>
         <p className="mt-1 flex items-center gap-1 text-sm text-sub">
@@ -129,7 +136,7 @@ export default function ListingDetail() {
                 <Phone size={21} className="text-sky-ink" />
                 Call
               </a>
-              <Button className="h-[52px] flex-[1.6] rounded-full text-[15px]" onClick={() => setParams({ visit: "1" }, { replace: true })}>
+              <Button variant="accent" className="h-[52px] flex-[1.6] rounded-full text-[15px]" onClick={() => setParams({ visit: "1" }, { replace: true })}>
                 <CalendarDays size={19} /> Request visit
               </Button>
             </>

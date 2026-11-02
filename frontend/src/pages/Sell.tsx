@@ -212,7 +212,7 @@ export default function Sell() {
       </Sheet>
 
       {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm font-medium text-sold">{error}</p>}
-      <Button type="submit" size="lg" disabled={busy || !config}>
+      <Button type="submit" variant="accent" size="lg" disabled={busy || !config}>
         {busy ? "Submitting…" : "Submit property"}
       </Button>
     </form>
