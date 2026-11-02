@@ -142,7 +142,7 @@ function HowItWorks() {
         <Fee label="Seller" value={`${config?.brokerage.seller_pct ?? 2}%`} />
         <Fee label="Buyer" value={`${config?.brokerage.buyer_pct ?? 1}%`} />
       </div>
-      <p className="px-2 text-center text-xs text-sub">GST applies additionally. Listing is always free.</p>
+      <p className="px-2 text-center text-xs text-sub">Listing is always free.</p>
       {config && (
         <div className="grid grid-cols-2 gap-3">
           <a href={waLink(config.contact)} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "wa" })}>
@@ -161,7 +161,7 @@ function Fee({ label, value }: { label: string; value: string }) {
   return (
     <div className="card p-4 text-center shadow-card">
       <p className="text-3xl font-semibold text-brand">{value}</p>
-      <p className="text-sm text-sub">{label} brokerage + GST</p>
+      <p className="text-sm text-sub">{label} brokerage</p>
     </div>
   );
 }

@@ -107,7 +107,7 @@ export default function ListingDetail() {
       <section className="mt-3 flex gap-3 rounded-3xl bg-brand-soft p-5 text-sm">
         <Info size={18} className="mt-0.5 shrink-0 text-brand" />
         <p>
-          <span className="font-semibold">Buyer brokerage: {l.brokerage.buyer_pct}% + GST</span>
+          <span className="font-semibold">Buyer brokerage: {l.brokerage.buyer_pct}%</span>
           <span className="block text-sub">Paid only when the sale closes. Nilayam arranges and joins every visit.</span>
         </p>
       </section>

@@ -194,10 +194,9 @@ export default function Sell() {
             Listing is <b>free</b>.
           </li>
           <li>
-            Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}% + GST</b>, only when the sale closes through Nilayam.
+            Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}%</b>, only when the sale closes through Nilayam.
           </li>
-          <li>Buyers pay {config?.brokerage.buyer_pct ?? 1}% + GST separately.</li>
-          <li>Your name, phone and exact address stay private. Buyers contact Nilayam.</li>
+          <li>Buyers pay {config?.brokerage.buyer_pct ?? 1}% separately.</li>
           <li>We confirm any price change with you before updating the listing.</li>
         </ul>
         <Button
