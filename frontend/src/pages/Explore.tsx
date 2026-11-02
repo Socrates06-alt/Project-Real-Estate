@@ -16,14 +16,12 @@ import { EmptyState, ErrorState } from "@/components/States";
 import { Button } from "@/components/ui/button";
 
 type TypeFilter = "all" | "house" | "land";
-type StatusFilter = "live" | "sold";
 const PAGE = 10;
 
 export default function Explore() {
   const [input, setInput] = useState("");
   const [q, setQ] = useState("");
   const [type, setType] = useState<TypeFilter>("all");
-  const [status, setStatus] = useState<StatusFilter>("live");
   const [extra, setExtra] = useState<Listing[]>([]);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -55,7 +53,7 @@ export default function Explore() {
   }, [input]);
 
   const query = (offset: number) => {
-    const p = new URLSearchParams({ q, status, limit: String(PAGE), offset: String(offset) });
+    const p = new URLSearchParams({ q, status: "live", limit: String(PAGE), offset: String(offset) });
     if (type !== "all") p.set("type", type);
     if (area) {
       p.set("lat", area.lat);
@@ -70,7 +68,7 @@ export default function Explore() {
     setExtra([]);
     setHasMore(feed.has_more);
     return feed;
-  }, [q, type, status, areaKey]);
+  }, [q, type, areaKey]);
   const config = useAsync(getConfig, []);
 
   async function loadMore() {
@@ -87,7 +85,7 @@ export default function Explore() {
   const items = [...(data?.items ?? []), ...extra];
   const contact = data?.contact ?? config.data?.contact;
   // The welcome sections show only on the plain Home view (no search, area or filters).
-  const isHome = !q && !area && status === "live" && type === "all";
+  const isHome = !q && !area && type === "all";
 
   return (
     <div>
@@ -117,15 +115,12 @@ export default function Explore() {
       <div className="space-y-4 pt-2">
         <FilterTiles
           type={type}
-          status={status}
           text={input.trim().toLowerCase()}
           onAll={() => {
             setType("all");
-            setStatus("live");
             setInput("");
           }}
           onType={(t) => setType(type === t ? "all" : t)}
-          onSold={() => setStatus(status === "sold" ? "live" : "sold")}
           onText={(t) => setInput(input.trim().toLowerCase() === t ? "" : t)}
         />
         {!area && <NearYouPopup onArea={setArea} />}
@@ -137,7 +132,7 @@ export default function Explore() {
         {data && !items.length && (
           <EmptyState
             icon={<SearchX size={28} />}
-            title={area ? "No properties in this area" : status === "sold" ? "No sold properties yet" : "Nothing matches yet"}
+            title={area ? "No properties in this area" : "Nothing matches yet"}
             text="Try a nearby area or a wider budget. New properties are added every week."
           />
         )}
