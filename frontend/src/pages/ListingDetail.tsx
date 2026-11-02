@@ -103,7 +103,7 @@ export default function ListingDetail() {
       </section>
 
       {/* Only what's actually known is shown; nothing empty or "not yet". */}
-      <section className={cn("mt-5 grid gap-3", l.documents_available ? "grid-cols-2" : "grid-cols-1")}>
+      <section className="mt-5 grid grid-cols-2 gap-3">
         <Fact tone="bg-land-soft text-land" icon={<Ruler size={18} />} label="Area" value={cents(l.land_area_cents)} />
         {l.documents_available && (
           <Fact tone="bg-verified-soft text-verified" icon={<FileCheck2 size={18} />} label="Documents" value="Available" />
@@ -202,10 +202,12 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
 
 function Fact({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: string }) {
   return (
-    <div className="card p-4">
-      <span className={cn("grid h-9 w-9 place-items-center rounded-2xl", tone)}>{icon}</span>
-      <p className="mt-3 text-xs text-sub">{label}</p>
-      <p className="font-semibold">{value}</p>
+    <div className="card-sm flex items-center gap-3 px-3.5 py-3">
+      <span className={cn("grid h-9 w-9 shrink-0 place-items-center rounded-xl", tone)}>{icon}</span>
+      <div className="min-w-0 leading-tight">
+        <p className="text-xs text-sub">{label}</p>
+        <p className="font-semibold">{value}</p>
+      </div>
     </div>
   );
 }

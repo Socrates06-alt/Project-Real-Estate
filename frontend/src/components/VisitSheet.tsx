@@ -52,10 +52,10 @@ export function VisitSheet({ listingId, open, onClose }: { listingId: string; op
         <form onSubmit={submit} className="space-y-4">
           <p className="-mt-2 text-sm text-sub">We confirm on WhatsApp and join every visit.</p>
           <Field label="Your name">
-            <Input name="name" required minLength={2} maxLength={80} autoComplete="name" />
+            <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
           </Field>
           <Field label="Phone">
-            <Input name="phone" required inputMode="tel" autoComplete="tel" placeholder="98470 12345" />
+            <Input name="phone" required inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number" />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Preferred time">

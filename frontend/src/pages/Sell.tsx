@@ -194,7 +194,7 @@ export default function Sell() {
 
       <Card title="Your details">
         <Field label="Name">
-          <Input name="seller_name" required minLength={2} maxLength={80} autoComplete="name" />
+          <Input name="seller_name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
         </Field>
         <Field label="Phone">
           <Input name="seller_phone" required inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number" />
