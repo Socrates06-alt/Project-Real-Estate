@@ -6,7 +6,6 @@ import { PhotoCarousel } from "./PhotoCarousel";
 import { cn } from "@/lib/utils";
 import { telLink, waLink } from "./contact";
 
-const glassTag = "glass rounded-full px-3 py-1 text-[13px] font-medium text-ink";
 const tag = "rounded-full px-3 py-1 text-[13px] font-semibold shadow-sm";
 const fact = "flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-ink";
 
@@ -33,7 +32,6 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
                 {!sold && isNew(listing.listed_at) && <span className={cn(tag, "bg-accent text-accent-ink")}>New</span>}
                 {!sold && listing.price_reduced && <span className={cn(tag, "bg-accent text-accent-ink")}>Price reduced</span>}
               </div>
-              <span className={glassTag}>#{listing.number}</span>
             </div>
             {!sold && (
               <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-white/92 px-2.5 py-1 text-[12px] font-semibold text-[#1d5fa8] shadow-sm">

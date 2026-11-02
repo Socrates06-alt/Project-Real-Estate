@@ -125,7 +125,7 @@ def inbox(db: DB) -> dict:
 
 
 @guarded.get("/properties")
-def list_properties(db: DB, group: Group = "live", q: str = Query("", max_length=60)) -> list[dict]:
+def list_properties(db: DB, group: Group = "live", q: str = Query("", max_length=200)) -> list[dict]:
     """A group's properties, or, with q, a search across all of them."""
     q = q.strip().lstrip("#")
     if not q:
@@ -135,6 +135,11 @@ def list_properties(db: DB, group: Group = "live", q: str = Query("", max_length
             f"{_ROW} where s.status in ({','.join('?' * len(statuses))}) order by s.status_updated_at desc limit 500",
             *statuses,
         )
+        return [_row(r) for r in rows]
+
+    # A property link pasted from a buyer's WhatsApp message: .../p/<listing id>
+    if m := re.search(r"/p/([0-9a-fA-F-]{36})", q):
+        rows = many(db, f"{_ROW} where l.id = ?", m.group(1))
         return [_row(r) for r in rows]
 
     digits = re.sub(r"\D", "", q)

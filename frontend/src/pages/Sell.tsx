@@ -82,7 +82,7 @@ export default function Sell() {
     }
   }
 
-  if (number) return <Done number={number} contactWa={config ? waLink(config.contact) : undefined} />;
+  if (number) return <Done contactWa={config ? waLink(config.contact) : undefined} />;
 
   return (
     <form onSubmit={submit} className="space-y-4 pt-[max(1.25rem,env(safe-area-inset-top))]">
@@ -231,18 +231,14 @@ function Card({ title, hint, children }: { title: string; hint?: string; childre
   );
 }
 
-function Done({ number, contactWa }: { number: number; contactWa?: string }) {
+function Done({ contactWa }: { contactWa?: string }) {
   return (
     <div className="flex min-h-[80dvh] flex-col items-center justify-center text-center">
       <div className="mb-5 grid h-16 w-16 place-items-center rounded-full bg-brand-soft text-brand">
         <Check size={30} strokeWidth={2.5} />
       </div>
       <h1 className="text-2xl font-semibold">Submission received</h1>
-      <div className="mt-6 card px-8 py-4">
-        <p className="text-sm text-sub">Your property number</p>
-        <p className="text-4xl font-semibold tracking-tight text-brand">#{number}</p>
-      </div>
-      <p className="mt-4 max-w-xs text-sub">We'll call you within 24 hours to confirm. Mention #{number} when you contact us.</p>
+      <p className="mt-2 max-w-xs text-sub">We'll call you within 24 hours to confirm the details.</p>
       <div className="mt-8 w-full max-w-sm space-y-2.5">
         {contactWa && (
           <a href={contactWa} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "wa", size: "lg" })}>

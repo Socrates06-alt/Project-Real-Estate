@@ -90,14 +90,11 @@ function MyListings() {
                 ))}
               </div>
             )}
-            <p className="mt-3 flex items-center justify-between text-xs text-sub">
-              Property <span className="font-semibold text-ink">#{s.number}</span>
-              {s.listing_id && (
-                <span className="ml-auto flex items-center font-semibold text-brand">
-                  View listing <ChevronRight size={14} />
-                </span>
-              )}
-            </p>
+            {s.listing_id && (
+              <p className="mt-3 flex items-center justify-end text-xs font-semibold text-brand">
+                View listing <ChevronRight size={14} />
+              </p>
+            )}
           </>
         );
         const cls = "block card p-4 shadow-card";

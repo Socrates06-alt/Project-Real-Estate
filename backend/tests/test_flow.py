@@ -111,6 +111,8 @@ def test_admin_search_by_number_phone_or_name(client, admin):
     assert found(str(sub["number"])) and found(f"#{sub['number']}")
     assert found("9447055555") and found("+91 94470 55555") and found("094470-55555")
     assert found("meera")
+    lid = publish(client, admin, sub["id"]).json()["listing_id"]
+    assert found(f"http://localhost:5173/p/{lid}")  # link from a buyer's WhatsApp message
     assert not found("nobody-like-this")
 
 

@@ -76,7 +76,6 @@ export default function ListingDetail() {
           )}
           {!sold && l.price_reduced && <Badge tone="accent">Price reduced</Badge>}
           <Badge tone={l.property_type === "house" ? "house" : "land"}>{typeLabel(l.property_type)}</Badge>
-          <span className="ml-auto text-xs text-sub">#{l.number}</span>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
           <h1 className={cn("text-[32px] leading-none font-bold tracking-tight", sold ? "text-sub" : "text-price")}>{inr(l.price)}</h1>
