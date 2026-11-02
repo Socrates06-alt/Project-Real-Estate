@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
-import { BadgeCheck, CalendarDays, Clock3, FileCheck2, Handshake, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
+import { BadgeCheck, CalendarDays, FileCheck2, Handshake, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
 import type { Contact, Listing } from "@/lib/api";
-import { cents, inr, isNew, perCent, typeLabel, updatedAgo } from "@/lib/format";
+import { cents, inr, isNew, perCent, typeLabel } from "@/lib/format";
 import { PhotoCarousel } from "./PhotoCarousel";
 import { cn } from "@/lib/utils";
 import { TYPE_TAG } from "@/lib/propertyType";
@@ -74,12 +74,7 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
             </span>
           )}
         </div>
-        <p className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-sub">
-          <span className="flex items-center gap-1 text-verified">
-            <Clock3 size={13} /> {updatedAgo(listing.published_at)}
-          </span>
-          {rera && <span>· RERA {rera}</span>}
-        </p>
+        {rera && <p className="mt-2 text-xs text-sub">Kerala RERA {rera}</p>}
       </button>
 
       {sold ? (

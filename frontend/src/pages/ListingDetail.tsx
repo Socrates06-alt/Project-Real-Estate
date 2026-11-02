@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { TYPE_TONE } from "@/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { BadgeCheck, CalendarDays, Clock3, Link2, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/lib/api";
-import { cents, inr, perCent, shortDate, typeLabel, updatedAgo } from "@/lib/format";
+import { cents, inr, perCent, shortDate, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
 import { Sheet } from "@/components/ui/sheet";
@@ -113,21 +113,23 @@ export default function ListingDetail() {
       </section>
 
       <section className="mt-3 card p-5">
-        <h2 className="mb-2 text-sm font-medium text-sub">About this property</h2>
-        <p className="leading-relaxed whitespace-pre-line">{l.description}</p>
-        {l.documents_note && (
-          <p className="mt-3 rounded-2xl bg-muted px-4 py-3 text-sm">
-            <span className="font-semibold">Documents: </span>
-            {l.documents_note}
-          </p>
+        <h2 className="text-base font-semibold">About this property</h2>
+        {l.description ? (
+          <p className="mt-2 text-[15px] leading-relaxed whitespace-pre-line text-ink/90">{l.description}</p>
+        ) : (
+          <p className="mt-2 text-[15px] text-sub">Call us for full details about this property.</p>
         )}
-        <p className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-sub">
-          <span className="flex items-center gap-1 text-verified">
-            <Clock3 size={13} /> {updatedAgo(l.published_at)}
-          </span>
-          · Listed {shortDate(l.listed_at)} · Exact location shared when we arrange your visit.
-        </p>
-        {config.data?.rera_number && <p className="mt-1 text-xs text-sub">Listed by LandFinder · Kerala RERA {config.data.rera_number}</p>}
+
+        <dl className="mt-4 divide-y divide-line rounded-2xl bg-muted/60 text-sm">
+          {l.documents_note && (
+            <InfoRow icon={<FileCheck2 size={17} className="text-verified" />} label="Documents" value={l.documents_note} />
+          )}
+          <InfoRow icon={<CalendarDays size={17} className="text-brand" />} label="Listed on" value={shortDate(l.listed_at)} />
+          <InfoRow icon={<MapPin size={17} className="text-brand" />} label="Exact location" value="Shared when we arrange your visit" />
+          {config.data?.rera_number && (
+            <InfoRow icon={<BadgeCheck size={17} className="text-verified" />} label="Kerala RERA" value={config.data.rera_number} />
+          )}
+        </dl>
       </section>
 
 
@@ -148,7 +150,7 @@ export default function ListingDetail() {
           ) : (
             <>
               <a href={telLink(l.contact)} className={cn(buttonVariants({ variant: "accent" }), "h-[52px] flex-[1.6] rounded-full text-base")}>
-                <Phone size={19} /> Call LandFinder
+                <Phone size={19} /> Call
               </a>
               <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
                 <MessageCircle size={21} className="text-wa" />
@@ -186,6 +188,16 @@ export default function ListingDetail() {
 
 const pillAction =
   "flex h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[12px] font-medium text-ink transition-colors hover:bg-[var(--glass-active)]";
+
+function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3 px-4 py-3">
+      <span className="mt-0.5 shrink-0">{icon}</span>
+      <dt className="w-28 shrink-0 text-sub">{label}</dt>
+      <dd className="min-w-0 flex-1 font-medium">{value}</dd>
+    </div>
+  );
+}
 
 function Fact({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: string }) {
   return (
