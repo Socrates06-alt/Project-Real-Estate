@@ -52,6 +52,7 @@ class SubmissionForm(BaseModel):
     negotiable: bool
     documents_available: bool
     documents_note: Short = ""
+    wants_doc_help: bool = False  # paid documentation assistance
     consent: bool
     consent_version: str
 

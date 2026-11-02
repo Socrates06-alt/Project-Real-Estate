@@ -32,6 +32,7 @@ create table if not exists submissions (
     negotiable          integer not null,
     documents_available integer not null,
     documents_note      text not null default '',
+    wants_doc_help      integer not null default 0,  -- seller asked for documentation assistance (paid)
     consent_version     text not null,
     consent_at          text not null default {NOW},
     created_at          text not null default {NOW},
@@ -102,7 +103,7 @@ create table if not exists visit_requests (
 create trigger if not exists submissions_immutable
 before update of number, device_hash, seller_name, seller_phone, property_type, land_area_cents, location,
     area_lat, area_lng, address, description, expected_price, negotiable, documents_available, documents_note,
-    consent_version, consent_at
+    wants_doc_help, consent_version, consent_at
 on submissions begin select raise(abort, 'submission original fields are immutable'); end;
 
 create trigger if not exists submissions_no_delete
@@ -116,7 +117,7 @@ create trigger if not exists published_versions_no_delete
 before delete on published_versions begin select raise(abort, 'published versions are immutable'); end;
 """
 
-BOOL_FIELDS = {"negotiable", "documents_available"}
+BOOL_FIELDS = {"negotiable", "documents_available", "wants_doc_help"}
 
 
 def connect() -> sqlite3.Connection:
@@ -127,7 +128,7 @@ def connect() -> sqlite3.Connection:
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -164,6 +165,10 @@ def _allow_commercial(conn: sqlite3.Connection) -> None:
 
 
 UPGRADES[5] = [_allow_commercial]
+UPGRADES[6] = [
+    "alter table submissions add column wants_doc_help integer not null default 0",
+    "drop trigger if exists submissions_immutable",  # recreated from SCHEMA with the new column
+]
 
 log = logging.getLogger("nilayam")
 

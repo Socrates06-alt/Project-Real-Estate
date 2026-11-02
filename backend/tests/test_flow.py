@@ -280,7 +280,16 @@ def test_old_database_upgrades_to_allow_commercial(tmp_path):
 
     path = tmp_path / "old.db"
     conn = sqlite3.connect(path)
-    old_schema = dbmod.SCHEMA.replace("'house', 'land', 'commercial'", "'house', 'land'")
+    # A version-4 database: no 'commercial' and no documentation-help column yet.
+    old_schema = (
+        dbmod.SCHEMA.replace("'house', 'land', 'commercial'", "'house', 'land'")
+        .replace(
+            "    wants_doc_help      integer not null default 0,"
+            "  -- seller asked for documentation assistance (paid)\n",
+            "",
+        )
+        .replace("    wants_doc_help, consent_version, consent_at", "    consent_version, consent_at")
+    )
     conn.executescript(old_schema)
     conn.execute("pragma user_version = 4")
     conn.execute(
@@ -324,3 +333,12 @@ def test_admin_can_add_photos_when_seller_did_not(client, admin):
     assert len(client.get(f"/api/listings/{lid}").json()["photos"]) == 1
     too_many = [("photos", (f"{i}.jpg", jpeg_with_gps(), "image/jpeg")) for i in range(3)]
     assert client.post(f"/api/admin/properties/{sid}/photos", files=too_many, headers=admin).status_code == 422
+
+
+def test_seller_can_ask_for_documentation_help(client, admin):
+    sid = submit(client, wants_doc_help="true").json()["id"]
+    assert client.get(f"/api/admin/properties/{sid}", headers=admin).json()["seller"]["wants_doc_help"] is True
+    new = client.get("/api/admin/inbox", headers=admin).json()["new"]
+    assert next(p for p in new if p["id"] == sid)["wants_doc_help"] is True
+    plain = submit(client).json()["id"]
+    assert client.get(f"/api/admin/properties/{plain}", headers=admin).json()["seller"]["wants_doc_help"] is False

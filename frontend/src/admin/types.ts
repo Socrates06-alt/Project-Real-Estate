@@ -15,6 +15,7 @@ export interface PropertyRow {
   group: Group;
   cover_url: string | null;
   open_visits: number;
+  wants_doc_help: boolean;
   created_at: string;
 }
 
@@ -71,6 +72,7 @@ export interface Property {
     negotiable: boolean;
     documents_available: boolean;
     documents_note: string;
+    wants_doc_help: boolean;
     consent_version: string;
     consent_at: string;
     created_at: string;

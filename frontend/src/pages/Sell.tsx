@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Camera, Check, ImagePlus, MessageCircle, X } from "lucide-react";
+import { Camera, Check, FileCheck2, ImagePlus, Info, MessageCircle, X } from "lucide-react";
 import { api, ApiError, getConfig, type PropertyType } from "@/lib/api";
 import { useAsync } from "@/lib/useAsync";
 import { AffixInput, Field, Input, Textarea } from "@/components/ui/field";
@@ -23,6 +23,8 @@ export default function Sell() {
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([]);
   const [negotiable, setNegotiable] = useState(true);
   const [docs, setDocs] = useState(false);
+  const [docHelp, setDocHelp] = useState(false);
+  const [docHelpInfo, setDocHelpInfo] = useState(false);
   const [agree, setAgree] = useState(false);
   const [area, setArea] = useState<Area>({ name: "", lat: null, lng: null });
   const [termsOpen, setTermsOpen] = useState(false);
@@ -61,6 +63,7 @@ export default function Sell() {
     f.set("property_type", type);
     f.set("negotiable", String(negotiable));
     f.set("documents_available", String(docs));
+    f.set("wants_doc_help", String(docHelp));
     f.set("consent", "true");
     if (area.lat != null && area.lng != null) {
       f.set("area_lat", String(area.lat));
@@ -160,6 +163,33 @@ export default function Sell() {
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
+        <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3.5">
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={docHelp}
+            aria-label="I need documentation assistance"
+            onClick={() => setDocHelp(!docHelp)}
+            className={cn(
+              "grid h-6 w-6 shrink-0 place-items-center rounded-lg border-2 transition",
+              docHelp ? "border-brand bg-brand text-brand-ink" : "border-line bg-surface",
+            )}
+          >
+            {docHelp && <Check size={15} strokeWidth={3} />}
+          </button>
+          <button type="button" onClick={() => setDocHelp(!docHelp)} className="min-w-0 flex-1 text-left">
+            <span className="block text-[15px] font-medium">I need documentation assistance</span>
+            <span className="block text-xs text-sub">Special charges apply</span>
+          </button>
+          <button
+            type="button"
+            aria-label="What's included"
+            onClick={() => setDocHelpInfo(true)}
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"
+          >
+            <Info size={18} />
+          </button>
+        </div>
       </Card>
 
       <Card title="Your details">
@@ -193,6 +223,32 @@ export default function Sell() {
         </p>
       </div>
 
+      <Sheet open={docHelpInfo} onClose={() => setDocHelpInfo(false)} title="Documentation assistance">
+        <p className="-mt-1 mb-3 text-sm text-sub">We help you prepare and obtain:</p>
+        <ul className="divide-y divide-line rounded-2xl bg-muted/60">
+          {DOC_HELP.map(([name, what]) => (
+            <li key={name} className="flex gap-3 px-4 py-3">
+              <FileCheck2 size={18} className="mt-0.5 shrink-0 text-verified" />
+              <span>
+                <span className="block text-[15px] font-semibold">{name}</span>
+                <span className="block text-sm text-sub">{what}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-medium">Special charges apply for this assistance.</p>
+        <Button
+          size="lg"
+          className="mt-4"
+          onClick={() => {
+            setDocHelp(true);
+            setDocHelpInfo(false);
+          }}
+        >
+          I need this
+        </Button>
+      </Sheet>
+
       <Sheet open={termsOpen} onClose={() => setTermsOpen(false)} title="Brokerage terms">
         <ul className="list-disc space-y-2 pl-5 text-[15px]">
           <li>
@@ -223,6 +279,14 @@ export default function Sell() {
     </form>
   );
 }
+
+const DOC_HELP: [string, string][] = [
+  ["Sale Agreement & Sale Deed Registration", "Drafting the agreement and registering the sale deed at the Sub-Registrar Office."],
+  ["Encumbrance Certificate (EC)", "Shows the property is free of loans, mortgages or legal dues."],
+  ["Possession Certificate", "From the Village Office, confirming who holds the property."],
+  ["Non-Attachment Certificate", "Confirms the property is not attached by any court or revenue recovery."],
+  ["Location Sketch", "Village Office sketch showing the property's location and boundaries."],
+];
 
 function Card({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (

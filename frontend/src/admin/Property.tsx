@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Check, ImagePlus, ChevronDown, ChevronLeft, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { Check, FileCheck2, ImagePlus, ChevronDown, ChevronLeft, ExternalLink, Eye, EyeOff } from "lucide-react";
 import { ApiError, type PropertyType } from "@/lib/api";
 import { cents, inr, shortDate, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
@@ -125,6 +125,11 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         <p className="text-xs text-sub">Seller</p>
         <p className="text-lg font-semibold">{s.seller_name}</p>
         <p className="text-sm text-sub">{s.seller_phone}</p>
+        {s.wants_doc_help && (
+          <p className="mt-2 flex items-center gap-2 rounded-2xl bg-accent-soft px-3 py-2 text-sm font-semibold">
+            <FileCheck2 size={16} /> Asked for documentation assistance (paid)
+          </p>
+        )}
         {s.address && <p className="mt-1 mb-3 text-sm whitespace-pre-line">{s.address}</p>}
         {!s.address && <div className="mb-3" />}
         <ContactButtons phone={s.seller_phone} size="lg" />
