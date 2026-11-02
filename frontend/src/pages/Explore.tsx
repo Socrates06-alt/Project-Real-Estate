@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ChevronRight, House, Map as MapIcon, MapPin, Search, SearchX, X } from "lucide-react";
+import { ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { useToast } from "@/components/ui/toast";
+import { getMyLocation, isNearTaluk } from "@/lib/geo";
+import { loadArea, markNearMeAsked, nearMeAsked, saveArea, type SavedArea } from "@/lib/savedArea";
 import { api, getConfig, type Feed, type Listing, type Parsed } from "@/lib/api";
 import { inr } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -29,6 +32,20 @@ export default function Explore() {
       ? { lat: params.get("lat")!, lng: params.get("lng")!, r: params.get("r") || "5", place: params.get("place") || "Selected area" }
       : null;
   const areaKey = area ? `${area.lat},${area.lng},${area.r}` : "";
+
+  // Remember the chosen area on this phone; reopen with it next time.
+  const setArea = (a: SavedArea | null) => {
+    if (!a) saveArea(null); // "All areas": forget it too
+    setParams(a ? { ...a } : {}, { replace: true });
+  };
+  useEffect(() => {
+    if (area) saveArea(area);
+    else if (!params.toString()) {
+      const saved = loadArea();
+      if (saved) setArea(saved);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areaKey]);
 
   useEffect(() => {
     const t = setTimeout(() => setQ(input.trim()), 350);
@@ -73,12 +90,9 @@ export default function Explore() {
       <header className="sticky top-0 z-30 -mx-4 bg-bg/80 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3 backdrop-blur-xl">
         <div className="mb-3 flex items-center justify-between">
           <Logo />
-          <span className="flex items-center gap-1 text-sm text-sub">
-            <MapPin size={15} /> Chengannur
-          </span>
+          <LocationButton area={area} onClear={() => setArea(null)} />
         </div>
-        <div className="flex items-center gap-2">
-        <div className="glass flex h-[52px] min-w-0 flex-1 items-center gap-3 rounded-full px-5 shadow-card focus-within:border-brand/50">
+        <div className="glass flex h-[52px] min-w-0 items-center gap-3 rounded-full px-5 shadow-card focus-within:border-brand/50">
           <Search size={20} className="shrink-0 text-sub" />
           <input
             value={input}
@@ -92,17 +106,6 @@ export default function Explore() {
               <X size={16} />
             </button>
           )}
-        </div>
-        <Link
-          to={area ? `/map?lat=${area.lat}&lng=${area.lng}&r=${area.r}&place=${encodeURIComponent(area.place)}` : "/map"}
-          aria-label="Search on map"
-          className={cn(
-            "glass grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full shadow-card",
-            area ? "text-brand" : "text-sub",
-          )}
-        >
-          <MapIcon size={21} />
-        </Link>
         </div>
         <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto">
           {(["all", "house", "land"] as const).map((t) => (
@@ -118,21 +121,11 @@ export default function Explore() {
             Sold
           </Chip>
         </div>
-        {area && (
-          <div className="mt-2.5 flex items-center gap-2">
-            <span className="flex items-center gap-1.5 rounded-full border border-brand/40 bg-brand-soft py-1.5 pr-1.5 pl-3 text-sm font-medium text-brand">
-              <MapPin size={15} />
-              {area.place} · {area.r} km
-              <button aria-label="Clear area" onClick={() => setParams({}, { replace: true })} className="grid h-6 w-6 place-items-center rounded-full hover:bg-brand/10">
-                <X size={14} />
-              </button>
-            </span>
-          </div>
-        )}
         {data && <ParsedChips parsed={data.parsed} />}
       </header>
 
       <div className="space-y-4 pt-2">
+        {!area && <NearYouCard onArea={setArea} />}
         {!q && !area && status === "live" && type === "all" && <SellBanner />}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
@@ -202,5 +195,90 @@ function SellBanner() {
       </div>
       <ChevronRight size={20} className="shrink-0 text-sub" />
     </Link>
+  );
+}
+
+/** Top-right location: "All areas ▾" or "Puliyoor · 5 km ▾". Tap to choose on the map. */
+function LocationButton({ area, onClear }: { area: SavedArea | null; onClear: () => void }) {
+  const to = area
+    ? `/map?lat=${area.lat}&lng=${area.lng}&r=${area.r}&place=${encodeURIComponent(area.place)}`
+    : "/map";
+  return (
+    <div
+      className={cn(
+        "flex h-10 max-w-[60%] items-center rounded-full border text-sm font-medium",
+        area ? "border-brand/40 bg-brand-soft text-brand" : "border-line bg-surface text-ink",
+      )}
+    >
+      <Link to={to} aria-label="Choose area" className="flex min-w-0 items-center gap-1.5 py-2 pr-2 pl-3">
+        <MapPin size={16} className="shrink-0" />
+        <span className="truncate">{area ? `${area.place} · ${area.r} km` : "All areas"}</span>
+        <ChevronDown size={16} className="shrink-0" />
+      </Link>
+      {area && (
+        <button aria-label="Show all areas" onClick={onClear} className="mr-1 grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-brand/10">
+          <X size={15} />
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** One-time, gentle offer to show properties near the buyer (only useful near the taluk). */
+function NearYouCard({ onArea }: { onArea: (a: SavedArea) => void }) {
+  const toast = useToast();
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (nearMeAsked()) return;
+    const t = setTimeout(() => setShow(true), 2500);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!show) return null;
+
+  const done = () => {
+    markNearMeAsked();
+    setShow(false);
+  };
+
+  async function useLocation() {
+    setBusy(true);
+    try {
+      const me = await getMyLocation();
+      if (isNearTaluk(me)) {
+        onArea({ lat: me.lat.toFixed(5), lng: me.lng.toFixed(5), r: "5", place: "Near you" });
+      } else {
+        toast("You're outside Chengannur — showing all areas");
+      }
+    } catch {
+      toast("Location not available — showing all areas");
+    } finally {
+      setBusy(false);
+      done();
+    }
+  }
+
+  return (
+    <div className="animate-fade rounded-3xl border border-line bg-surface p-4">
+      <div className="flex items-start gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
+          <LocateFixed size={20} />
+        </span>
+        <div>
+          <p className="font-semibold">Looking near where you are?</p>
+          <p className="text-sm text-sub">Show properties around you.</p>
+        </div>
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button size="sm" className="flex-1" disabled={busy} onClick={useLocation}>
+          {busy ? "Finding you…" : "Use my location"}
+        </Button>
+        <Button size="sm" variant="ghost" className="flex-1" onClick={done}>
+          No thanks
+        </Button>
+      </div>
+    </div>
   );
 }

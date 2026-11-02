@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, LocateFixed, MapPin, Search, X } from "lucide-react";
 import { api, type Feed } from "@/lib/api";
-import { CHENGANNUR, cssVar, getMyLocation, searchPlaces, type LatLng, type Place } from "@/lib/geo";
+import { CHENGANNUR, cssVar, getMyLocation, isNearTaluk, searchPlaces, type LatLng, type Place } from "@/lib/geo";
 import { createMap, L } from "@/components/map/leaflet";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -69,8 +69,17 @@ export default function MapSearch() {
     setLocating(true);
     try {
       const me = await getMyLocation();
-      flyTo(me);
-      setPlace("Your location");
+      if (isNearTaluk(me)) {
+        flyTo(me);
+        setPlace("Your location");
+      } else {
+        // Most buyers are away (NRIs, other cities): keep the map on Chengannur.
+        if (initial) {
+          flyTo(CHENGANNUR);
+          setPlace("Chengannur");
+        }
+        toast("You're outside Chengannur — search a place instead");
+      }
     } catch {
       if (initial) {
         flyTo(CHENGANNUR);

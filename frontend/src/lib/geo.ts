@@ -40,3 +40,16 @@ export async function searchPlaces(q: string, signal?: AbortSignal): Promise<Pla
 }
 
 export const cssVar = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+/** Straight-line distance in km (haversine). */
+export function distanceKm(a: LatLng, b: LatLng): number {
+  const r = (d: number) => (d * Math.PI) / 180;
+  const dLat = r(b.lat - a.lat);
+  const dLng = r(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+}
+
+/** Most buyers aren't local (NRIs, other cities): "near you" only makes sense close to the taluk. */
+export const NEAR_TALUK_KM = 25;
+export const isNearTaluk = (p: LatLng) => distanceKm(p, CHENGANNUR) <= NEAR_TALUK_KM;
