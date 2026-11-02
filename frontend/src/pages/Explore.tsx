@@ -92,8 +92,8 @@ export default function Explore() {
           <Logo />
           <LocationButton area={area} onClear={() => setArea(null)} />
         </div>
-        <div className="glass flex h-[52px] min-w-0 items-center gap-3 rounded-full px-5 shadow-card focus-within:border-brand/50">
-          <Search size={20} className="shrink-0 text-sub" />
+        <div className="search-pill flex h-[52px] min-w-0 items-center gap-3 rounded-full px-5">
+          <Search size={20} className="shrink-0 text-brand" />
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -147,11 +147,18 @@ export default function Explore() {
   );
 }
 
+// Selected: solid colour. Not selected: soft tint of the same colour, so every chip is easy to spot.
 const CHIP_ON = {
-  brand: "bg-brand-soft text-brand shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--brand)_35%,transparent)]",
-  house: "bg-house-soft text-house shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--house)_35%,transparent)]",
-  land: "bg-land-soft text-land shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--land)_35%,transparent)]",
-  sold: "bg-sold-soft text-sold shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--sold)_35%,transparent)]",
+  brand: "bg-brand text-surface shadow-[0_6px_14px_-8px_var(--brand)]",
+  house: "bg-house text-surface shadow-[0_6px_14px_-8px_var(--house)]",
+  land: "bg-land text-surface shadow-[0_6px_14px_-8px_var(--land)]",
+  sold: "bg-sold text-surface shadow-[0_6px_14px_-8px_var(--sold)]",
+};
+const CHIP_OFF = {
+  brand: "bg-brand-soft text-brand",
+  house: "bg-house-soft text-house",
+  land: "bg-land-soft text-land",
+  sold: "bg-sold-soft text-sold",
 };
 
 function Chip({
@@ -171,7 +178,7 @@ function Chip({
       aria-pressed={on}
       className={cn(
         "h-10 shrink-0 rounded-full px-4 text-[15px] font-medium transition duration-200 active:scale-95",
-        on ? CHIP_ON[tone] : "bg-surface text-sub shadow-[0_0_0_1px_var(--hairline)] hover:text-ink",
+        on ? CHIP_ON[tone] : `${CHIP_OFF[tone]} hover:brightness-[0.97]`,
       )}
     >
       {children}

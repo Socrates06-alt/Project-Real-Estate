@@ -155,6 +155,19 @@ h1, h2, h3 {
   .btn-primary:hover {
     filter: brightness(1.04);
   }
+  /* Home search bar: mint edge + soft mint glow so it stands out. */
+  .search-pill {
+    background: var(--surface);
+    box-shadow:
+      0 0 0 1.5px color-mix(in srgb, var(--brand) 45%, transparent),
+      0 10px 24px -14px color-mix(in srgb, var(--brand) 70%, transparent);
+    transition: box-shadow 0.2s ease;
+  }
+  .search-pill:focus-within {
+    box-shadow:
+      0 0 0 2px var(--brand),
+      0 0 0 6px color-mix(in srgb, var(--brand) 16%, transparent);
+  }
   /* Loading placeholders that gently shimmer. */
   .shimmer {
     background: linear-gradient(90deg, var(--muted) 0%, color-mix(in srgb, var(--muted) 60%, var(--surface)) 50%, var(--muted) 100%);
