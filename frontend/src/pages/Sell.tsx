@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Camera, Check, FileCheck2, ImagePlus, Info, MessageCircle, X } from "lucide-react";
 import { ApiError, getConfig, uploadForm, type PropertyType } from "@/lib/api";
 import { shrinkImage } from "@/lib/image";
+import { clearDraft, loadDraft, saveDraft } from "@/lib/draft";
 import { useAsync } from "@/lib/useAsync";
 import { AffixInput, Field, Input, Textarea } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/sheet";
@@ -16,6 +17,8 @@ import { waLink } from "@/components/contact";
 import { cn } from "@/lib/utils";
 
 const ACCEPT = ["image/jpeg", "image/png", "image/webp"];
+// Typed fields remembered in the draft (the consent tick is never remembered).
+const TEXT_FIELDS = ["land_area_cents", "address", "description", "expected_price", "documents_note", "seller_name", "seller_phone"];
 
 export default function Sell() {
   const { data: config } = useAsync(getConfig, []);
@@ -35,9 +38,78 @@ export default function Sell() {
   const [error, setError] = useState<string | null>(null);
   const [number, setNumber] = useState<number | null>(null);
   const picker = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  // Unfinished-form memory: restored once on open, then saved as the seller types.
+  const [saved, setSaved] = useState<Record<string, string>>({});
+  const [formKey, setFormKey] = useState(0); // bumped to re-render typed fields with restored values
+  const [loaded, setLoaded] = useState(false);
+  const [restored, setRestored] = useState(false);
+  const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const max = config?.max_photos ?? 3;
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
+
+  useEffect(() => {
+    loadDraft().then((d) => {
+      if (d) {
+        const st = d.state as { type?: PropertyType; negotiable?: boolean; docs?: boolean; docHelp?: boolean; area?: Area };
+        if (st.type) setType(st.type);
+        if (st.negotiable != null) setNegotiable(st.negotiable);
+        if (st.docs != null) setDocs(st.docs);
+        if (st.docHelp != null) setDocHelp(st.docHelp);
+        if (st.area) setArea(st.area);
+        setPhotos(d.photos.map((b, i) => {
+          const file = new File([b], `photo-${i + 1}.jpg`, { type: b.type || "image/jpeg" });
+          return { file, url: URL.createObjectURL(file) };
+        }));
+        setSaved(d.fields);
+        setFormKey((k) => k + 1);
+        if (Object.values(d.fields).some(Boolean) || d.photos.length) setRestored(true);
+      }
+      setLoaded(true);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function persist() {
+    if (!loaded || number) return;
+    const form = formRef.current;
+    const fields: Record<string, string> = { ...saved };
+    if (form) {
+      const fd = new FormData(form);
+      for (const k of TEXT_FIELDS) if (fd.has(k)) fields[k] = String(fd.get(k));
+    }
+    saveDraft({ fields, state: { type, negotiable, docs, docHelp, area }, photos: photos.map((p) => p.file) });
+  }
+
+  function persistSoon() {
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(persist, 600);
+  }
+
+  // Save when choices/photos change, and straight away when the seller leaves the page or switches apps.
+  useEffect(persistSoon, [type, negotiable, docs, docHelp, area, photos, loaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const now = () => document.visibilityState === "hidden" && persist();
+    document.addEventListener("visibilitychange", now);
+    return () => document.removeEventListener("visibilitychange", now);
+  });
+
+  async function startOver() {
+    clearTimeout(saveTimer.current);
+    await clearDraft();
+    setType("house");
+    setNegotiable(true);
+    setDocs(false);
+    setDocHelp(false);
+    setArea({ name: "", lat: null, lng: null });
+    setPhotos([]);
+    setAgree(false);
+    setSaved({});
+    setFormKey((k) => k + 1);
+    setRestored(false);
+    window.scrollTo({ top: 0 });
+  }
 
   async function addPhotos(files: FileList | null) {
     if (!files) return;
@@ -86,6 +158,8 @@ export default function Sell() {
     setProgress(0);
     try {
       const res = await uploadForm<{ number: number }>("/api/submissions", f, setProgress, { device: true });
+      clearTimeout(saveTimer.current);
+      await clearDraft();
       setNumber(res.number);
       window.scrollTo({ top: 0 });
     } catch (err) {
@@ -99,8 +173,16 @@ export default function Sell() {
   if (number) return <Done contactWa={config ? waLink(config.contact) : undefined} />;
 
   return (
-    <form onSubmit={submit} className="space-y-4">
+    <form key={formKey} ref={formRef} onSubmit={submit} onInput={persistSoon} className="space-y-4">
       <PageHeader title="List your property" subtitle="Free listing · pay only when it sells" />
+      {restored && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand">
+          <span>Continuing your unfinished listing</span>
+          <button type="button" onClick={startOver} className="shrink-0 font-semibold underline underline-offset-2">
+            Start over
+          </button>
+        </div>
+      )}
 
       <Card title="Photos" hint={`${photos.length}/${max}`}>
         <div className="grid grid-cols-3 gap-2.5">
@@ -145,17 +227,17 @@ export default function Sell() {
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="e.g. 10" pattern="\d+(\.\d{1,2})?" />
+          <AffixInput name="land_area_cents" defaultValue={saved.land_area_cents} suffix="cents" required inputMode="decimal" placeholder="e.g. 10" pattern="\d+(\.\d{1,2})?" />
         </Field>
         <Field label="Location">
           <AreaInput name="location" required value={area} onChange={setArea} />
         </Field>
         <Field label="Full address">
-          <Textarea name="address" maxLength={300} rows={2} className="min-h-0" placeholder="House or building name, street, landmark, PIN" />
+          <Textarea name="address" defaultValue={saved.address} maxLength={300} rows={2} className="min-h-0" placeholder="House or building name, street, landmark, PIN" />
         </Field>
         <Field label="Description">
           <Textarea
-            name="description"
+            name="description" defaultValue={saved.description}
             maxLength={4000}
             placeholder={
               type === "house"
@@ -170,11 +252,11 @@ export default function Sell() {
 
       <Card title="Price & documents">
         <Field label="Expected price">
-          <AffixInput name="expected_price" prefix="₹" required inputMode="numeric" placeholder="e.g. 25,00,000" />
+          <AffixInput name="expected_price" defaultValue={saved.expected_price} prefix="₹" required inputMode="numeric" placeholder="e.g. 25,00,000" />
         </Field>
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
-        {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
+        {docs && <Input name="documents_note" defaultValue={saved.documents_note} maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
         <div className="flex items-center gap-3 rounded-2xl bg-muted/60 p-3.5">
           <button
             type="button"
@@ -206,10 +288,10 @@ export default function Sell() {
 
       <Card title="Your details">
         <Field label="Name">
-          <Input name="seller_name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
+          <Input name="seller_name" defaultValue={saved.seller_name} required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
         </Field>
         <Field label="Phone">
-          <Input name="seller_phone" required inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number" />
+          <Input name="seller_phone" defaultValue={saved.seller_phone} required inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number" />
         </Field>
       </Card>
 
