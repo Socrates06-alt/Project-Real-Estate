@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import admin, public
+from app import admin, photos, public
 from app.config import get_settings
 from app.db import init_db
 
@@ -14,6 +14,7 @@ from app.db import init_db
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     init_db()
+    photos.ensure_small_copies()
     yield
 
 

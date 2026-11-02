@@ -81,6 +81,7 @@ def public_config() -> dict:
             "listing_fee": 0,
         },
         "consent_version": s.consent_version,
+        "rera_number": s.rera_number or None,
         "max_photos": s.max_photos,
         "max_photo_bytes": s.max_photo_bytes,
     }

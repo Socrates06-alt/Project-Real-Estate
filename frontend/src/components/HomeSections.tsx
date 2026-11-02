@@ -18,7 +18,7 @@ export function FilterTiles(props: {
     key: `p${lakh}`,
     label: `Under ₹${lakh} L`,
     icon: <IndianRupee size={18} />,
-    tone: "bg-accent-soft text-[var(--accent-strong)]",
+    tone: "bg-muted text-brand",
     on: text === `under ${lakh} lakh`,
     onClick: () => props.onText(`under ${lakh} lakh`),
   });
@@ -40,7 +40,7 @@ export function FilterTiles(props: {
           onClick={t.onClick}
           aria-pressed={t.on}
           className={cn(
-            "card-sm flex h-[76px] flex-col items-center justify-center gap-1 rounded-[16px] px-1 text-center transition duration-200 active:scale-95",
+            "card-sm flex min-h-[76px] flex-col items-center justify-center gap-1 rounded-[16px] px-1 py-2 text-center transition duration-200 active:scale-95",
             i < 4 ? "col-span-3" : "col-span-4",
             t.on && "shadow-[0_0_0_2px_var(--brand),var(--card-shadow)]",
           )}

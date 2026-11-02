@@ -8,7 +8,8 @@ const tones = {
   sky: "bg-sky text-sky-ink",
   sold: "bg-sold-soft text-sold",
   gray: "bg-muted text-sub",
-  accent: "bg-accent-soft text-[var(--accent-strong)]",
+  accent: "bg-accent text-accent-ink",
+  verified: "bg-verified-soft text-verified",
   glass: "bg-black/45 text-white backdrop-blur-md",
 };
 

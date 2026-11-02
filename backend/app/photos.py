@@ -56,14 +56,41 @@ def read(rel: str) -> bytes:
     return (media_root() / rel).read_bytes()
 
 
+CARD_SIDE = 640  # light copy for property cards (cheap phones, patchy 4G)
+
+
 def publish_copy(original_rel: str, listing_id: str, photo_id: str) -> str:
-    """Copy an original into the public folder (idempotent) and return its URL."""
+    """Copy an original into the public folder (idempotent), plus a card-size copy; return the full URL."""
     rel = f"public/{listing_id}/{photo_id}.webp"
     dest = media_root() / rel
     if not dest.exists():
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(media_root() / original_rel, dest)
+    make_small_copy(dest)
     return f"/media/{rel}"
+
+
+def make_small_copy(full: Path) -> None:
+    """abc.webp -> abc-sm.webp (640 px). Skips if it already exists."""
+    small = full.with_name(f"{full.stem}-sm.webp")
+    if small.exists():
+        return
+    with Image.open(full) as img:
+        img.thumbnail((CARD_SIDE, CARD_SIDE))
+        img.save(small, "WEBP", quality=78)
+
+
+def ensure_small_copies() -> None:
+    """Create card-size copies for photos published before this existed."""
+    public = media_root() / "public"
+    if not public.exists():
+        return
+    for full in public.rglob("*.webp"):
+        if not full.stem.endswith("-sm"):
+            try:
+                make_small_copy(full)
+            except OSError:
+                pass
 
 
 def delete_files(rels: list[str]) -> None:

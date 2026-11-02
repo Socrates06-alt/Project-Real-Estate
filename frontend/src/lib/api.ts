@@ -101,6 +101,7 @@ export interface PublicConfig {
   contact: Contact;
   brokerage: { seller_pct: number; buyer_pct: number; gst_extra: boolean; listing_fee: number };
   consent_version: string;
+  rera_number: string | null;
   max_photos: number;
   max_photo_bytes: number;
 }

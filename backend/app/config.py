@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     contact_phone: str = "+919999999999"
     contact_whatsapp: str = "+919999999999"
     consent_version: str = "2026-11-v1"
+    rera_number: str = ""  # Kerala RERA agent registration; shown on listings once set
     seller_brokerage_pct: float = 2.0
     buyer_brokerage_pct: float = 1.0
     material_price_change_pct: float = 5.0

@@ -16,9 +16,9 @@ const button = cva(
         danger: "bg-sold text-white hover:brightness-105",
       },
       size: {
-        sm: "h-9 rounded-full px-4 text-sm",
-        md: "h-11 rounded-2xl px-5 text-[15px]",
-        lg: "h-13 rounded-2xl px-6 text-base w-full",
+        sm: "min-h-9 rounded-full px-4 py-1.5 text-sm",
+        md: "min-h-11 rounded-2xl px-5 py-2 text-[15px]",
+        lg: "min-h-13 rounded-2xl px-6 py-2.5 text-base w-full",
         icon: "h-10 w-10 rounded-full",
       },
     },

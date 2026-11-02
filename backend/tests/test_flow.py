@@ -86,6 +86,8 @@ def test_full_journey(client, admin):
     assert data["title"] == "Plot near Mulakuzha" and data["negotiable"] is True
     assert data["number"] == sub["number"]  # one number from submission to buyer
     assert client.get(data["photos"][0]).status_code == 200
+    small = data["photos"][0].replace(".webp", "-sm.webp")  # light copy for cards
+    assert client.get(small).status_code == 200
     found = client.get("/api/listings", params={"q": "land under 40 lakh mulakuzha"}).json()["items"]
     assert lid in [i["id"] for i in found]
     assert lid not in [i["id"] for i in client.get("/api/listings", params={"q": "house"}).json()["items"]]

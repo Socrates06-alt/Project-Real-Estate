@@ -1,13 +1,14 @@
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { BadgeCheck, CalendarDays, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
-import { api, type Contact, type Listing } from "@/lib/api";
-import { cents, inr, perCent, shortDate, typeLabel } from "@/lib/format";
+import { BadgeCheck, CalendarDays, Clock3, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { api, getConfig, type Contact, type Listing } from "@/lib/api";
+import { cents, inr, perCent, shortDate, typeLabel, updatedAgo } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
+import { SaveButton } from "@/components/SaveButton";
 import { VisitSheet } from "@/components/VisitSheet";
 import { ErrorState } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { telLink, waLink } from "@/components/contact";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ export default function ListingDetail() {
   const toast = useToast();
   const [params, setParams] = useSearchParams();
   const { data: l, error, reload } = useAsync(() => api<Detail>(`/api/listings/${id}`), [id]);
+  const config = useAsync(getConfig, []);
   const visitOpen = params.get("visit") === "1";
 
   const back = () => (window.history.length > 1 ? nav(-1) : nav("/"));
@@ -59,9 +61,12 @@ export default function ListingDetail() {
             <button onClick={back} aria-label="Back" className={roundBtn}>
               <ChevronLeft size={22} />
             </button>
+            <div className="flex gap-2">
+              <SaveButton id={l.id} className="h-11 w-11" />
             <button onClick={share} aria-label="Share" className={roundBtn}>
               <Share2 size={18} />
             </button>
+            </div>
           </div>
         }
       />
@@ -70,11 +75,11 @@ export default function ListingDetail() {
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={sold ? "sold" : "brand"}>{sold ? "Sold" : "Available"}</Badge>
           {!sold && (
-            <Badge tone="brand">
+            <Badge tone="verified">
               <BadgeCheck size={13} /> Verified by Nilayam
             </Badge>
           )}
-          {!sold && l.price_reduced && <Badge tone="accent">Price reduced</Badge>}
+          {!sold && l.price_reduced && <Badge tone="brand">Price reduced</Badge>}
           <Badge tone={l.property_type === "house" ? "house" : "land"}>{typeLabel(l.property_type)}</Badge>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
@@ -91,7 +96,7 @@ export default function ListingDetail() {
       <section className="mt-5 grid grid-cols-2 gap-3">
         <Fact tone="bg-land-soft text-land" icon={<Ruler size={18} />} label="Area" value={cents(l.land_area_cents)} />
         <Fact
-          tone={l.documents_available ? "bg-brand-soft text-brand" : "bg-sky text-sky-ink"}
+          tone={l.documents_available ? "bg-verified-soft text-verified" : "bg-muted text-sub"}
           icon={l.documents_available ? <FileCheck2 size={18} /> : <FileClock size={18} />}
           label="Documents"
           value={l.documents_available ? "Available" : "Not yet uploaded"}
@@ -107,7 +112,13 @@ export default function ListingDetail() {
             {l.documents_note}
           </p>
         )}
-        <p className="mt-3 text-xs text-sub">Listed {shortDate(l.published_at)} · Exact location shared when we arrange your visit.</p>
+        <p className="mt-3 flex flex-wrap items-center gap-x-2 text-xs text-sub">
+          <span className="flex items-center gap-1 text-verified">
+            <Clock3 size={13} /> {updatedAgo(l.published_at)}
+          </span>
+          · Listed {shortDate(l.listed_at)} · Exact location shared when we arrange your visit.
+        </p>
+        {config.data?.rera_number && <p className="mt-1 text-xs text-sub">Listed by Nilayam · Kerala RERA {config.data.rera_number}</p>}
       </section>
 
 
@@ -127,17 +138,17 @@ export default function ListingDetail() {
             </a>
           ) : (
             <>
+              <a href={telLink(l.contact)} className={cn(buttonVariants({ variant: "accent" }), "h-[52px] flex-[1.6] rounded-full text-base")}>
+                <Phone size={19} /> Call Nilayam
+              </a>
               <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
-                <MessageCircle size={22} className="text-wa" />
+                <MessageCircle size={21} className="text-wa" />
                 WhatsApp
               </a>
-              <a href={telLink(l.contact)} className={pillAction}>
-                <Phone size={21} className="text-sky-ink" />
-                Call
-              </a>
-              <Button variant="accent" className="h-[52px] flex-[1.6] rounded-full text-[15px]" onClick={() => setParams({ visit: "1" }, { replace: true })}>
-                <CalendarDays size={19} /> Request visit
-              </Button>
+              <button onClick={() => setParams({ visit: "1" }, { replace: true })} className={pillAction}>
+                <CalendarDays size={20} className="text-brand" />
+                Visit
+              </button>
             </>
           )}
         </div>

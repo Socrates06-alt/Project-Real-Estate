@@ -128,7 +128,7 @@ export default function Explore() {
         {isHome && data && items.length > 0 && <h2 className="px-1 pt-1 font-semibold">All properties</h2>}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
-        {data && contact && items.map((l) => <ListingCard key={l.id} listing={l} contact={contact} />)}
+        {data && contact && items.map((l) => <ListingCard key={l.id} listing={l} contact={contact} rera={config.data?.rera_number} />)}
         {data && !items.length && (
           <EmptyState
             icon={<SearchX size={28} />}
@@ -169,7 +169,7 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
 
 function SellBanner() {
   return (
-    <Link to="/sell" className="card card-hover flex items-center gap-4 bg-accent-soft p-5">
+    <Link to="/sell" className="card card-hover flex items-center gap-4 bg-brand-soft p-5">
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-ink shadow-sm">
         <House size={22} />
       </span>

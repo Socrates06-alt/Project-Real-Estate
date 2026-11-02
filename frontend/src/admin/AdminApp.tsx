@@ -39,7 +39,7 @@ function AdminNav() {
   const { signOut } = useAdmin();
   const item = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex h-[52px] min-w-[76px] flex-col items-center justify-center gap-0.5 rounded-full px-3 text-[12px] font-medium transition-colors",
+      "flex min-h-[52px] min-w-[76px] flex-col items-center justify-center gap-0.5 rounded-full px-3 text-[12px] font-medium transition-colors",
       isActive ? "bg-[var(--glass-active)] text-ink" : "text-sub",
     );
   return (

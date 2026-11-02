@@ -35,3 +35,13 @@ export function perCent(price: number, cents: number): string | null {
 
 /** Listed within the last 7 days. */
 export const isNew = (iso: string) => Date.now() - new Date(iso).getTime() < 7 * 86400 * 1000;
+
+/** "Updated today", "Updated 3 days ago", "Updated 2 weeks ago". */
+export function updatedAgo(iso: string): string {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days <= 0) return "Updated today";
+  if (days === 1) return "Updated yesterday";
+  if (days < 14) return `Updated ${days} days ago`;
+  if (days < 60) return `Updated ${Math.floor(days / 7)} weeks ago`;
+  return `Updated ${Math.floor(days / 30)} months ago`;
+}
