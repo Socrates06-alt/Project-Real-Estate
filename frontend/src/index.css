@@ -157,13 +157,23 @@ h1, h2, h3 {
   }
   /* Home search bar: mint edge + soft mint glow so it stands out. */
   .search-pill {
-    background: var(--surface);
+    /* Soft mint wash inside the bar, a little brighter on the left where the icon is. */
+    background: linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--brand) 16%, var(--surface)) 0%,
+      color-mix(in srgb, var(--brand) 7%, var(--surface)) 55%,
+      color-mix(in srgb, var(--brand) 11%, var(--surface)) 100%
+    );
     box-shadow:
       0 0 0 1.5px color-mix(in srgb, var(--brand) 45%, transparent),
       0 10px 24px -14px color-mix(in srgb, var(--brand) 70%, transparent);
     transition: box-shadow 0.2s ease;
   }
+  .search-pill input::placeholder {
+    color: color-mix(in srgb, var(--brand) 55%, var(--sub));
+  }
   .search-pill:focus-within {
+    background: color-mix(in srgb, var(--brand) 6%, var(--surface));
     box-shadow:
       0 0 0 2px var(--brand),
       0 0 0 6px color-mix(in srgb, var(--brand) 16%, transparent);

@@ -99,7 +99,7 @@ export default function Explore() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Search area, budget or type"
             aria-label="Search properties"
-            className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-sub"
+            className="min-w-0 flex-1 bg-transparent text-base outline-none"
           />
           {input && (
             <button aria-label="Clear search" onClick={() => setInput("")} className="grid h-8 w-8 place-items-center rounded-full text-sub hover:bg-muted">
