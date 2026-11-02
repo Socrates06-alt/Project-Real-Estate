@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { TYPE_TONE } from "@/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { BadgeCheck, CalendarDays, Clock3, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { BadgeCheck, CalendarDays, Clock3, Link2, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/lib/api";
 import { cents, inr, perCent, shortDate, typeLabel, updatedAgo } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
+import { Sheet } from "@/components/ui/sheet";
 import { VisitSheet } from "@/components/VisitSheet";
 import { ErrorState } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
@@ -26,18 +28,28 @@ export default function ListingDetail() {
 
   const back = () => (window.history.length > 1 ? nav(-1) : nav("/"));
 
+  const shareUrl = window.location.href.split("?")[0];
+  const [shareOpen, setShareOpen] = useState(false);
+
+  // Phone's own share menu if available; otherwise our Share popup (WhatsApp / Copy link).
   async function share() {
-    const url = window.location.href.split("?")[0];
-    try {
-      if (navigator.share) await navigator.share({ title: l?.title, url });
-      else {
-        await navigator.clipboard.writeText(url);
-        toast("Link copied");
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: l?.title, url: shareUrl });
+        return;
+      } catch (e) {
+        if ((e as Error).name === "AbortError") return; // user closed the menu
       }
-    } catch {
-      /* cancelled */
     }
+    setShareOpen(true);
   }
+
+  async function copyLink() {
+    if (await copyText(shareUrl)) toast("Link copied");
+    else toast("Couldn't copy — please copy the link from the address bar");
+    setShareOpen(false);
+  }
+
 
   if (error)
     return (
@@ -151,6 +163,22 @@ export default function ListingDetail() {
         </div>
       </div>
 
+      <Sheet open={shareOpen} onClose={() => setShareOpen(false)} title="Share this property">
+        <div className="grid gap-2">
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(`${l.title} · ${l.location}\n${shareUrl}`)}`}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => setShareOpen(false)}
+            className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+          >
+            <MessageCircle size={19} className="text-wa" /> Share on WhatsApp
+          </a>
+          <button onClick={copyLink} className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
+            <Link2 size={19} className="text-brand" /> Copy link
+          </button>
+        </div>
+      </Sheet>
       {!sold && <VisitSheet listingId={l.id} open={visitOpen} onClose={() => setParams({}, { replace: true })} />}
     </div>
   );
@@ -167,4 +195,23 @@ function Fact({ icon, label, value, tone }: { icon: React.ReactNode; label: stri
       <p className="font-semibold">{value}</p>
     </div>
   );
+}
+
+/** Copy text; works even where the clipboard API is blocked (plain http on a phone). */
+async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const el = document.createElement("textarea");
+    el.value = text;
+    el.setAttribute("readonly", "");
+    el.style.position = "fixed";
+    el.style.opacity = "0";
+    document.body.appendChild(el);
+    el.select();
+    const ok = document.execCommand("copy");
+    el.remove();
+    return ok;
+  }
 }
