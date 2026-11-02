@@ -33,6 +33,32 @@ export async function api<T>(path: string, opts: Opts = {}): Promise<T> {
   return (res.headers.get("content-type")?.includes("json") ? res.json() : res.blob()) as Promise<T>;
 }
 
+/** POST a form with upload progress (0–100). fetch() can't report upload progress, so this uses XHR. */
+export function uploadForm<T>(path: string, form: FormData, onProgress: (pct: number) => void, opts: { device?: boolean } = {}): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", BASE + path);
+    if (opts.device) xhr.setRequestHeader("X-Device-Token", deviceToken());
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress(Math.round((e.loaded * 100) / e.total));
+    xhr.onerror = () => reject(new ApiError(0, "You seem to be offline. Please try again."));
+    xhr.ontimeout = () => reject(new ApiError(0, "The upload took too long. Please try again on a better connection."));
+    xhr.onload = async () => {
+      const res = new Response(xhr.responseText, {
+        status: xhr.status,
+        headers: { "content-type": xhr.getResponseHeader("content-type") ?? "" },
+      });
+      if (!res.ok) return reject(new ApiError(res.status, await errorMessage(res)));
+      try {
+        resolve(JSON.parse(xhr.responseText) as T);
+      } catch {
+        reject(new ApiError(res.status, "Something went wrong. Please try again."));
+      }
+    };
+    xhr.timeout = 5 * 60 * 1000;
+    xhr.send(form);
+  });
+}
+
 async function errorMessage(res: Response): Promise<string> {
   try {
     const data = await res.json();

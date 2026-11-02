@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Check, FileCheck2, ImagePlus, ChevronDown, ChevronLeft, ExternalLink, Eye, EyeOff } from "lucide-react";
 import { ApiError, type PropertyType } from "@/lib/api";
 import { cents, inr, shortDate, typeLabel } from "@/lib/format";
+import { shrinkImage } from "@/lib/image";
 import { useAsync } from "@/lib/useAsync";
 import { cn } from "@/lib/utils";
 import { ErrorState } from "@/components/States";
@@ -49,9 +50,10 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   async function addPhotos(files: FileList | null) {
     if (!files?.length) return;
     const form = new FormData();
-    Array.from(files).slice(0, 3 - photos.length).forEach((f) => form.append("photos", f));
     setUploading(true);
     try {
+      const picked = Array.from(files).slice(0, 3 - photos.length);
+      (await Promise.all(picked.map(shrinkImage))).forEach((f) => form.append("photos", f));
       const res = await call<{ photos: { id: string; url: string }[] }>(`/properties/${p.id}/photos`, { method: "POST", form });
       setAdded((a) => [...a, ...res.photos]);
       setF((x) => ({ ...x, photo_ids: [...x.photo_ids, ...res.photos.map((ph) => ph.id)] }));

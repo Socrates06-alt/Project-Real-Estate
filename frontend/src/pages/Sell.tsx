@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Camera, Check, FileCheck2, ImagePlus, Info, MessageCircle, X } from "lucide-react";
-import { api, ApiError, getConfig, type PropertyType } from "@/lib/api";
+import { ApiError, getConfig, uploadForm, type PropertyType } from "@/lib/api";
+import { shrinkImage } from "@/lib/image";
 import { useAsync } from "@/lib/useAsync";
 import { AffixInput, Field, Input, Textarea } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/sheet";
@@ -29,6 +30,8 @@ export default function Sell() {
   const [area, setArea] = useState<Area>({ name: "", lat: null, lng: null });
   const [termsOpen, setTermsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [preparing, setPreparing] = useState(false); // shrinking photos on the phone
+  const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [number, setNumber] = useState<number | null>(null);
   const picker = useRef<HTMLInputElement>(null);
@@ -36,21 +39,27 @@ export default function Sell() {
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
 
-  function addPhotos(files: FileList | null) {
+  async function addPhotos(files: FileList | null) {
     if (!files) return;
     const limit = config?.max_photo_bytes ?? 8 * 1024 * 1024;
     const next = [...photos];
-    for (const file of Array.from(files)) {
-      if (next.length >= max) break;
-      if (!ACCEPT.includes(file.type)) {
-        toast("Use JPEG, PNG or WebP photos");
-        continue;
+    setPreparing(true);
+    try {
+      for (const original of Array.from(files)) {
+        if (next.length >= max) break;
+        if (!ACCEPT.includes(original.type)) {
+          toast("Use JPEG, PNG or WebP photos");
+          continue;
+        }
+        const file = await shrinkImage(original); // checked after shrinking: big camera photos are fine
+        if (file.size > limit) {
+          toast("This photo is too large. Please choose another.");
+          continue;
+        }
+        next.push({ file, url: URL.createObjectURL(file) });
       }
-      if (file.size > limit) {
-        toast("Each photo must be under 8 MB");
-        continue;
-      }
-      next.push({ file, url: URL.createObjectURL(file) });
+    } finally {
+      setPreparing(false);
     }
     setPhotos(next);
   }
@@ -74,14 +83,16 @@ export default function Sell() {
     photos.forEach((p) => f.append("photos", p.file));
     setBusy(true);
     setError(null);
+    setProgress(0);
     try {
-      const res = await api<{ number: number }>("/api/submissions", { form: f, device: true });
+      const res = await uploadForm<{ number: number }>("/api/submissions", f, setProgress, { device: true });
       setNumber(res.number);
       window.scrollTo({ top: 0 });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong");
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -111,10 +122,11 @@ export default function Sell() {
             <button
               type="button"
               onClick={() => picker.current?.click()}
+              disabled={preparing}
               className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-line text-sub transition hover:border-brand hover:text-brand"
             >
               {photos.length ? <ImagePlus size={22} /> : <Camera size={22} />}
-              <span className="text-xs font-semibold">Add photo</span>
+              <span className="text-xs font-semibold">{preparing ? "Preparing…" : "Add photo"}</span>
             </button>
           )}
         </div>
@@ -273,8 +285,18 @@ export default function Sell() {
       </Sheet>
 
       {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm font-medium text-sold">{error}</p>}
-      <Button type="submit" variant="accent" size="lg" disabled={busy || !config}>
-        {busy ? "Submitting…" : "Submit property"}
+      {progress != null && (
+        <div role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label="Upload progress">
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-brand transition-[width] duration-200" style={{ width: `${progress}%` }} />
+          </div>
+          <p className="mt-1.5 text-center text-xs text-sub">
+            {progress < 100 ? `Uploading… ${progress}%` : "Almost done…"} Please keep this page open.
+          </p>
+        </div>
+      )}
+      <Button type="submit" variant="accent" size="lg" disabled={busy || preparing || !config}>
+        {busy ? (progress != null && progress < 100 ? `Uploading ${progress}%` : "Submitting…") : "Submit property"}
       </Button>
     </form>
   );
