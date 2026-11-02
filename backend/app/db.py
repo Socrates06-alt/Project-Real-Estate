@@ -23,7 +23,10 @@ create table if not exists submissions (
     seller_phone        text not null,
     property_type       text not null check (property_type in ('house', 'land')),
     land_area_cents     real not null check (land_area_cents > 0),
-    location            text not null,
+    location            text not null,  -- area name (public), e.g. "Puliyoor"
+    area_lat            real,           -- area centre from the place suggestion
+    area_lng            real,
+    address             text not null default '',  -- full address: private, for Nilayam only
     description         text not null,
     expected_price      integer not null check (expected_price > 0),
     negotiable          integer not null,
@@ -61,9 +64,9 @@ create table if not exists listings (
     documents_available integer not null,
     documents_note      text not null default '',
     photo_ids           text not null default '[]',
-    lat                 real,  -- exact location: private (admin only)
+    lat                 real,  -- area centre (e.g. middle of Puliyoor)
     lng                 real,
-    public_lat          real,  -- approximate location shown to buyers (moved 150-500 m)
+    public_lat          real,  -- the area's "flag": centre snapped to a ~1 km grid; used only for radius search
     public_lng          real,
     confirmed_price     integer,
     current_version     integer not null default 0,
@@ -98,7 +101,8 @@ create table if not exists visit_requests (
 -- The seller's original submission never changes (only its workflow status).
 create trigger if not exists submissions_immutable
 before update of number, device_hash, seller_name, seller_phone, property_type, land_area_cents, location,
-    description, expected_price, negotiable, documents_available, documents_note, consent_version, consent_at
+    area_lat, area_lng, address, description, expected_price, negotiable, documents_available, documents_note,
+    consent_version, consent_at
 on submissions begin select raise(abort, 'submission original fields are immutable'); end;
 
 create trigger if not exists submissions_no_delete
@@ -123,11 +127,20 @@ def connect() -> sqlite3.Connection:
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
     3: [f"alter table listings add column {c} real" for c in ("lat", "lng", "public_lat", "public_lng")],
+    4: [
+        "alter table submissions add column area_lat real",
+        "alter table submissions add column area_lng real",
+        "alter table submissions add column address text not null default ''",
+        "drop trigger if exists submissions_immutable",  # recreated below with the new columns
+        # Old blurred spots -> grid flags (0.01 degree squares, ~1.1 km)
+        "update listings set public_lat = cast(lat / 0.01 as integer) * 0.01 + 0.005,"
+        " public_lng = cast(lng / 0.01 as integer) * 0.01 + 0.005 where lat is not null",
+    ],
 }
 OLDEST_UPGRADABLE = 2
 

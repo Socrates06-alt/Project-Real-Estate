@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { ChevronLeft, LocateFixed, MapPin, Search, X } from "lucide-react";
 import { api, type Feed } from "@/lib/api";
 import { CHENGANNUR, cssVar, getMyLocation, searchPlaces, type LatLng, type Place } from "@/lib/geo";
-import { inr } from "@/lib/format";
 import { createMap, L } from "@/components/map/leaflet";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -26,13 +25,13 @@ export default function MapSearch() {
   const el = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const circleRef = useRef<L.Circle | null>(null);
-  const dotsRef = useRef<L.LayerGroup | null>(null);
 
   const [center, setCenter] = useState<LatLng>(fromUrl ?? CHENGANNUR);
   const [radius, setRadius] = useState(() => clamp(Number(params.get("r")) || 5));
   const [place, setPlace] = useState(params.get("place") ?? "");
   const [locating, setLocating] = useState(false);
   const [count, setCount] = useState<number | null>(null);
+  const [failed, setFailed] = useState(false);
 
   // Create the map once.
   useEffect(() => {
@@ -47,7 +46,6 @@ export default function MapSearch() {
       fillOpacity: 0.12,
       interactive: false,
     }).addTo(map);
-    dotsRef.current = L.layerGroup().addTo(map);
     map.fitBounds(circle.getBounds(), { padding: [24, 24] });
     map.on("move", () => circle.setLatLng(map.getCenter()));
     map.on("moveend", () => setCenter(map.getCenter()));
@@ -101,34 +99,28 @@ export default function MapSearch() {
     map.fitBounds(circle.getBounds(), { padding: [24, 24], animate: true });
   }, [radius]);
 
-  // Count + dots for the current circle.
+  // How many properties are inside the circle (count only).
   useEffect(() => {
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       try {
-        const qs = new URLSearchParams({ lat: center.lat.toFixed(5), lng: center.lng.toFixed(5), radius_km: String(radius), limit: "50" });
+        const qs = new URLSearchParams({ lat: center.lat.toFixed(5), lng: center.lng.toFixed(5), radius_km: String(radius), limit: "1" });
         const feed = await api<Feed>(`/api/listings?${qs}`);
         if (ctrl.signal.aborted) return;
-        setCount(feed.total);
-        const dots = dotsRef.current;
-        dots?.clearLayers();
-        const brand = cssVar("--brand") || "#3a7fc8";
-        for (const item of feed.items) {
-          if (item.lat == null || item.lng == null) continue;
-          L.circleMarker([item.lat, item.lng], { radius: 8, color: "#fff", weight: 2, fillColor: brand, fillOpacity: 1 })
-            .bindTooltip(inr(item.price), { direction: "top", offset: [0, -6] })
-            .on("click", () => nav(`/p/${item.id}`))
-            .addTo(dots!);
-        }
+        setCount(feed.total); // only a count: properties are never shown on the map
+        setFailed(false);
       } catch {
-        setCount(null);
+        if (!ctrl.signal.aborted) {
+          setCount(null);
+          setFailed(true);
+        }
       }
     }, 250);
     return () => {
       ctrl.abort();
       clearTimeout(t);
     };
-  }, [center, radius, nav]);
+  }, [center, radius]);
 
   function showProperties() {
     const qs = new URLSearchParams({
@@ -198,7 +190,7 @@ export default function MapSearch() {
             <span>{MAX_KM} km</span>
           </div>
           <Button size="lg" className="mt-3 h-[52px] rounded-full" disabled={!count} onClick={showProperties}>
-            {count == null ? "Searching…" : count === 0 ? "No properties in this area" : `Show ${count} propert${count === 1 ? "y" : "ies"}`}
+            {failed ? "Couldn't search — try again shortly" : count == null ? "Searching…" : count === 0 ? "No properties in this area" : `Show ${count} propert${count === 1 ? "y" : "ies"}`}
           </Button>
         </div>
       </div>

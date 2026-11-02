@@ -5,6 +5,7 @@ import { api, ApiError, getConfig, type PropertyType } from "@/lib/api";
 import { useAsync } from "@/lib/useAsync";
 import { AffixInput, Field, Input, Textarea } from "@/components/ui/field";
 import { Sheet } from "@/components/ui/sheet";
+import { AreaInput, type Area } from "@/components/AreaInput";
 import { Segmented } from "@/components/ui/segmented";
 import { Switch } from "@/components/ui/switch";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -22,6 +23,7 @@ export default function Sell() {
   const [negotiable, setNegotiable] = useState(true);
   const [docs, setDocs] = useState(false);
   const [agree, setAgree] = useState(false);
+  const [area, setArea] = useState<Area>({ name: "", lat: null, lng: null });
   const [termsOpen, setTermsOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,10 @@ export default function Sell() {
     f.set("negotiable", String(negotiable));
     f.set("documents_available", String(docs));
     f.set("consent", "true");
+    if (area.lat != null && area.lng != null) {
+      f.set("area_lat", String(area.lat));
+      f.set("area_lng", String(area.lng));
+    }
     f.set("consent_version", config.consent_version);
     f.set("expected_price", String(f.get("expected_price")).replace(/\D/g, ""));
     photos.forEach((p) => f.append("photos", p.file));
@@ -124,14 +130,15 @@ export default function Sell() {
             { value: "land", label: "Land" },
           ]}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Area">
-            <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
-          </Field>
-          <Field label="Location">
-            <Input name="location" required minLength={2} maxLength={120} placeholder="Puliyoor" />
-          </Field>
-        </div>
+        <Field label="Land size">
+          <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
+        </Field>
+        <Field label="Area" hint="Shown to buyers">
+          <AreaInput name="location" required value={area} onChange={setArea} />
+        </Field>
+        <Field label="Full address" hint="Only for Nilayam">
+          <Textarea name="address" required minLength={5} maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, landmark, PIN" />
+        </Field>
         <Field label="Description">
           <Textarea
             name="description"

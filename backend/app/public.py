@@ -5,20 +5,24 @@ import re
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, Request, UploadFile
 
 from app import geo, photos
 from app.config import get_settings
 from app.db import DB, many, one
 from app.models import SubmissionForm, VisitRequestIn
+from app.ratelimit import RateLimiter, client_ip
 from app.search import parse_query
+
+# Normal map use is far below this; stops someone probing the map with hundreds of searches.
+area_search_limiter = RateLimiter(limit=300, window_seconds=3600)
 
 router = APIRouter(prefix="/api")
 
 _STATES = {"live": ("published",), "sold": ("sold",), "all": ("published", "sold")}
 _SNAPSHOT_FIELDS = (
     "number", "title", "property_type", "land_area_cents", "location", "description",
-    "price", "negotiable", "documents_available", "documents_note", "photos", "lat", "lng",
+    "price", "negotiable", "documents_available", "documents_note", "photos",
 )  # fmt: skip
 
 
@@ -48,7 +52,7 @@ def public_listing(row: dict) -> dict:
 
 
 _LIVE_SELECT = """
-    select l.id, l.state, l.sold_at, v.version, v.snapshot, v.published_at
+    select l.id, l.state, l.sold_at, l.public_lat, l.public_lng, v.version, v.snapshot, v.published_at
     from listings l
     join published_versions v on v.listing_id = l.id and v.version = l.current_version
 """
@@ -79,6 +83,7 @@ def public_config() -> dict:
 @router.get("/listings")
 def list_listings(
     db: DB,
+    request: Request,
     q: str = Query("", max_length=200),
     type: Literal["house", "land"] | None = None,
     status: Literal["live", "sold", "all"] = "live",
@@ -117,16 +122,20 @@ def list_listings(
         f"{_LIVE_SELECT} where {' and '.join(where)} order by l.state = 'published' desc, v.published_at desc",
         *args,
     )
-    items = [public_listing(r) for r in rows]
     if lat is not None and lng is not None:
-        # Area search (map): keep properties whose public spot is inside the circle, nearest first.
+        # Area search (map): a property is in if its area's flag is inside the circle.
+        # Nearest area first; within an area, newest first. Locations/distances are never returned.
+        area_search_limiter.hit(client_ip(request))
         near = []
-        for item in items:
-            if item["lat"] is not None:
-                d = geo.distance_km(lat, lng, item["lat"], item["lng"])
+        for r in rows:
+            if r["public_lat"] is not None:
+                d = geo.distance_km(lat, lng, r["public_lat"], r["public_lng"])
                 if d <= radius_km:
-                    near.append({**item, "distance_km": round(d, 1)})
-        items = sorted(near, key=lambda i: i["distance_km"])
+                    near.append((round(d, 2), r))
+        near.sort(key=lambda x: (x[1]["published_at"], x[1]["snapshot"]["number"]), reverse=True)
+        near.sort(key=lambda x: x[0])  # stable: keeps newest-first inside each area
+        rows = [r for _, r in near]
+    items = [public_listing(r) for r in rows]
     return {
         "items": items[offset : offset + limit],
         "has_more": len(items) > offset + limit,
@@ -198,12 +207,12 @@ def create_submission(
     ]
     db.execute(
         """insert into submissions (id, number, device_hash, seller_name, seller_phone, property_type,
-               land_area_cents, location, description, expected_price, negotiable, documents_available,
-               documents_note, consent_version)
-           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               land_area_cents, location, area_lat, area_lng, address, description, expected_price, negotiable,
+               documents_available, documents_note, consent_version)
+           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (sub_id, number, device, form.seller_name, form.seller_phone, form.property_type,
-         form.land_area_cents, form.location, form.description, form.expected_price, form.negotiable,
-         form.documents_available, form.documents_note, form.consent_version),
+         form.land_area_cents, form.location, form.area_lat, form.area_lng, form.address, form.description,
+         form.expected_price, form.negotiable, form.documents_available, form.documents_note, form.consent_version),
     )  # fmt: skip
     saved: list[str] = []
     try:

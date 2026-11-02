@@ -91,7 +91,7 @@ PROPERTIES = [
 ]
 
 
-# Rough sample positions for the demo map (not real properties).
+# Rough area centres for the demo (as if picked from place suggestions).
 SAMPLE_SPOTS = {
     "Chengannur town": (9.3176, 76.6113),
     "Puliyoor": (9.3040, 76.5830),
@@ -144,6 +144,8 @@ def main() -> None:
             "negotiable": str(neg).lower(),
             "documents_available": str(docs).lower(),
             "documents_note": note,
+            "address": f"{name.split()[0]} Bhavan, {loc} P.O., Chengannur",
+            **({"area_lat": SAMPLE_SPOTS[loc][0], "area_lng": SAMPLE_SPOTS[loc][1]} if loc in SAMPLE_SPOTS else {}),
             "consent": "true",
             "consent_version": S.consent_version,
         }
@@ -157,8 +159,7 @@ def main() -> None:
             continue
         sid = resp.json()["id"]
         form = httpx.get(f"{API}/api/admin/properties/{sid}", headers=admin).json()["form"]
-        lat, lng = SAMPLE_SPOTS.get(loc, (None, None))
-        body = {**form, "title": title, "lat": lat, "lng": lng}
+        body = {**form, "title": title}  # area centre comes from the seller's chosen area
         res = httpx.post(f"{API}/api/admin/properties/{sid}/publish", json=body, headers=admin)
         res.raise_for_status()
         if action == "sold":

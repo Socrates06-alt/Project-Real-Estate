@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useAdmin } from "./auth";
-import { LocationPicker } from "@/components/map/LocationPicker";
+import { AreaInput } from "@/components/AreaInput";
 import { ContactButtons, GroupBadge, PrivatePhoto, VisitCard } from "./ui";
 import type { Property, PublicForm } from "./types";
 
@@ -102,7 +102,9 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       <section className="rounded-3xl border border-line bg-surface p-4">
         <p className="text-xs text-sub">Seller</p>
         <p className="text-lg font-semibold">{s.seller_name}</p>
-        <p className="mb-3 text-sm text-sub">{s.seller_phone}</p>
+        <p className="text-sm text-sub">{s.seller_phone}</p>
+        {s.address && <p className="mt-1 mb-3 text-sm whitespace-pre-line">{s.address}</p>}
+        {!s.address && <div className="mb-3" />}
         <ContactButtons phone={s.seller_phone} size="lg" />
         <button onClick={() => setShowOriginal(!showOriginal)} className="mt-3 flex w-full items-center justify-between py-1 text-sm font-medium text-sub">
           Seller's original details
@@ -116,7 +118,8 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
               ["Asked price", inr(s.expected_price)],
               ["Negotiable", s.negotiable ? "Yes" : "No"],
               ["Documents", s.documents_available ? `Yes${s.documents_note ? ` — ${s.documents_note}` : ""}` : "Not yet uploaded"],
-              ["Location", s.location],
+              ["Area", s.location],
+              ["Full address", s.address || "—"],
               ["Submitted", shortDate(s.created_at)],
               ["Agreed to terms", `${s.consent_version} · ${shortDate(s.consent_at)}`],
               ["Description", s.description],
@@ -185,26 +188,22 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
             { value: "land", label: "Land" },
           ]}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Area">
-            <AffixInput suffix="cents" inputMode="decimal" value={areaText}
-              onChange={(e) => {
-                setAreaText(e.target.value);
-                set("land_area_cents", Number(e.target.value) || 0);
-              }} />
-          </Field>
-          <Field label="Place shown">
-            <Input value={f.location} onChange={(e) => set("location", e.target.value)} />
-          </Field>
-        </div>
+        <Field label="Land size">
+          <AffixInput suffix="cents" inputMode="decimal" value={areaText}
+            onChange={(e) => {
+              setAreaText(e.target.value);
+              set("land_area_cents", Number(e.target.value) || 0);
+            }} />
+        </Field>
+        <Field label="Area" hint={f.lat != null ? "On map search" : "Pick a suggestion to include in map search"}>
+          <AreaInput
+            value={{ name: f.location, lat: f.lat, lng: f.lng }}
+            onChange={(a) => setF((x) => ({ ...x, location: a.name, lat: a.lat, lng: a.lng }))}
+          />
+        </Field>
         <Field label="Description">
           <Textarea rows={5} value={f.description} onChange={(e) => set("description", e.target.value)} />
         </Field>
-        <LocationPicker
-          value={f.lat != null && f.lng != null ? { lat: f.lat, lng: f.lng } : null}
-          onChange={(v) => setF((x) => ({ ...x, lat: v?.lat ?? null, lng: v?.lng ?? null }))}
-          disabled={readOnly}
-        />
         <Switch checked={f.negotiable} onChange={(v) => set("negotiable", v)} label="Negotiable" />
         <Switch checked={f.documents_available} onChange={(v) => set("documents_available", v)} label="Documents available" />
         {f.documents_available && <Input value={f.documents_note} placeholder="Title deed, tax receipt…" onChange={(e) => set("documents_note", e.target.value)} />}

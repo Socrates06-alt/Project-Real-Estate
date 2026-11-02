@@ -43,7 +43,8 @@ def jpeg_with_gps() -> bytes:
 def submit(client, **overrides):
     form = {
         "seller_name": "Ravi Kumar", "seller_phone": "98470 12345", "property_type": "land",
-        "land_area_cents": "12.5", "location": "Mulakuzha", "description": "Flat land with road access.",
+        "land_area_cents": "12.5", "location": "Mulakuzha", "address": "Kizhakkethil House, Mulakuzha P.O.",
+        "description": "Flat land with road access.",
         "expected_price": "3000000", "negotiable": "true", "documents_available": "true",
         "documents_note": "Title deed", "consent": "true", "consent_version": "test-v1", **overrides,
     }  # fmt: skip
@@ -169,31 +170,62 @@ def test_photo_metadata_stripped_and_search_parser():
     assert (p.property_type, p.max_price, p.min_cents, p.text) == ("house", 4_000_000, 10, "mulakuzha")
 
 
-def test_map_location_is_blurred_and_searchable(client, admin):
-    from app.geo import distance_km
+PULIYOOR = (9.3040, 76.5830)
+ALA = (9.3300, 76.5950)  # ~3 km from Puliyoor
+VENMONY = (9.2560, 76.6460)  # ~8.5 km from Puliyoor
 
-    exact = (9.30210, 76.60450)
-    sid = submit(client).json()["id"]
-    res = publish(client, admin, sid, lat=exact[0], lng=exact[1]).json()
-    lid = res["listing_id"]
 
-    page = client.get(f"/api/listings/{lid}").json()
-    public = (page["lat"], page["lng"])
-    assert public != exact and 0.1 < distance_km(*exact, *public) < 0.6  # moved 150-500 m
-    # The exact pin is never in any public response.
-    feed = client.get("/api/listings").json()["items"]
-    assert all((i["lat"], i["lng"]) != exact for i in [page, *feed])
+def publish_in_area(client, admin, area, name):
+    sid = submit(client, location=name, area_lat=str(area[0]), area_lng=str(area[1])).json()["id"]
+    res = publish(client, admin, sid).json()  # form defaults to the seller's chosen area
+    return sid, res["listing_id"]
 
-    # Same pin on republish keeps the same public spot (can't be averaged out).
-    publish(client, admin, sid, title="Plot with good road access", lat=exact[0], lng=exact[1])
-    assert (
-        client.get(f"/api/listings/{lid}").json()["lat"],
-        client.get(f"/api/listings/{lid}").json()["lng"],
-    ) == public
 
-    # Radius search: inside 2 km of the spot, not inside 2 km of a point ~11 km away.
-    near = client.get("/api/listings", params={"lat": exact[0], "lng": exact[1], "radius_km": 2}).json()
-    hit = next(i for i in near["items"] if i["id"] == lid)
-    assert hit["distance_km"] <= 0.6 and near["total"] >= 1
-    far = client.get("/api/listings", params={"lat": 9.40, "lng": 76.60, "radius_km": 2}).json()
-    assert lid not in [i["id"] for i in far["items"]]
+def test_area_search_finds_by_area_and_never_reveals_location(client, admin):
+    from app.public import area_search_limiter
+
+    area_search_limiter.reset()
+    sid, p1 = publish_in_area(client, admin, PULIYOOR, "Puliyoor")
+    _, p2 = publish_in_area(client, admin, PULIYOOR, "Puliyoor")
+    _, a1 = publish_in_area(client, admin, ALA, "Ala")
+    _, v1 = publish_in_area(client, admin, VENMONY, "Venmony")
+
+    # Private address only in admin.
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    assert prop["seller"]["address"].startswith("Kizhakkethil")
+
+    def search(km):
+        return client.get("/api/listings", params={"lat": PULIYOOR[0], "lng": PULIYOOR[1], "radius_km": km}).json()
+
+    r5 = search(5)
+    ids5 = [i["id"] for i in r5["items"]]
+    assert {p1, p2, a1} <= set(ids5) and v1 not in ids5
+    # Nearest area first (both Puliyoor ones before Ala), newest first within Puliyoor.
+    assert ids5.index(p2) < ids5.index(p1) < ids5.index(a1)
+    assert v1 in [i["id"] for i in search(10)["items"]]
+
+    # No coordinates, distances or address in anything buyers can load.
+    for item in [*r5["items"], client.get(f"/api/listings/{p1}").json()]:
+        assert not {"lat", "lng", "public_lat", "public_lng", "distance_km", "address"} & item.keys()
+    assert "Kizhakkethil" not in client.get(f"/api/listings/{p1}").text
+
+
+def test_area_search_is_rate_limited(client):
+    from app.public import area_search_limiter
+
+    area_search_limiter.reset()
+    area_search_limiter.limit = 3
+    try:
+        params = {"lat": PULIYOOR[0], "lng": PULIYOOR[1], "radius_km": 5}
+        codes = [client.get("/api/listings", params=params).status_code for _ in range(4)]
+        assert codes == [200, 200, 200, 429]
+        assert client.get("/api/listings").status_code == 200  # normal browsing is not limited
+    finally:
+        area_search_limiter.limit = 300
+        area_search_limiter.reset()
+
+
+def test_grid_flag_is_shared_within_an_area():
+    from app.geo import flag
+
+    assert flag(9.30401, 76.58302) == flag(9.30455, 76.58377)  # two spots in the same ~1 km square

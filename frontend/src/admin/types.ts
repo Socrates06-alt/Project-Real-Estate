@@ -65,6 +65,7 @@ export interface Property {
     property_type: PropertyType;
     land_area_cents: number;
     location: string;
+    address: string;
     description: string;
     expected_price: number;
     negotiable: boolean;

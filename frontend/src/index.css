@@ -45,23 +45,24 @@
 
 /* Light is the default. Dark only when the user turns it on (data-theme="dark" on <html>). */
 :root[data-theme="dark"] {
-  --bg: #0d1b2c;
-  --bg-top: #10233a;
-  --surface: #132840;
-  --muted: #19324d;
-  --ink: #e7f0fa;
-  --sub: #9bb2cb;
-  --line: #23405f;
-  --brand: #7db6ec;
-  --brand-ink: #0a1d31;
-  --brand-soft: #18375a;
-  --sky: #17344f;
-  --sky-ink: #a9d2f5;
-  --sold: #8ea6c2;
-  --wa: #7db6ec;
-  --glass: rgb(19 40 64 / 0.88);
-  --glass-line: rgb(125 182 236 / 0.18);
-  --glass-active: rgb(125 182 236 / 0.14);
+  /* Soft neutral dark (easy on the eyes, high contrast text) with a light blue accent. */
+  --bg: #18191b;
+  --bg-top: #18191b;
+  --surface: #232427;
+  --muted: #2c2e32;
+  --ink: #ececee;
+  --sub: #a9adb4;
+  --line: #36383d;
+  --brand: #7fb3ec;
+  --brand-ink: #10161f;
+  --brand-soft: #24303d;
+  --sky: #24303d;
+  --sky-ink: #a8cdf3;
+  --sold: #a3abb5;
+  --wa: #7fb3ec;
+  --glass: rgb(35 36 39 / 0.92);
+  --glass-line: rgb(255 255 255 / 0.08);
+  --glass-active: rgb(127 179 236 / 0.14);
   color-scheme: dark;
 }
 

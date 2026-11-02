@@ -44,7 +44,10 @@ class SubmissionForm(BaseModel):
     seller_phone: Phone
     property_type: PropertyType
     land_area_cents: Cents
-    location: Location
+    location: Location  # area name, shown to buyers
+    area_lat: Annotated[float, Field(ge=-90, le=90)] | None = None  # from the place suggestion
+    area_lng: Annotated[float, Field(ge=-180, le=180)] | None = None
+    address: Annotated[str, text(5, 300)]  # full address: private
     description: Description
     expected_price: Price
     negotiable: bool
@@ -83,7 +86,7 @@ class PublishIn(Strict):
     documents_note: Short = ""
     photo_ids: Annotated[list[str], Field(max_length=3)]
     seller_confirmed: bool = False  # seller agreed to this price (needed for big price changes)
-    lat: Annotated[float, Field(ge=-90, le=90)] | None = None  # exact pin (private); public spot is blurred
+    lat: Annotated[float, Field(ge=-90, le=90)] | None = None  # area centre; buyers' search uses its grid flag
     lng: Annotated[float, Field(ge=-180, le=180)] | None = None
 
     @model_validator(mode="after")
