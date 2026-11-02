@@ -139,8 +139,8 @@ function HowItWorks() {
         </ol>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Fee label="Seller" value={`${config?.brokerage.seller_pct ?? 2}%`} />
-        <Fee label="Buyer" value={`${config?.brokerage.buyer_pct ?? 1}%`} />
+        <Fee label="Seller" tone="bg-peach-soft text-peach" value={`${config?.brokerage.seller_pct ?? 2}%`} />
+        <Fee label="Buyer" tone="bg-sky text-sky-ink" value={`${config?.brokerage.buyer_pct ?? 1}%`} />
       </div>
       <p className="px-2 text-center text-xs text-sub">Listing is always free.</p>
       {config && (
@@ -157,10 +157,10 @@ function HowItWorks() {
   );
 }
 
-function Fee({ label, value }: { label: string; value: string }) {
+function Fee({ label, value, tone }: { label: string; value: string; tone: string }) {
   return (
-    <div className="card p-4 text-center shadow-card">
-      <p className="text-3xl font-semibold text-brand">{value}</p>
+    <div className={cn("rounded-[28px] p-4 text-center", tone)}>
+      <p className="text-3xl font-semibold">{value}</p>
       <p className="text-sm text-sub">{label} brokerage</p>
     </div>
   );

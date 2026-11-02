@@ -37,7 +37,7 @@ export default function MapSearch() {
   useEffect(() => {
     if (!el.current) return;
     const map = createMap(el.current, fromUrl ?? CHENGANNUR, 13);
-    const brand = cssVar("--brand") || "#3a7fc8";
+    const brand = cssVar("--brand") || "#1f9d74";
     const circle = L.circle(map.getCenter(), {
       radius: radius * 1000,
       color: brand,

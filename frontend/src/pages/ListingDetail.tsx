@@ -69,7 +69,7 @@ export default function ListingDetail() {
       <section className="pt-5">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={sold ? "sold" : "brand"}>{sold ? "Sold" : "Available"}</Badge>
-          <Badge>{typeLabel(l.property_type)}</Badge>
+          <Badge tone={l.property_type === "house" ? "house" : "land"}>{typeLabel(l.property_type)}</Badge>
           <span className="ml-auto text-xs text-sub">#{l.number}</span>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
@@ -83,8 +83,9 @@ export default function ListingDetail() {
       </section>
 
       <section className="mt-5 grid grid-cols-2 gap-3">
-        <Fact icon={<Ruler size={18} />} label="Area" value={cents(l.land_area_cents)} />
+        <Fact tone="bg-land-soft text-land" icon={<Ruler size={18} />} label="Area" value={cents(l.land_area_cents)} />
         <Fact
+          tone={l.documents_available ? "bg-brand-soft text-brand" : "bg-sky text-sky-ink"}
           icon={l.documents_available ? <FileCheck2 size={18} /> : <FileClock size={18} />}
           label="Documents"
           value={l.documents_available ? "Available" : "Not yet uploaded"}
@@ -104,8 +105,8 @@ export default function ListingDetail() {
       </section>
 
 
-      <section className="mt-3 flex gap-3 rounded-3xl bg-brand-soft p-5 text-sm">
-        <Info size={18} className="mt-0.5 shrink-0 text-brand" />
+      <section className="mt-3 flex gap-3 rounded-[28px] bg-sky p-5 text-sm">
+        <Info size={18} className="mt-0.5 shrink-0 text-sky-ink" />
         <p>
           <span className="font-semibold">Buyer brokerage: {l.brokerage.buyer_pct}%</span>
           <span className="block text-sub">Paid only when the sale closes. Nilayam arranges and joins every visit.</span>
@@ -125,7 +126,7 @@ export default function ListingDetail() {
                 WhatsApp
               </a>
               <a href={telLink(l.contact)} className={pillAction}>
-                <Phone size={21} className="text-brand" />
+                <Phone size={21} className="text-sky-ink" />
                 Call
               </a>
               <Button className="h-[52px] flex-[1.6] rounded-full text-[15px]" onClick={() => setParams({ visit: "1" }, { replace: true })}>
@@ -144,10 +145,10 @@ export default function ListingDetail() {
 const pillAction =
   "flex h-[52px] flex-1 flex-col items-center justify-center gap-0.5 rounded-full text-[12px] font-medium text-ink transition-colors hover:bg-[var(--glass-active)]";
 
-function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Fact({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: string; tone: string }) {
   return (
     <div className="card p-4">
-      <span className="grid h-9 w-9 place-items-center rounded-2xl bg-brand-soft text-brand">{icon}</span>
+      <span className={cn("grid h-9 w-9 place-items-center rounded-2xl", tone)}>{icon}</span>
       <p className="mt-3 text-xs text-sub">{label}</p>
       <p className="font-semibold">{value}</p>
     </div>

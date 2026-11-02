@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { ChevronRight, PartyPopper } from "lucide-react";
 import { inr, typeLabel } from "@/lib/format";
@@ -28,9 +29,16 @@ export default function Inbox() {
 
       <div className="grid grid-cols-3 gap-2">
         {(["live", "sold", "not_listed"] as Group[]).map((g) => (
-          <Link key={g} to={`/admin/properties?group=${g}`} className="card-sm p-3 text-center">
+          <Link
+            key={g}
+            to={`/admin/properties?group=${g}`}
+            className={cn(
+              "rounded-[20px] p-3 text-center transition active:scale-[0.97]",
+              g === "live" ? "bg-brand-soft text-brand" : g === "sold" ? "bg-sold-soft text-sold" : "bg-muted text-sub",
+            )}
+          >
             <p className="text-2xl font-semibold">{data?.counts[g] ?? "–"}</p>
-            <p className="text-xs text-sub">{g === "live" ? "Live" : g === "sold" ? "Sold" : "Not listed"}</p>
+            <p className="text-xs opacity-80">{g === "live" ? "Live" : g === "sold" ? "Sold" : "Not listed"}</p>
           </Link>
         ))}
       </div>

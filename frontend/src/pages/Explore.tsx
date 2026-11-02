@@ -109,7 +109,7 @@ export default function Explore() {
         </div>
         <div className="no-scrollbar mt-3 flex items-center gap-2 overflow-x-auto">
           {(["all", "house", "land"] as const).map((t) => (
-            <Chip key={t} on={type === t} onClick={() => setType(t)}>
+            <Chip key={t} on={type === t} tone={t === "house" ? "house" : t === "land" ? "land" : "brand"} onClick={() => setType(t)}>
               {t === "all" ? "All" : t === "house" ? "Houses" : "Land"}
             </Chip>
           ))}
@@ -117,7 +117,7 @@ export default function Explore() {
           <Chip on={status === "live"} onClick={() => setStatus("live")}>
             For sale
           </Chip>
-          <Chip on={status === "sold"} onClick={() => setStatus("sold")}>
+          <Chip on={status === "sold"} tone="sold" onClick={() => setStatus("sold")}>
             Sold
           </Chip>
         </div>
@@ -147,16 +147,31 @@ export default function Explore() {
   );
 }
 
-function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+const CHIP_ON = {
+  brand: "bg-brand-soft text-brand shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--brand)_35%,transparent)]",
+  house: "bg-house-soft text-house shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--house)_35%,transparent)]",
+  land: "bg-land-soft text-land shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--land)_35%,transparent)]",
+  sold: "bg-sold-soft text-sold shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--sold)_35%,transparent)]",
+};
+
+function Chip({
+  on,
+  onClick,
+  children,
+  tone = "brand",
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  tone?: keyof typeof CHIP_ON;
+}) {
   return (
     <button
       onClick={onClick}
       aria-pressed={on}
       className={cn(
         "h-10 shrink-0 rounded-full px-4 text-[15px] font-medium transition duration-200 active:scale-95",
-        on
-          ? "bg-brand-soft text-brand shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--brand)_35%,transparent)]"
-          : "bg-surface text-sub shadow-[0_0_0_1px_var(--hairline)] hover:text-ink",
+        on ? CHIP_ON[tone] : "bg-surface text-sub shadow-[0_0_0_1px_var(--hairline)] hover:text-ink",
       )}
     >
       {children}
@@ -187,8 +202,8 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
 
 function SellBanner() {
   return (
-    <Link to="/sell" className="flex items-center gap-4 card p-5 shadow-card transition-colors card-hover">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
+    <Link to="/sell" className="card card-hover flex items-center gap-4 bg-peach-soft p-5">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-surface text-peach shadow-sm">
         <House size={22} />
       </span>
       <div className="min-w-0 flex-1">

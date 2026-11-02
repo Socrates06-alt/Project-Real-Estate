@@ -3,8 +3,10 @@ import { cn } from "@/lib/utils";
 
 const tones = {
   brand: "bg-brand-soft text-brand",
-  sold: "bg-muted text-sold",
+  house: "bg-house-soft text-house",
+  land: "bg-land-soft text-land",
   sky: "bg-sky text-sky-ink",
+  sold: "bg-sold-soft text-sold",
   gray: "bg-muted text-sub",
   glass: "bg-black/45 text-white backdrop-blur-md",
 };

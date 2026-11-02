@@ -3,9 +3,11 @@ import { CalendarDays, MapPin, MessageCircle, Phone } from "lucide-react";
 import type { Contact, Listing } from "@/lib/api";
 import { cents, inr, typeLabel } from "@/lib/format";
 import { PhotoCarousel } from "./PhotoCarousel";
+import { cn } from "@/lib/utils";
 import { telLink, waLink } from "./contact";
 
 const glassTag = "glass rounded-full px-3 py-1 text-[13px] font-medium text-ink";
+const tag = "rounded-full px-3 py-1 text-[13px] font-semibold shadow-sm";
 
 /** Feed post: swipeable photos, price and facts, then clear labelled actions. */
 export function ListingCard({ listing, contact }: { listing: Listing; contact: Contact }) {
@@ -22,7 +24,9 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
         className="aspect-[4/3] cursor-pointer rounded-[22px]"
         overlay={
           <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between p-3">
-            <span className={glassTag}>{sold ? "Sold" : typeLabel(listing.property_type)}</span>
+            <span className={cn(tag, sold ? "bg-sold-soft text-sold" : listing.property_type === "house" ? "bg-house-soft text-house" : "bg-land-soft text-land")}>
+              {sold ? "Sold" : typeLabel(listing.property_type)}
+            </span>
             <span className={glassTag}>#{listing.number}</span>
           </div>
         }
@@ -48,14 +52,14 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
         <div className="h-3" />
       ) : (
         <div className="mt-3 grid grid-cols-3 gap-1.5">
-          <a href={waLink(contact, listing)} target="_blank" rel="noreferrer" className={action}>
+          <a href={waLink(contact, listing)} target="_blank" rel="noreferrer" className={cn(action, "bg-brand-soft")}>
             <MessageCircle size={18} className="text-wa" /> WhatsApp
           </a>
-          <a href={telLink(contact)} className={action}>
-            <Phone size={17} className="text-brand" /> Call
+          <a href={telLink(contact)} className={cn(action, "bg-sky")}>
+            <Phone size={17} className="text-sky-ink" /> Call
           </a>
-          <Link to={`/p/${listing.id}?visit=1`} className={action}>
-            <CalendarDays size={17} className="text-brand" /> Visit
+          <Link to={`/p/${listing.id}?visit=1`} className={cn(action, "bg-peach-soft")}>
+            <CalendarDays size={17} className="text-peach" /> Visit
           </Link>
         </div>
       )}
@@ -64,7 +68,7 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
 }
 
 const action =
-  "flex h-11 items-center justify-center gap-1.5 rounded-[16px] bg-muted text-sm font-medium text-ink transition duration-200 hover:bg-brand-soft active:scale-[0.97]";
+  "flex h-11 items-center justify-center gap-1.5 rounded-[16px] text-sm font-medium text-ink transition duration-200 hover:brightness-[0.97] active:scale-[0.97]";
 
 export function ListingCardSkeleton() {
   return (
