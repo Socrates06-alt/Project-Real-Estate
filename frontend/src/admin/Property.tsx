@@ -25,7 +25,7 @@ export default function PropertyPage() {
   const { data, error, reload } = useAsync(() => call<Property>(`/properties/${id}`), [id]);
 
   if (error) return <ErrorState message={error.message} retry={reload} />;
-  if (!data) return <div className="mt-12 h-96 animate-pulse rounded-3xl bg-surface" />;
+  if (!data) return <div className="mt-12 h-96 shimmer rounded-[28px]" />;
   // Re-mount the editor whenever fresh data arrives so the form resets cleanly.
   return <Editor key={JSON.stringify(data.form) + data.group} p={data} reload={reload} />;
 }
@@ -92,14 +92,14 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         </div>
         <GroupBadge group={p.group} />
         {p.listing_id && p.group !== "not_listed" && (
-          <Link to={`/p/${p.listing_id}`} target="_blank" aria-label="See public page" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface border border-line">
+          <Link to={`/p/${p.listing_id}`} target="_blank" aria-label="See public page" className="card-sm grid h-10 w-10 shrink-0 place-items-center rounded-full">
             <ExternalLink size={16} />
           </Link>
         )}
       </header>
 
       {/* Seller */}
-      <section className="rounded-3xl border border-line bg-surface p-4">
+      <section className="card p-4">
         <p className="text-xs text-sub">Seller</p>
         <p className="text-lg font-semibold">{s.seller_name}</p>
         <p className="text-sm text-sub">{s.seller_phone}</p>
@@ -135,7 +135,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       </section>
 
       {/* What buyers see */}
-      <fieldset disabled={readOnly} className="space-y-4 rounded-3xl border border-line bg-surface p-4">
+      <fieldset disabled={readOnly} className="space-y-4 card p-4">
         <legend className="sr-only">What buyers see</legend>
         <p className="text-xs text-sub">What buyers see</p>
 

@@ -153,8 +153,10 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       onClick={onClick}
       aria-pressed={on}
       className={cn(
-        "h-10 shrink-0 rounded-full border px-4 text-[15px] font-medium transition-colors",
-        on ? "border-brand/40 bg-brand-soft text-brand" : "border-line bg-surface text-sub hover:text-ink",
+        "h-10 shrink-0 rounded-full px-4 text-[15px] font-medium transition duration-200 active:scale-95",
+        on
+          ? "bg-brand-soft text-brand shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--brand)_35%,transparent)]"
+          : "bg-surface text-sub shadow-[0_0_0_1px_var(--hairline)] hover:text-ink",
       )}
     >
       {children}
@@ -175,7 +177,7 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
     <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
       <span className="text-sub">Showing</span>
       {chips.map((c) => (
-        <span key={c as string} className="rounded-full border border-line bg-surface px-2.5 py-1 font-medium text-ink">
+        <span key={c as string} className="rounded-full bg-surface px-2.5 py-1 font-medium text-ink shadow-[0_0_0_1px_var(--hairline)]">
           {c}
         </span>
       ))}
@@ -185,7 +187,7 @@ function ParsedChips({ parsed }: { parsed: Parsed }) {
 
 function SellBanner() {
   return (
-    <Link to="/sell" className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 shadow-card transition-colors hover:border-brand/40">
+    <Link to="/sell" className="flex items-center gap-4 card p-5 shadow-card transition-colors card-hover">
       <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
         <House size={22} />
       </span>
@@ -206,8 +208,10 @@ function LocationButton({ area, onClear }: { area: SavedArea | null; onClear: ()
   return (
     <div
       className={cn(
-        "flex h-10 max-w-[60%] items-center rounded-full border text-sm font-medium",
-        area ? "border-brand/40 bg-brand-soft text-brand" : "border-line bg-surface text-ink",
+        "flex h-10 max-w-[60%] items-center rounded-full text-sm font-medium transition duration-200",
+        area
+          ? "bg-brand-soft text-brand shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--brand)_35%,transparent)]"
+          : "bg-surface text-ink shadow-[0_0_0_1px_var(--hairline)]",
       )}
     >
       <Link to={to} aria-label="Choose area" className="flex min-w-0 items-center gap-1.5 py-2 pr-2 pl-3">
@@ -261,7 +265,7 @@ function NearYouCard({ onArea }: { onArea: (a: SavedArea) => void }) {
   }
 
   return (
-    <div className="animate-fade rounded-3xl border border-line bg-surface p-4">
+    <div className="animate-fade card p-4">
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
           <LocateFixed size={20} />

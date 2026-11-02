@@ -17,8 +17,8 @@
   --color-wa: var(--wa);
   --color-sky: var(--sky);
   --color-sky-ink: var(--sky-ink);
-  --shadow-card: 0 1px 2px rgb(30 70 120 / 0.05), 0 6px 20px -6px rgb(30 70 120 / 0.10);
-  --shadow-float: 0 10px 36px -12px rgb(30 70 120 / 0.30);
+  --shadow-card: var(--card-shadow);
+  --shadow-float: var(--float-shadow);
 }
 
 :root {
@@ -40,6 +40,9 @@
   --glass: rgb(255 255 255 / 0.86);
   --glass-line: rgb(58 127 200 / 0.16);
   --glass-active: rgb(58 127 200 / 0.12);
+  --hairline: rgb(18 38 63 / 0.07);
+  --card-shadow: 0 0 0 1px var(--hairline), 0 1px 2px rgb(18 38 63 / 0.04), 0 10px 28px -14px rgb(18 38 63 / 0.16);
+  --float-shadow: 0 0 0 1px var(--hairline), 0 16px 40px -16px rgb(18 38 63 / 0.30);
   color-scheme: light;
 }
 
@@ -63,6 +66,9 @@
   --glass: rgb(35 36 39 / 0.92);
   --glass-line: rgb(255 255 255 / 0.08);
   --glass-active: rgb(127 179 236 / 0.14);
+  --hairline: rgb(255 255 255 / 0.07);
+  --card-shadow: 0 0 0 1px var(--hairline), 0 12px 28px -16px rgb(0 0 0 / 0.6);
+  --float-shadow: 0 0 0 1px var(--hairline), 0 18px 40px -16px rgb(0 0 0 / 0.7);
   color-scheme: dark;
 }
 
@@ -86,6 +92,59 @@ body {
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   font-size: 16px;
+  /* Inter's modern alternates: single-storey a, open digits */
+  font-feature-settings: "cv11", "ss01", "ss03";
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.015em;
+}
+
+@layer components {
+  /* Soft surface: hairline edge + gentle depth instead of hard borders. */
+  .card {
+    background: var(--surface);
+    border-radius: 28px;
+    box-shadow: var(--card-shadow);
+  }
+  .card-sm {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+  }
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--float-shadow);
+  }
+  .card-hover:active {
+    transform: scale(0.99);
+  }
+  /* Primary buttons: subtle top light + soft coloured glow. */
+  .btn-primary {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 82%, white), var(--brand));
+    color: var(--brand-ink);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.28),
+      0 8px 18px -10px color-mix(in srgb, var(--brand) 80%, transparent);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.04);
+  }
+  /* Loading placeholders that gently shimmer. */
+  .shimmer {
+    background: linear-gradient(90deg, var(--muted) 0%, color-mix(in srgb, var(--muted) 60%, var(--surface)) 50%, var(--muted) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }
 
 .no-scrollbar::-webkit-scrollbar {

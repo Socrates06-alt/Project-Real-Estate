@@ -166,7 +166,7 @@ export default function Sell() {
         </Field>
       </Card>
 
-      <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5">
+      <div className="flex items-center gap-3 card-sm p-3.5">
         <button
           type="button"
           role="checkbox"
@@ -222,7 +222,7 @@ export default function Sell() {
 
 function Card({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
-    <section className="space-y-3.5 rounded-3xl border border-line bg-surface p-5">
+    <section className="space-y-3.5 card p-5">
       <div className="flex items-baseline justify-between">
         <h2 className="font-semibold">{title}</h2>
         {hint && <span className="text-xs text-sub">{hint}</span>}
@@ -239,7 +239,7 @@ function Done({ number, contactWa }: { number: number; contactWa?: string }) {
         <Check size={30} strokeWidth={2.5} />
       </div>
       <h1 className="text-2xl font-semibold">Submission received</h1>
-      <div className="mt-6 rounded-3xl border border-line bg-surface px-8 py-4">
+      <div className="mt-6 card px-8 py-4">
         <p className="text-sm text-sub">Your property number</p>
         <p className="text-4xl font-semibold tracking-tight text-brand">#{number}</p>
       </div>

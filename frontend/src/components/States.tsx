@@ -3,7 +3,7 @@ import { Button } from "./ui/button";
 
 export function EmptyState({ icon, title, text, action }: { icon: ReactNode; title: string; text?: string; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center rounded-3xl border border-line bg-surface px-6 py-12 text-center shadow-card">
+    <div className="flex flex-col items-center card px-6 py-12 text-center shadow-card">
       <div className="mb-4 grid h-16 w-16 place-items-center rounded-3xl bg-brand-soft text-brand">{icon}</div>
       <p className="font-bold">{title}</p>
       {text && <p className="mt-1 max-w-xs text-sm text-sub">{text}</p>}
@@ -14,7 +14,7 @@ export function EmptyState({ icon, title, text, action }: { icon: ReactNode; tit
 
 export function ErrorState({ message, retry }: { message: string; retry?: () => void }) {
   return (
-    <div className="rounded-3xl border border-line bg-surface px-6 py-10 text-center shadow-card">
+    <div className="card px-6 py-10 text-center shadow-card">
       <p className="font-semibold">Couldn't load</p>
       <p className="mt-1 text-sm text-sub">{message}</p>
       {retry && (

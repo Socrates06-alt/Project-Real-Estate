@@ -91,7 +91,7 @@ export default function ListingDetail() {
         />
       </section>
 
-      <section className="mt-3 rounded-3xl border border-line bg-surface p-5">
+      <section className="mt-3 card p-5">
         <h2 className="mb-2 text-sm font-medium text-sub">About this property</h2>
         <p className="leading-relaxed whitespace-pre-line">{l.description}</p>
         {l.documents_note && (
@@ -146,7 +146,7 @@ const pillAction =
 
 function Fact({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-3xl border border-line bg-surface p-4">
+    <div className="card p-4">
       <span className="grid h-9 w-9 place-items-center rounded-2xl bg-brand-soft text-brand">{icon}</span>
       <p className="mt-3 text-xs text-sub">{label}</p>
       <p className="font-semibold">{value}</p>

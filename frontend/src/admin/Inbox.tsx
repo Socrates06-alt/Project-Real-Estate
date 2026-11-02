@@ -28,16 +28,16 @@ export default function Inbox() {
 
       <div className="grid grid-cols-3 gap-2">
         {(["live", "sold", "not_listed"] as Group[]).map((g) => (
-          <Link key={g} to={`/admin/properties?group=${g}`} className="rounded-2xl border border-line bg-surface p-3 text-center">
+          <Link key={g} to={`/admin/properties?group=${g}`} className="card-sm p-3 text-center">
             <p className="text-2xl font-semibold">{data?.counts[g] ?? "–"}</p>
             <p className="text-xs text-sub">{g === "live" ? "Live" : g === "sold" ? "Sold" : "Not listed"}</p>
           </Link>
         ))}
       </div>
 
-      {!data && <div className="h-40 animate-pulse rounded-3xl bg-surface" />}
+      {!data && <div className="h-40 shimmer rounded-[28px]" />}
       {empty && (
-        <div className="rounded-3xl border border-line bg-surface px-6 py-10 text-center">
+        <div className="card px-6 py-10 text-center">
           <PartyPopper className="mx-auto mb-2 text-brand" size={28} />
           <p className="font-semibold">All caught up</p>
           <p className="text-sm text-sub">New properties and visit requests will appear here.</p>
@@ -49,7 +49,7 @@ export default function Inbox() {
           <h2 className="mb-2 px-1 font-semibold">New properties · {data.new.length}</h2>
           <div className="space-y-2">
             {data.new.map((p) => (
-              <Link key={p.id} to={`/admin/p/${p.id}`} className="flex items-center gap-3 rounded-3xl border border-line bg-surface p-3">
+              <Link key={p.id} to={`/admin/p/${p.id}`} className="flex items-center gap-3 card p-3">
                 <PrivatePhoto url={p.cover_url} type={p.property_type} className="h-16 w-16 shrink-0 rounded-2xl" />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{p.seller_name}</p>

@@ -24,7 +24,7 @@ export default function Login() {
 
   return (
     <div className="grid min-h-dvh place-items-center px-4">
-      <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-3xl border border-line bg-surface p-7 shadow-card">
+      <form onSubmit={submit} className="w-full max-w-sm space-y-4 card p-7 shadow-card">
         <div className="mb-2 grid h-14 w-14 place-items-center rounded-2xl bg-brand-soft text-brand">
           <Lock size={24} />
         </div>

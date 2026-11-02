@@ -251,7 +251,7 @@ function PlaceSearch({ onPick }: { onPick: (p: Place) => void }) {
         )}
       </div>
       {open && results.length > 0 && (
-        <ul className="absolute inset-x-0 top-[58px] overflow-hidden rounded-3xl border border-line bg-surface shadow-float">
+        <ul className="absolute inset-x-0 top-[58px] overflow-hidden card shadow-float">
           {results.map((p) => (
             <li key={`${p.lat},${p.lng}`}>
               <button

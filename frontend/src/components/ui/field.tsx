@@ -2,7 +2,7 @@ import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "rea
 import { cn } from "@/lib/utils";
 
 const base =
-  "w-full rounded-2xl border border-line bg-muted/60 px-4 py-3 text-[15px] text-ink placeholder:text-sub/70 outline-none transition focus:border-brand focus:bg-surface focus:ring-4 focus:ring-brand/10";
+  "w-full rounded-[18px] border border-transparent bg-muted px-4 py-3 text-[15px] text-ink placeholder:text-sub/70 outline-none transition duration-200 focus:border-brand/40 focus:bg-surface focus:ring-4 focus:ring-brand/12";
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(base, "h-12", className)} {...props} />;
@@ -15,7 +15,7 @@ export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTex
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 flex items-baseline justify-between text-sm font-semibold">
+      <span className="mb-1.5 flex items-baseline justify-between px-1 text-sm font-medium">
         {label}
         {hint && <span className="text-xs font-normal text-sub">{hint}</span>}
       </span>

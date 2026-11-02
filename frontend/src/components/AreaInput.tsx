@@ -67,7 +67,7 @@ export function AreaInput({
         <MapPin size={17} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-brand" aria-label="Area found on map" />
       )}
       {open && results.length > 0 && (
-        <ul className="absolute inset-x-0 top-[52px] z-30 overflow-hidden rounded-2xl border border-line bg-surface shadow-float">
+        <ul className="absolute inset-x-0 top-[52px] z-30 overflow-hidden card-sm shadow-float">
           {results.map((p) => (
             <li key={`${p.lat},${p.lng}`}>
               <button

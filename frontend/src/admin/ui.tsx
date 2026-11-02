@@ -37,7 +37,7 @@ export function ContactButtons({ phone, size = "md" }: { phone: string; size?: "
   );
   return (
     <div className="flex gap-2">
-      <a href={`tel:${phone}`} className={cn(cls, "border border-line bg-surface")}>
+      <a href={`tel:${phone}`} className={cn(cls, "bg-surface shadow-[0_0_0_1px_var(--hairline)]")}>
         <Phone size={17} className="text-brand" /> Call
       </a>
       <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer" className={cn(cls, "bg-wa text-white")}>
@@ -74,7 +74,7 @@ export function VisitCard({ visit, onChange, showListing }: { visit: Visit; onCh
 
   const cancelled = visit.status === "cancelled";
   return (
-    <div className="rounded-3xl border border-line bg-surface p-4">
+    <div className="card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="font-semibold">{visit.name}</p>

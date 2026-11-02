@@ -63,14 +63,14 @@ export default function Properties() {
       )}
 
       {error && <ErrorState message={error.message} retry={reload} />}
-      {!data && !error && <div className="h-40 animate-pulse rounded-3xl bg-surface" />}
+      {!data && !error && <div className="h-40 shimmer rounded-[28px]" />}
       {data && !data.length && (
         <p className="py-12 text-center text-sub">{q ? `No property matches "${q}"` : "Nothing here yet"}</p>
       )}
 
       <div className="space-y-2">
         {data?.map((p) => (
-          <Link key={p.id} to={`/admin/p/${p.id}`} className="flex items-center gap-3 rounded-3xl border border-line bg-surface p-3">
+          <Link key={p.id} to={`/admin/p/${p.id}`} className="flex items-center gap-3 card p-3">
             <PrivatePhoto url={p.cover_url} type={p.property_type} className="h-16 w-16 shrink-0 rounded-2xl" />
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-2">

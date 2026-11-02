@@ -14,12 +14,12 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
   const open = () => nav(`/p/${listing.id}`);
 
   return (
-    <article className="overflow-hidden rounded-3xl border border-line bg-surface shadow-card">
+    <article className="card overflow-hidden p-2">
       <PhotoCarousel
         photos={listing.photos}
         type={listing.property_type}
         onOpen={open}
-        className="aspect-[4/3] cursor-pointer"
+        className="aspect-[4/3] cursor-pointer rounded-[22px]"
         overlay={
           <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between p-3">
             <span className={glassTag}>{sold ? "Sold" : typeLabel(listing.property_type)}</span>
@@ -28,7 +28,7 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
         }
       />
 
-      <button onClick={open} className="block w-full px-5 pt-4 text-left">
+      <button onClick={open} className="block w-full px-3 pt-3 text-left">
         <div className="flex items-baseline justify-between gap-3">
           <p className={sold ? "text-[22px] font-semibold text-sub line-through" : "text-[22px] font-semibold tracking-tight"}>
             {inr(listing.price)}
@@ -45,13 +45,13 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
       </button>
 
       {sold ? (
-        <div className="h-5" />
+        <div className="h-3" />
       ) : (
-        <div className="mt-4 grid grid-cols-3 border-t border-line">
+        <div className="mt-3 grid grid-cols-3 gap-1.5">
           <a href={waLink(contact, listing)} target="_blank" rel="noreferrer" className={action}>
             <MessageCircle size={18} className="text-wa" /> WhatsApp
           </a>
-          <a href={telLink(contact)} className={`${action} border-x border-line`}>
+          <a href={telLink(contact)} className={action}>
             <Phone size={17} className="text-brand" /> Call
           </a>
           <Link to={`/p/${listing.id}?visit=1`} className={action}>
@@ -63,15 +63,16 @@ export function ListingCard({ listing, contact }: { listing: Listing; contact: C
   );
 }
 
-const action = "flex h-12 items-center justify-center gap-2 text-sm font-medium text-ink transition-colors hover:bg-muted";
+const action =
+  "flex h-11 items-center justify-center gap-1.5 rounded-[16px] bg-muted text-sm font-medium text-ink transition duration-200 hover:bg-brand-soft active:scale-[0.97]";
 
 export function ListingCardSkeleton() {
   return (
-    <div className="animate-pulse overflow-hidden rounded-3xl border border-line bg-surface">
-      <div className="aspect-[4/3] bg-muted" />
-      <div className="space-y-2.5 p-5">
-        <div className="h-6 w-28 rounded-full bg-muted" />
-        <div className="h-4 w-56 rounded-full bg-muted" />
+    <div className="card overflow-hidden p-2">
+      <div className="shimmer aspect-[4/3] rounded-[22px]" />
+      <div className="space-y-2.5 p-3">
+        <div className="shimmer h-6 w-28 rounded-full" />
+        <div className="shimmer h-4 w-56 rounded-full" />
       </div>
     </div>
   );
