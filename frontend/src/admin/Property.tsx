@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Check, ChevronDown, ChevronLeft, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { Check, ImagePlus, ChevronDown, ChevronLeft, ExternalLink, Eye, EyeOff } from "lucide-react";
 import { ApiError, type PropertyType } from "@/lib/api";
 import { cents, inr, shortDate, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
@@ -41,6 +41,28 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   const [dontListOpen, setDontListOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [areaText, setAreaText] = useState(String(p.form.land_area_cents));
+  // Photos the admin adds here (when the seller didn't): shown and selected straight away.
+  const [added, setAdded] = useState<{ id: string; url: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const photos = [...p.photos, ...added];
+
+  async function addPhotos(files: FileList | null) {
+    if (!files?.length) return;
+    const form = new FormData();
+    Array.from(files).slice(0, 3 - photos.length).forEach((f) => form.append("photos", f));
+    setUploading(true);
+    try {
+      const res = await call<{ photos: { id: string; url: string }[] }>(`/properties/${p.id}/photos`, { method: "POST", form });
+      setAdded((a) => [...a, ...res.photos]);
+      setF((x) => ({ ...x, photo_ids: [...x.photo_ids, ...res.photos.map((ph) => ph.id)] }));
+      toast(res.photos.length > 1 ? "Photos added" : "Photo added");
+    } catch (e) {
+      toast((e as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
   const set = <K extends keyof PublicForm>(k: K, v: PublicForm[K]) => setF((x) => ({ ...x, [k]: v }));
 
   const s = p.seller;
@@ -74,7 +96,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   const togglePhoto = (pid: string) =>
     set(
       "photo_ids",
-      f.photo_ids.includes(pid) ? f.photo_ids.filter((x) => x !== pid) : p.photos.map((x) => x.id).filter((x) => x === pid || f.photo_ids.includes(x)),
+      f.photo_ids.includes(pid) ? f.photo_ids.filter((x) => x !== pid) : photos.map((x) => x.id).filter((x) => x === pid || f.photo_ids.includes(x)),
     );
 
   const mainLabel = { new: "Publish", live: "Save changes", not_listed: "Publish again", sold: "" }[p.group];
@@ -142,7 +164,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         <div>
           <p className="mb-1.5 text-sm font-semibold">Photos</p>
           <div className="grid grid-cols-3 gap-2">
-            {p.photos.map((ph) => {
+            {photos.map((ph) => {
               const on = f.photo_ids.includes(ph.id);
               return (
                 <button key={ph.id} type="button" onClick={() => togglePhoto(ph.id)} className="relative">
@@ -153,7 +175,15 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
                 </button>
               );
             })}
+            {!readOnly && photos.length < 3 && (
+              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-line text-sub transition hover:border-brand hover:text-brand">
+                <ImagePlus size={22} />
+                <span className="text-xs font-semibold">{uploading ? "Adding…" : "Add photo"}</span>
+                <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden disabled={uploading} onChange={(e) => (addPhotos(e.target.files), (e.target.value = ""))} />
+              </label>
+            )}
           </div>
+          {!photos.length && <p className="mt-1.5 text-xs text-sub">No photos yet. Add some so buyers can see the property.</p>}
         </div>
 
         <Field label="Price" hint={inr(f.price || 0)}>

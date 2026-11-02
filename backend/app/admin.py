@@ -7,9 +7,9 @@ import re
 import sqlite3
 import time
 import uuid
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, Response, UploadFile
 
 from app import geo, photos
 from app.config import get_settings
@@ -197,6 +197,33 @@ def get_property(submission_id: str, db: DB) -> dict:
         "form": form,
         "visits": visits,
     }
+
+
+@guarded.post("/properties/{submission_id}/photos", status_code=201)
+def add_photos(submission_id: str, db: DB, photo_files: Annotated[list[UploadFile], File(alias="photos")]) -> dict:
+    """Admin adds photos when the seller didn't (cleaned the same way; up to the photo limit)."""
+    get_submission(db, submission_id)
+    s = get_settings()
+    have = db.execute("select count(*) from photos where submission_id = ?", (submission_id,)).fetchone()[0]
+    if have + len(photo_files) > s.max_photos:
+        raise HTTPException(422, f"Up to {s.max_photos} photos per property")
+    added = []
+    for f in photo_files:
+        data = f.file.read(s.max_photo_bytes + 1)
+        if len(data) > s.max_photo_bytes:
+            raise HTTPException(413, "Each photo must be under 8 MB")
+        try:
+            clean = photos.sanitize(data)
+        except photos.InvalidImage as exc:
+            raise HTTPException(422, str(exc)) from exc
+        photo_id = str(uuid.uuid4())
+        path = photos.save_original(submission_id, photo_id, clean)
+        db.execute(
+            "insert into photos (id, submission_id, path, position) values (?, ?, ?, ?)",
+            (photo_id, submission_id, path, have + len(added)),
+        )
+        added.append({"id": photo_id, "url": f"/api/admin/photos/{photo_id}"})
+    return {"photos": added}
 
 
 @guarded.get("/photos/{photo_id}")

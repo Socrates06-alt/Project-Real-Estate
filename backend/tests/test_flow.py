@@ -307,3 +307,20 @@ def test_old_database_upgrades_to_allow_commercial(tmp_path):
         " location, description, expected_price, negotiable, documents_available, consent_version)"
         " values ('s2', 1002, 'd', 'B', '+919000000001', 'commercial', 5, 'Y', '', 100000, 0, 0, 'v')"
     )
+
+
+def test_admin_can_add_photos_when_seller_did_not(client, admin):
+    form = {"seller_name": "No Pics", "seller_phone": "9447033333", "property_type": "land", "land_area_cents": "5",
+            "location": "Kollam", "expected_price": "500000", "negotiable": "false", "documents_available": "false",
+            "consent": "true", "consent_version": "test-v1"}  # fmt: skip
+    sid = client.post("/api/submissions", data=form, headers=DEVICE).json()["id"]
+    assert client.get(f"/api/admin/properties/{sid}", headers=admin).json()["photos"] == []
+    files = [("photos", ("a.jpg", jpeg_with_gps(), "image/jpeg"))]
+    res = client.post(f"/api/admin/properties/{sid}/photos", files=files, headers=admin)
+    assert res.status_code == 201 and len(res.json()["photos"]) == 1
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    assert len(prop["photos"]) == 1
+    lid = publish(client, admin, sid, photo_ids=[prop["photos"][0]["id"]]).json()["listing_id"]
+    assert len(client.get(f"/api/listings/{lid}").json()["photos"]) == 1
+    too_many = [("photos", (f"{i}.jpg", jpeg_with_gps(), "image/jpeg")) for i in range(3)]
+    assert client.post(f"/api/admin/properties/{sid}/photos", files=too_many, headers=admin).status_code == 422

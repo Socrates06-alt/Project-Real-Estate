@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TYPE_TONE } from "@/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { AlignLeft, BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { AlignLeft, BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/lib/api";
 import { cents, inr, perCent, shortDate, typeLabel } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
@@ -102,24 +102,18 @@ export default function ListingDetail() {
         </p>
       </section>
 
-      <section className="mt-5 grid grid-cols-2 gap-3">
+      {/* Only what's actually known is shown; nothing empty or "not yet". */}
+      <section className={cn("mt-5 grid gap-3", l.documents_available ? "grid-cols-2" : "grid-cols-1")}>
         <Fact tone="bg-land-soft text-land" icon={<Ruler size={18} />} label="Area" value={cents(l.land_area_cents)} />
-        <Fact
-          tone={l.documents_available ? "bg-verified-soft text-verified" : "bg-muted text-sub"}
-          icon={l.documents_available ? <FileCheck2 size={18} /> : <FileClock size={18} />}
-          label="Documents"
-          value={l.documents_available ? "Available" : "Not yet uploaded"}
-        />
+        {l.documents_available && (
+          <Fact tone="bg-verified-soft text-verified" icon={<FileCheck2 size={18} />} label="Documents" value="Available" />
+        )}
       </section>
 
       <section className="mt-3 card p-5">
         <h2 className="text-base font-semibold">About this property</h2>
         <dl className="mt-3 divide-y divide-line rounded-2xl bg-muted/60 text-sm">
-          <InfoRow
-            icon={<AlignLeft size={17} className="text-brand" />}
-            label="Description"
-            value={l.description || "Call us for full details"}
-          />
+          {l.description && <InfoRow icon={<AlignLeft size={17} className="text-brand" />} label="Description" value={l.description} />}
           {l.documents_note && (
             <InfoRow icon={<FileCheck2 size={17} className="text-verified" />} label="Documents" value={l.documents_note} />
           )}
@@ -128,6 +122,15 @@ export default function ListingDetail() {
             <InfoRow icon={<BadgeCheck size={17} className="text-verified" />} label="Kerala RERA" value={config.data.rera_number} />
           )}
         </dl>
+        <div className="mt-4 flex items-center gap-3 rounded-2xl bg-brand-soft p-3 pl-4">
+          <p className="min-w-0 flex-1 text-sm font-medium text-brand">Call or message us for more details</p>
+          <a href={telLink(l.contact)} aria-label="Call" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent text-accent-ink shadow-sm transition active:scale-95">
+            <Phone size={18} />
+          </a>
+          <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface text-wa shadow-sm transition active:scale-95">
+            <MessageCircle size={19} />
+          </a>
+        </div>
       </section>
 
 

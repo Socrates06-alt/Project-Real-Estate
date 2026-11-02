@@ -6,7 +6,7 @@ const KEY = "nilayam.admin";
 type Ctx = {
   token: string | null;
   login: (password: string) => Promise<void>;
-  call: <T>(path: string, opts?: { method?: string; body?: unknown }) => Promise<T>;
+  call: <T>(path: string, opts?: { method?: string; body?: unknown; form?: FormData }) => Promise<T>;
   signOut: () => void;
 };
 
@@ -42,7 +42,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const call = useCallback(
-    async <T,>(path: string, opts: { method?: string; body?: unknown } = {}) => {
+    async <T,>(path: string, opts: { method?: string; body?: unknown; form?: FormData } = {}) => {
       try {
         return await api<T>(`/api/admin${path}`, { ...opts, token: stored() });
       } catch (e) {
