@@ -1,7 +1,5 @@
-import { Home, IndianRupee, LayoutGrid, MessageCircle, Route, Trees } from "lucide-react";
-import type { Contact } from "@/lib/api";
+import { Home, IndianRupee, LayoutGrid, Route, Trees } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { waLink } from "./contact";
 
 type Tile = { key: string; label: string; icon: React.ReactNode; tone: string; on: boolean; onClick: () => void };
 
@@ -52,20 +50,5 @@ export function FilterTiles(props: {
         </button>
       ))}
     </section>
-  );
-}
-
-/** Familiar floating WhatsApp button (bottom right, above the nav). */
-export function FloatingWhatsApp({ contact }: { contact: Contact }) {
-  return (
-    <a
-      href={waLink(contact)}
-      target="_blank"
-      rel="noreferrer"
-      aria-label="Chat with Nilayam on WhatsApp"
-      className="fixed right-4 bottom-[calc(max(0.75rem,env(safe-area-inset-bottom))+76px)] z-40 grid h-14 w-14 place-items-center rounded-full bg-wa text-white shadow-float transition active:scale-95"
-    >
-      <MessageCircle size={26} />
-    </a>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { FilterTiles, FloatingWhatsApp } from "@/components/HomeSections";
+import { FilterTiles } from "@/components/HomeSections";
 import { Sheet } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
 import { getMyLocation, isNearTaluk } from "@/lib/geo";
@@ -142,7 +142,6 @@ export default function Explore() {
           </Button>
         )}
       </div>
-      {contact && <FloatingWhatsApp contact={contact} />}
     </div>
   );
 }
