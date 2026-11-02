@@ -4,6 +4,13 @@ import re
 from dataclasses import dataclass
 
 _TYPE_WORDS = {
+    "commercial": "commercial",
+    "shop": "commercial",
+    "shops": "commercial",
+    "office": "commercial",
+    "building": "commercial",
+    "godown": "commercial",
+    "warehouse": "commercial",
     "house": "house",
     "houses": "house",
     "home": "house",

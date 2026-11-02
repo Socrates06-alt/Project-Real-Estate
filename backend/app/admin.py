@@ -161,7 +161,7 @@ def get_property(submission_id: str, db: DB) -> dict:
     sub.pop("device_hash")
     listing = one(db, "select * from listings where submission_id = ?", submission_id)
     photo_rows = many(db, "select id from photos where submission_id = ? order by position", submission_id)
-    kind = "House" if sub["property_type"] == "house" else "Land"
+    kind = {"house": "House", "land": "Land", "commercial": "Commercial property"}[sub["property_type"]]
     # The editable form: current listing, or a ready-made one from the seller's submission (no seller identity).
     form = (
         {**{k: listing[k] for k in PUBLIC_FIELDS}, "lat": listing["lat"], "lng": listing["lng"]}
@@ -238,8 +238,6 @@ def publish(submission_id: str, body: PublishIn, db: DB) -> dict:
     valid_photos = {
         p["id"]: p["path"] for p in many(db, "select id, path from photos where submission_id = ?", submission_id)
     }
-    if not body.photo_ids:
-        raise HTTPException(422, "Show at least one photo")
     if not set(body.photo_ids) <= valid_photos.keys() or len(set(body.photo_ids)) != len(body.photo_ids):
         raise HTTPException(422, "Invalid photos")
 

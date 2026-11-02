@@ -1,5 +1,6 @@
+import { TYPE_ICON } from "@/lib/propertyType";
 import { useState } from "react";
-import { Home, MessageCircle, Phone, Trees } from "lucide-react";
+import { MessageCircle, Phone } from "lucide-react";
 import type { PropertyType } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
@@ -21,7 +22,7 @@ export const GroupBadge = ({ group }: { group: Group }) => <Badge tone={GROUP_TO
 /** Private (admin-only) photo, fetched with the admin token. */
 export function PrivatePhoto({ url, type, className }: { url: string | null; type: PropertyType; className?: string }) {
   const src = usePrivateImage(url ?? "");
-  const Icon = type === "house" ? Home : Trees;
+  const Icon = TYPE_ICON[type];
   return (
     <div className={cn("grid place-items-center overflow-hidden bg-brand-soft text-brand/50", className)}>
       {url && src ? <img src={src} alt="" className="h-full w-full object-cover" /> : <Icon size={22} />}

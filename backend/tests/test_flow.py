@@ -162,6 +162,13 @@ def test_originals_and_snapshots_are_immutable(client, admin):
 
 def test_address_and_description_are_optional_but_basics_required(client):
     assert submit(client, address="", description="").status_code == 201
+    form = {k: v for k, v in [("seller_name", "No Photo"), ("seller_phone", "9447011111"), ("property_type", "land"),
+            ("land_area_cents", "5"), ("location", "Kollam"), ("expected_price", "500000"), ("negotiable", "false"),
+            ("documents_available", "false"), ("consent", "true"), ("consent_version", "test-v1")]}  # fmt: skip
+    assert client.post("/api/submissions", data=form, headers=DEVICE).status_code == 201  # photos optional
+    assert submit(client, seller_name="").status_code == 422
+    assert submit(client, seller_phone="").status_code == 422
+    assert submit(client, expected_price="").status_code == 422
     assert submit(client, location="").status_code == 422
     assert submit(client, land_area_cents="").status_code == 422
     assert submit(client, property_type="").status_code == 422
@@ -255,3 +262,48 @@ def test_home_badges_and_documents_filter(client, admin):
     nodocs_lid = publish(client, admin, nodocs).json()["listing_id"]
     with_docs = [i["id"] for i in client.get("/api/listings", params={"docs": True, "limit": 50}).json()["items"]]
     assert lid in with_docs and nodocs_lid not in with_docs
+
+
+def test_commercial_property_and_upgrade(client, admin):
+    sid = submit(client, property_type="commercial", location="Kollam").json()["id"]
+    lid = publish(client, admin, sid).json()["listing_id"]
+    assert client.get(f"/api/listings/{lid}").json()["property_type"] == "commercial"
+    found = [i["id"] for i in client.get("/api/listings", params={"type": "commercial", "limit": 50}).json()["items"]]
+    assert lid in found
+    assert lid in [i["id"] for i in client.get("/api/listings", params={"q": "shop kollam"}).json()["items"]]
+
+
+def test_old_database_upgrades_to_allow_commercial(tmp_path):
+    import sqlite3
+
+    from app import db as dbmod
+
+    path = tmp_path / "old.db"
+    conn = sqlite3.connect(path)
+    old_schema = dbmod.SCHEMA.replace("'house', 'land', 'commercial'", "'house', 'land'")
+    conn.executescript(old_schema)
+    conn.execute("pragma user_version = 4")
+    conn.execute(
+        "insert into submissions (id, number, device_hash, seller_name, seller_phone, property_type, land_area_cents,"
+        " location, description, expected_price, negotiable, documents_available, consent_version)"
+        " values ('s1', 1001, 'd', 'A', '+919000000000', 'land', 5, 'X', '', 100000, 0, 0, 'v')"
+    )
+    conn.commit()
+    conn.close()
+
+    settings = dbmod.get_settings()
+    original = settings.database_path
+    settings.database_path = str(path)
+    try:
+        dbmod.init_db()
+    finally:
+        settings.database_path = original
+    conn = sqlite3.connect(path)
+    assert conn.execute("pragma user_version").fetchone()[0] == dbmod.SCHEMA_VERSION
+    assert conn.execute("select count(*) from submissions").fetchone()[0] == 1  # data kept
+    conn.execute("update submissions set status = 'listed'")  # still allowed
+    conn.execute(
+        "insert into submissions (id, number, device_hash, seller_name, seller_phone, property_type, land_area_cents,"
+        " location, description, expected_price, negotiable, documents_available, consent_version)"
+        " values ('s2', 1002, 'd', 'B', '+919000000001', 'commercial', 5, 'Y', '', 100000, 0, 0, 'v')"
+    )

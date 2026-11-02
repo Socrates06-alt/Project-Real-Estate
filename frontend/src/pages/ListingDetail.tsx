@@ -1,10 +1,10 @@
+import { TYPE_TONE } from "@/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { BadgeCheck, CalendarDays, Clock3, ChevronLeft, FileCheck2, FileClock, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/lib/api";
 import { cents, inr, perCent, shortDate, typeLabel, updatedAgo } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
-import { SaveButton } from "@/components/SaveButton";
 import { VisitSheet } from "@/components/VisitSheet";
 import { ErrorState } from "@/components/States";
 import { Badge } from "@/components/ui/badge";
@@ -61,12 +61,9 @@ export default function ListingDetail() {
             <button onClick={back} aria-label="Back" className={roundBtn}>
               <ChevronLeft size={22} />
             </button>
-            <div className="flex gap-2">
-              <SaveButton id={l.id} className="h-11 w-11" />
             <button onClick={share} aria-label="Share" className={roundBtn}>
               <Share2 size={18} />
             </button>
-            </div>
           </div>
         }
       />
@@ -76,11 +73,11 @@ export default function ListingDetail() {
           <Badge tone={sold ? "sold" : "brand"}>{sold ? "Sold" : "Available"}</Badge>
           {!sold && (
             <Badge tone="verified">
-              <BadgeCheck size={13} /> Verified by Nilayam
+              <BadgeCheck size={13} /> Verified by LandFinder
             </Badge>
           )}
           {!sold && l.price_reduced && <Badge tone="brand">Price reduced</Badge>}
-          <Badge tone={l.property_type === "house" ? "house" : "land"}>{typeLabel(l.property_type)}</Badge>
+          <Badge tone={TYPE_TONE[l.property_type]}>{typeLabel(l.property_type)}</Badge>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
           <h1 className={cn("text-[32px] leading-none font-bold tracking-tight", sold ? "text-sub" : "text-price")}>{inr(l.price)}</h1>
@@ -118,7 +115,7 @@ export default function ListingDetail() {
           </span>
           · Listed {shortDate(l.listed_at)} · Exact location shared when we arrange your visit.
         </p>
-        {config.data?.rera_number && <p className="mt-1 text-xs text-sub">Listed by Nilayam · Kerala RERA {config.data.rera_number}</p>}
+        {config.data?.rera_number && <p className="mt-1 text-xs text-sub">Listed by LandFinder · Kerala RERA {config.data.rera_number}</p>}
       </section>
 
 
@@ -126,7 +123,7 @@ export default function ListingDetail() {
         <Info size={18} className="mt-0.5 shrink-0 text-sky-ink" />
         <p>
           <span className="font-semibold">Buyer brokerage: {l.brokerage.buyer_pct}%</span>
-          <span className="block text-sub">Paid only when the sale closes. Nilayam arranges and joins every visit.</span>
+          <span className="block text-sub">Paid only when the sale closes. LandFinder arranges and joins every visit.</span>
         </p>
       </section>
 
@@ -139,7 +136,7 @@ export default function ListingDetail() {
           ) : (
             <>
               <a href={telLink(l.contact)} className={cn(buttonVariants({ variant: "accent" }), "h-[52px] flex-[1.6] rounded-full text-base")}>
-                <Phone size={19} /> Call Nilayam
+                <Phone size={19} /> Call LandFinder
               </a>
               <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
                 <MessageCircle size={21} className="text-wa" />

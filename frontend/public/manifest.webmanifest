@@ -1,7 +1,7 @@
 {
-  "name": "Nilayam",
-  "short_name": "Nilayam",
-  "description": "Verified land and homes in Chengannur",
+  "name": "LandFinder",
+  "short_name": "LandFinder",
+  "description": "Verified land, homes and commercial property",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#2e3a8c",

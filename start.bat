@@ -1,5 +1,5 @@
 @echo off
-REM Starts Nilayam: backend (API) and frontend (web app) in two windows.
+REM Starts LandFinder: backend (API) and frontend (web app) in two windows.
 cd /d "%~dp0"
 
 if not exist backend\.venv (
@@ -13,8 +13,8 @@ if not exist frontend\node_modules (
   pushd frontend & call npm install & popd
 )
 
-start "Nilayam backend" cmd /k "cd /d %~dp0backend && .venv\Scripts\uvicorn app.main:app --reload"
-start "Nilayam frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
+start "LandFinder backend" cmd /k "cd /d %~dp0backend && .venv\Scripts\uvicorn app.main:app --reload"
+start "LandFinder frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
 timeout /t 6 >nul
 start http://localhost:5173
 exit /b 0

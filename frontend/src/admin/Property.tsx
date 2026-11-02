@@ -78,7 +78,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
     );
 
   const mainLabel = { new: "Publish", live: "Save changes", not_listed: "Publish again", sold: "" }[p.group];
-  const mainDisabled = busy || !f.photo_ids.length || (needsConfirm && !sellerConfirmed) || (p.group === "live" && !dirty);
+  const mainDisabled = busy || (needsConfirm && !sellerConfirmed) || (p.group === "live" && !dirty);
 
   return (
     <div className="space-y-4 pb-24">
@@ -186,6 +186,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           options={[
             { value: "house", label: "House" },
             { value: "land", label: "Land" },
+            { value: "commercial", label: "Commercial" },
           ]}
         />
         <Field label="Land size">

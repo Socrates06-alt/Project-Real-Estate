@@ -1,5 +1,5 @@
+import { TYPE_ICON } from "@/lib/propertyType";
 import { useRef, useState, type ReactNode } from "react";
-import { Home, Trees } from "lucide-react";
 import { mediaUrl, type PropertyType } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -52,7 +52,7 @@ export function PhotoCarousel({
 }
 
 function Placeholder({ type, onClick }: { type: PropertyType; onClick?: () => void }) {
-  const Icon = type === "house" ? Home : Trees;
+  const Icon = TYPE_ICON[type];
   return (
     <div onClick={onClick} className="grid h-full w-full shrink-0 place-items-center bg-brand-soft text-brand/60">
       <Icon size={56} strokeWidth={1.4} />

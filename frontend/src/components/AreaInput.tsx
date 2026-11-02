@@ -7,14 +7,14 @@ export type Area = { name: string; lat: number | null; lng: number | null };
 
 /**
  * Area box: type a few letters, tap a suggestion (sets the area's centre for map search).
- * Typing without picking still works (no map position; Nilayam can fix it in admin).
+ * Typing without picking still works (no map position; LandFinder can fix it in admin).
  */
 export function AreaInput({
   value,
   onChange,
   name,
   required,
-  placeholder = "Start typing, e.g. Puliyoor",
+  placeholder = "Start typing your town or village",
 }: {
   value: Area;
   onChange: (a: Area) => void;

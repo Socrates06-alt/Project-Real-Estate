@@ -52,7 +52,7 @@ export const mediaUrl = (u: string) => (u.startsWith("http") ? u : BASE + u);
 
 // ---- Types -----------------------------------------------------------------
 
-export type PropertyType = "house" | "land";
+export type PropertyType = "house" | "land" | "commercial";
 
 export interface Listing {
   id: string;

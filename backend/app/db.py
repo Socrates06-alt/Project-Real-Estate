@@ -21,12 +21,12 @@ create table if not exists submissions (
     device_hash         text not null,
     seller_name         text not null,
     seller_phone        text not null,
-    property_type       text not null check (property_type in ('house', 'land')),
+    property_type       text not null check (property_type in ('house', 'land', 'commercial')),
     land_area_cents     real not null check (land_area_cents > 0),
     location            text not null,  -- area name (public), e.g. "Puliyoor"
     area_lat            real,           -- area centre from the place suggestion
     area_lng            real,
-    address             text not null default '',  -- full address: private, for Nilayam only
+    address             text not null default '',  -- full address: private, for LandFinder only
     description         text not null,
     expected_price      integer not null check (expected_price > 0),
     negotiable          integer not null,
@@ -55,7 +55,7 @@ create table if not exists listings (
     submission_id       text not null unique references submissions (id),
     state               text not null default 'draft' check (state in ('draft', 'published', 'sold', 'withdrawn')),
     title               text not null,
-    property_type       text not null check (property_type in ('house', 'land')),
+    property_type       text not null check (property_type in ('house', 'land', 'commercial')),
     land_area_cents     real not null,
     location            text not null,
     description         text not null,
@@ -127,7 +127,7 @@ def connect() -> sqlite3.Connection:
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -144,6 +144,27 @@ UPGRADES = {
 }
 OLDEST_UPGRADABLE = 2
 
+
+def _allow_commercial(conn: sqlite3.Connection) -> None:
+    """Widen the property_type check to include 'commercial'.
+
+    Relaxing a CHECK doesn't change stored data, so SQLite allows editing the schema text in place.
+    """
+    old = "check (property_type in ('house', 'land'))"
+    new = "check (property_type in ('house', 'land', 'commercial'))"
+    version = conn.execute("pragma schema_version").fetchone()[0]
+    conn.execute("pragma writable_schema = on")
+    conn.execute(
+        "update sqlite_master set sql = replace(sql, ?, ?)"
+        " where type = 'table' and name in ('submissions', 'listings')",
+        (old, new),
+    )
+    conn.execute(f"pragma schema_version = {version + 1}")
+    conn.execute("pragma writable_schema = off")
+
+
+UPGRADES[5] = [_allow_commercial]
+
 log = logging.getLogger("nilayam")
 
 
@@ -158,8 +179,8 @@ def init_db() -> None:
         if has_tables and OLDEST_UPGRADABLE <= version < SCHEMA_VERSION:
             conn = sqlite3.connect(path)
             for v in range(version + 1, SCHEMA_VERSION + 1):
-                for sql in UPGRADES.get(v, []):
-                    conn.execute(sql)
+                for step in UPGRADES.get(v, []):
+                    step(conn) if callable(step) else conn.execute(step)
                 conn.execute(f"pragma user_version = {v}")
             conn.commit()
             conn.close()

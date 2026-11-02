@@ -92,7 +92,7 @@ def list_listings(
     db: DB,
     request: Request,
     q: str = Query("", max_length=200),
-    type: Literal["house", "land"] | None = None,
+    type: Literal["house", "land", "commercial"] | None = None,
     status: Literal["live", "sold", "all"] = "live",
     limit: int = Query(20, ge=1, le=50),
     offset: int = Query(0, ge=0),
@@ -191,15 +191,16 @@ def request_visit(listing_id: str, body: VisitRequestIn, db: DB) -> dict:
 @router.post("/submissions", status_code=201)
 def create_submission(
     form: Annotated[SubmissionForm, Form()],
-    photo_files: Annotated[list[UploadFile], File(alias="photos")],
     device: Annotated[str, Depends(device_hash)],
     db: DB,
+    photo_files: Annotated[list[UploadFile] | None, File(alias="photos")] = None,
 ) -> dict:
     s = get_settings()
     if not form.consent or form.consent_version != s.consent_version:
         raise HTTPException(422, "Please accept the current brokerage terms")
-    if not 1 <= len(photo_files) <= s.max_photos:
-        raise HTTPException(422, f"Upload between 1 and {s.max_photos} photos")
+    photo_files = photo_files or []  # photos are optional
+    if len(photo_files) > s.max_photos:
+        raise HTTPException(422, f"Upload up to {s.max_photos} photos")
 
     images = []
     for f in photo_files:

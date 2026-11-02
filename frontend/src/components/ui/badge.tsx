@@ -5,6 +5,7 @@ const tones = {
   brand: "bg-brand-soft text-brand",
   house: "bg-house-soft text-house",
   land: "bg-land-soft text-land",
+  commercial: "bg-commercial-soft text-commercial",
   sky: "bg-sky text-sky-ink",
   sold: "bg-sold-soft text-sold",
   gray: "bg-muted text-sub",

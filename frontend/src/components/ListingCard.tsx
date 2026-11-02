@@ -4,8 +4,8 @@ import type { Contact, Listing } from "@/lib/api";
 import { cents, inr, isNew, perCent, typeLabel, updatedAgo } from "@/lib/format";
 import { PhotoCarousel } from "./PhotoCarousel";
 import { cn } from "@/lib/utils";
+import { TYPE_TAG } from "@/lib/propertyType";
 import { telLink, waLink } from "./contact";
-import { SaveButton } from "./SaveButton";
 
 const tag = "rounded-full px-3 py-1 text-[13px] font-semibold shadow-sm";
 const outlineTag = "bg-surface text-brand shadow-[inset_0_0_0_1.5px_var(--brand)]";
@@ -29,17 +29,16 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
           <>
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3">
               <div className="flex flex-wrap gap-1.5">
-                <span className={cn(tag, sold ? "bg-sold-soft text-sold" : listing.property_type === "house" ? "bg-house-soft text-house" : "bg-land-soft text-land")}>
+                <span className={cn(tag, sold ? "bg-sold-soft text-sold" : TYPE_TAG[listing.property_type])}>
                   {sold ? "Sold" : typeLabel(listing.property_type)}
                 </span>
                 {!sold && isNew(listing.listed_at) && <span className={cn(tag, outlineTag)}>New</span>}
                 {!sold && listing.price_reduced && <span className={cn(tag, outlineTag)}>Price reduced</span>}
               </div>
             </div>
-            <SaveButton id={listing.id} className="absolute top-2.5 right-2.5" />
             {!sold && (
               <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-verified-soft px-2.5 py-1 text-[12px] font-semibold text-verified shadow-sm">
-                <BadgeCheck size={14} /> Verified by Nilayam
+                <BadgeCheck size={14} /> Verified by LandFinder
               </span>
             )}
           </>

@@ -1,6 +1,7 @@
+import { TYPE_ICON } from "@/lib/propertyType";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Home, MessageCircle, Phone, Trees } from "lucide-react";
+import { ChevronRight, Home, MessageCircle, Phone } from "lucide-react";
 import { api, getConfig, type MySubmission, type SubmissionStatus } from "@/lib/api";
 import { inr, shortDate } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
@@ -63,7 +64,7 @@ function MyListings() {
     <div className="space-y-3">
       {data.map((s) => {
         const st = STATUS[s.status];
-        const Icon = s.property_type === "house" ? Home : Trees;
+        const Icon = TYPE_ICON[s.property_type];
         const body = (
           <>
             <div className="flex items-center gap-3">

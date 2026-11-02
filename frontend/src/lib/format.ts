@@ -25,7 +25,7 @@ export function timeAgo(iso: string) {
   return shortDate(iso);
 }
 
-export const typeLabel = (t: string) => (t === "house" ? "House" : "Land");
+export const typeLabel = (t: string) => ({ house: "House", land: "Land", commercial: "Commercial" })[t] ?? t;
 
 /** Kerala buyers compare land by price per cent: "₹1.8 L/cent". */
 export function perCent(price: number, cents: number): string | null {

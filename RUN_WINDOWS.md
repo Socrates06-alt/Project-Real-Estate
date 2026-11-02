@@ -1,4 +1,4 @@
-# Run Nilayam on Windows
+# Run LandFinder on Windows
 
 No database, Docker or cloud account needed.
 

@@ -1,4 +1,4 @@
-# Nilayam backend (prototype)
+# LandFinder backend (prototype)
 
 A lean FastAPI app on **SQLite**: no database server, no cloud accounts. The database file
 (`nilayam.db`) and photo folder (`media/`) are created automatically on first start.

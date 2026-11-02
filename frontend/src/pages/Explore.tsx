@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { FilterTiles } from "@/components/HomeSections";
+import { FilterTiles, type PropertyFilter } from "@/components/HomeSections";
 import { Sheet } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
 import { getMyLocation, isNearTaluk } from "@/lib/geo";
@@ -15,7 +15,7 @@ import { ListingCard, ListingCardSkeleton } from "@/components/ListingCard";
 import { EmptyState, ErrorState } from "@/components/States";
 import { Button } from "@/components/ui/button";
 
-type TypeFilter = "all" | "house" | "land";
+type TypeFilter = PropertyFilter;
 const PAGE = 10;
 
 export default function Explore() {
@@ -113,16 +113,7 @@ export default function Explore() {
       </header>
 
       <div className="space-y-4 pt-4">
-        <FilterTiles
-          type={type}
-          text={input.trim().toLowerCase()}
-          onAll={() => {
-            setType("all");
-            setInput("");
-          }}
-          onType={(t) => setType(type === t ? "all" : t)}
-          onText={(t) => setInput(input.trim().toLowerCase() === t ? "" : t)}
-        />
+        <FilterTiles type={type} onType={setType} />
         {!area && <NearYouPopup onArea={setArea} />}
         {isHome && <SellBanner />}
         {isHome && data && items.length > 0 && <h2 className="px-1 pt-1 font-semibold">All properties</h2>}

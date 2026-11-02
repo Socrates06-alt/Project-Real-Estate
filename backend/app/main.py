@@ -20,7 +20,7 @@ async def lifespan(_: FastAPI):
 
 def create_app() -> FastAPI:
     settings = get_settings()
-    app = FastAPI(title="Nilayam API (prototype)", lifespan=lifespan)
+    app = FastAPI(title="LandFinder API (prototype)", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

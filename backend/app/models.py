@@ -27,7 +27,7 @@ Location = Annotated[str, text(2, 120)]
 Short = Annotated[str, text(0, 500)]
 Cents = Annotated[float, Field(gt=0, le=100_000)]
 Price = Annotated[int, Field(gt=0, le=10**11)]
-PropertyType = Literal["house", "land"]
+PropertyType = Literal["house", "land", "commercial"]
 VisitStatus = Literal["new", "contacted", "scheduled", "done", "cancelled"]
 
 

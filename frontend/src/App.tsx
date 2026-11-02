@@ -5,7 +5,6 @@ import Explore from "@/pages/Explore";
 import ListingDetail from "@/pages/ListingDetail";
 import Sell from "@/pages/Sell";
 import Profile from "@/pages/Profile";
-import Saved from "@/pages/Saved";
 
 // The map (and Leaflet) only loads when someone opens it.
 const MapSearch = lazy(() => import("@/pages/MapSearch"));
@@ -33,7 +32,6 @@ export default function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<Explore />} />
-        <Route path="saved" element={<Saved />} />
         <Route path="sell" element={<Sell />} />
         <Route path="me" element={<Profile />} />
       </Route>

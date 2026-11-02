@@ -56,7 +56,6 @@ export default function Sell() {
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!config) return;
-    if (!photos.length) return setError("Add at least one photo");
     if (!agree) return setError("Please accept the brokerage terms");
     const f = new FormData(e.currentTarget);
     f.set("property_type", type);
@@ -127,33 +126,40 @@ export default function Sell() {
           options={[
             { value: "house", label: "House" },
             { value: "land", label: "Land" },
+            { value: "commercial", label: "Commercial" },
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
+          <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="e.g. 10" pattern="\d+(\.\d{1,2})?" />
         </Field>
-        <Field label="Location" hint="Shown to buyers">
+        <Field label="Location">
           <AreaInput name="location" required value={area} onChange={setArea} />
         </Field>
-        <Field label="Full address" hint="Optional · only for Nilayam">
-          <Textarea name="address" maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, landmark, PIN" />
+        <Field label="Full address">
+          <Textarea name="address" maxLength={300} rows={2} className="min-h-0" placeholder="House or building name, street, landmark, PIN" />
         </Field>
-        <Field label="Description" hint="Optional">
+        <Field label="Description">
           <Textarea
             name="description"
             maxLength={4000}
-            placeholder={type === "house" ? "Bedrooms, built-up area, road access, water…" : "Road access, shape of plot, trees, water…"}
+            placeholder={
+              type === "house"
+                ? "Bedrooms, built-up area, road access, water…"
+                : type === "commercial"
+                  ? "Floor area, frontage, parking, road access…"
+                  : "Road access, shape of plot, trees, water…"
+            }
           />
         </Field>
       </Card>
 
       <Card title="Price & documents">
         <Field label="Expected price">
-          <AffixInput name="expected_price" prefix="₹" required inputMode="numeric" placeholder="55,00,000" />
+          <AffixInput name="expected_price" prefix="₹" required inputMode="numeric" placeholder="e.g. 25,00,000" />
         </Field>
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
-        {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey sketch" />}
+        {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
       </Card>
 
       <Card title="Your details">
@@ -161,7 +167,7 @@ export default function Sell() {
           <Input name="seller_name" required minLength={2} maxLength={80} autoComplete="name" />
         </Field>
         <Field label="Phone">
-          <Input name="seller_phone" required inputMode="tel" autoComplete="tel" placeholder="98470 12345" />
+          <Input name="seller_phone" required inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number" />
         </Field>
       </Card>
 
@@ -193,7 +199,7 @@ export default function Sell() {
             Listing is <b>free</b>.
           </li>
           <li>
-            Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}%</b>, only when the sale closes through Nilayam.
+            Seller brokerage: <b>{config?.brokerage.seller_pct ?? 2}%</b>, only when the sale closes through LandFinder.
           </li>
           <li>Buyers pay {config?.brokerage.buyer_pct ?? 1}% separately.</li>
           <li>We confirm any price change with you before updating the listing.</li>

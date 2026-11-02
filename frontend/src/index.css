@@ -23,6 +23,8 @@
   --color-house-soft: var(--house-soft);
   --color-land: var(--land);
   --color-land-soft: var(--land-soft);
+  --color-commercial: var(--commercial);
+  --color-commercial-soft: var(--commercial-soft);
   --color-peach: var(--peach);
   --color-peach-soft: var(--peach-soft);
   --color-accent: var(--accent);
@@ -48,14 +50,16 @@
   --ink: #1a1d29;
   --sub: #5d6170;
   --line: #e4e0d6;
-  --brand: #2e3a8c;          /* Nilayam Indigo - the brand colour */
+  --brand: #2e3a8c;          /* LandFinder Indigo - the brand colour */
   --brand-deep: #2e3a8c;     /* brand bands: headers, splash, icon */
   --brand-ink: #ffffff;
   --brand-soft: #e9ebf7;
-  --house: #2e3a8c;          /* houses: Nilayam indigo */
+  --house: #2e3a8c;          /* houses: LandFinder indigo */
   --house-soft: #e8eaf6;
   --land: #5b4e9e;           /* land: violet-indigo */
   --land-soft: #eeebf7;
+  --commercial: #4a5578;     /* commercial: slate-indigo */
+  --commercial-soft: #eceef4;
   --sky: #eceef8;            /* neutral indigo tint for info */
   --sky-ink: #2e3a8c;
   --peach: #2e3a8c;
@@ -96,6 +100,8 @@
   --house-soft: #262a45;
   --land: #bfb2f0;
   --land-soft: #2d2944;
+  --commercial: #b4bdd6;
+  --commercial-soft: #2a2e3b;
   --sky: #262a45;
   --sky-ink: #b3bcf4;
   --peach: #9aa5ef;

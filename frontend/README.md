@@ -1,4 +1,4 @@
-# Nilayam frontend
+# LandFinder frontend
 
 React + Vite + TypeScript + Tailwind v4, with shadcn-style components in `src/components/ui`.
 Mobile-first, feed-style UI. All data goes through the FastAPI backend. Admin login is a
