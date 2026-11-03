@@ -7,8 +7,7 @@ import { Sheet } from "@/components/ui/sheet";
 import { useToast } from "@/components/ui/toast";
 import { getMyLocation, isNearTaluk } from "@/lib/geo";
 import { loadArea, markNearMeAsked, nearMeAsked, saveArea, type SavedArea } from "@/lib/savedArea";
-import { api, getConfig, type Feed, type Listing, type Parsed } from "@/lib/api";
-import { inr } from "@/lib/format";
+import { api, getConfig, type Feed, type Listing } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useAsync } from "@/lib/useAsync";
 import { ListingCard, ListingCardSkeleton } from "@/components/ListingCard";
@@ -101,7 +100,7 @@ export default function Explore() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Search area, budget or type"
             aria-label="Search properties"
-            className="min-w-0 flex-1 bg-transparent text-base outline-none"
+            className="min-w-0 flex-1 bg-transparent text-base text-ink caret-[var(--brand)] outline-none"
           />
           {input && (
             <button aria-label="Clear search" onClick={() => setInput("")} className="grid h-8 w-8 place-items-center rounded-full text-sub hover:bg-muted">
@@ -109,7 +108,6 @@ export default function Explore() {
             </button>
           )}
         </div>
-        {data && <ParsedChips parsed={data.parsed} />}
       </header>
 
       <div className="space-y-4 pt-4">
@@ -133,27 +131,6 @@ export default function Explore() {
           </Button>
         )}
       </div>
-    </div>
-  );
-}
-
-function ParsedChips({ parsed }: { parsed: Parsed }) {
-  const chips = [
-    parsed.max_price && `Under ${inr(parsed.max_price)}`,
-    parsed.min_price && `Above ${inr(parsed.min_price)}`,
-    parsed.min_cents && `${parsed.min_cents}+ cents`,
-    parsed.max_cents && `Up to ${parsed.max_cents} cents`,
-    parsed.text && `“${parsed.text}”`,
-  ].filter(Boolean);
-  if (!chips.length) return null;
-  return (
-    <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs">
-      <span className="text-white/75">Showing</span>
-      {chips.map((c) => (
-        <span key={c as string} className="rounded-full bg-surface px-2.5 py-1 font-medium text-ink shadow-[0_0_0_1px_var(--hairline)]">
-          {c}
-        </span>
-      ))}
     </div>
   );
 }
