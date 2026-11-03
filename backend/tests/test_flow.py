@@ -342,3 +342,36 @@ def test_seller_can_ask_for_documentation_help(client, admin):
     assert next(p for p in new if p["id"] == sid)["wants_doc_help"] is True
     plain = submit(client).json()["id"]
     assert client.get(f"/api/admin/properties/{plain}", headers=admin).json()["seller"]["wants_doc_help"] is False
+
+
+def test_second_founder_password_and_login_lockout(client, monkeypatch):
+    from app.admin import login_limiter
+    from app.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "admin_password_2", "founder-two-pass")
+    login_limiter.reset()
+    try:
+        ok = client.post("/api/admin/login", json={"password": "founder-two-pass"})
+        assert ok.status_code == 200
+        headers = {"Authorization": "Bearer " + ok.json()["token"]}
+        assert client.get("/api/admin/inbox", headers=headers).status_code == 200
+
+        monkeypatch.setattr("app.admin.time.sleep", lambda _: None)
+        codes = [client.post("/api/admin/login", json={"password": "wrong"}).status_code for _ in range(11)]
+        assert codes[:10] == [401] * 10 and codes[10] == 429
+    finally:
+        login_limiter.reset()
+
+
+def test_production_refuses_weak_settings():
+    from app.config import Settings
+    from app.main import check_production
+
+    with pytest.raises(RuntimeError):
+        check_production(Settings(production=True, admin_password="demo123"))
+    with pytest.raises(RuntimeError):  # placeholder phone number
+        check_production(Settings(production=True, admin_password="a-long-strong-password"))
+    check_production(Settings(
+        production=True, admin_password="a-long-strong-password",
+        contact_phone="+919847012345", contact_whatsapp="+919847012345",
+    ))  # fmt: skip

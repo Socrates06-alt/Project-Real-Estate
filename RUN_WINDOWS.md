@@ -56,3 +56,5 @@ Window 1: `cd backend` → `.venv\Scripts\activate` → `uvicorn app.main:app --
 Window 2: `cd frontend` → `npm run dev`
 
 To start fresh, stop the backend and delete `backend\nilayam.db` and `backend\media`.
+
+To put the app online, see [DEPLOY.md](DEPLOY.md).

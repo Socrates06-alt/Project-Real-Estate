@@ -45,6 +45,8 @@ export default function Sell() {
   const [loaded, setLoaded] = useState(false);
   const [restored, setRestored] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const typed = useRef<Record<string, string>>({}); // latest typed values (kept even after leaving the page)
+  const flush = useRef<() => void>(() => {});
   const max = config?.max_photos ?? 3;
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
@@ -63,6 +65,7 @@ export default function Sell() {
           return { file, url: URL.createObjectURL(file) };
         }));
         setSaved(d.fields);
+        typed.current = { ...d.fields };
         setFormKey((k) => k + 1);
         if (Object.values(d.fields).some(Boolean) || d.photos.length) setRestored(true);
       }
@@ -73,13 +76,16 @@ export default function Sell() {
 
   function persist() {
     if (!loaded || number) return;
+    saveDraft({ fields: { ...typed.current }, state: { type, negotiable, docs, docHelp, area }, photos: photos.map((p) => p.file) });
+  }
+
+  function onTyping() {
     const form = formRef.current;
-    const fields: Record<string, string> = { ...saved };
     if (form) {
       const fd = new FormData(form);
-      for (const k of TEXT_FIELDS) if (fd.has(k)) fields[k] = String(fd.get(k));
+      for (const k of TEXT_FIELDS) if (fd.has(k)) typed.current[k] = String(fd.get(k));
     }
-    saveDraft({ fields, state: { type, negotiable, docs, docHelp, area }, photos: photos.map((p) => p.file) });
+    persistSoon();
   }
 
   function persistSoon() {
@@ -89,6 +95,12 @@ export default function Sell() {
 
   // Save when choices/photos change, and straight away when the seller leaves the page or switches apps.
   useEffect(persistSoon, [type, negotiable, docs, docHelp, area, photos, loaded]); // eslint-disable-line react-hooks/exhaustive-deps
+  flush.current = () => {
+    if (saveTimer.current) persist();
+    clearTimeout(saveTimer.current);
+  };
+  // Leaving for another page (e.g. Terms): save straight away.
+  useEffect(() => () => flush.current(), []);
   useEffect(() => {
     const now = () => document.visibilityState === "hidden" && persist();
     document.addEventListener("visibilitychange", now);
@@ -106,6 +118,7 @@ export default function Sell() {
     setPhotos([]);
     setAgree(false);
     setSaved({});
+    typed.current = {};
     setFormKey((k) => k + 1);
     setRestored(false);
     window.scrollTo({ top: 0 });
@@ -159,6 +172,7 @@ export default function Sell() {
     try {
       const res = await uploadForm<{ number: number }>("/api/submissions", f, setProgress, { device: true });
       clearTimeout(saveTimer.current);
+      saveTimer.current = undefined;
       await clearDraft();
       setNumber(res.number);
       window.scrollTo({ top: 0 });
@@ -173,7 +187,7 @@ export default function Sell() {
   if (number) return <Done contactWa={config ? waLink(config.contact) : undefined} />;
 
   return (
-    <form key={formKey} ref={formRef} onSubmit={submit} onInput={persistSoon} className="space-y-4">
+    <form key={formKey} ref={formRef} onSubmit={submit} onInput={onTyping} className="space-y-4">
       <PageHeader title="List your property" subtitle="Free listing · pay only when it sells" />
       {restored && (
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand">
@@ -353,7 +367,14 @@ export default function Sell() {
           </li>
           <li>Buyers pay {config?.brokerage.buyer_pct ?? 1}% separately.</li>
           <li>We confirm any price change with you before updating the listing.</li>
+          <li>Your phone number and address are never shown to buyers.</li>
         </ul>
+        <p className="mt-3 text-sm text-sub">
+          Full details:{" "}
+          <Link to="/terms" className="font-medium text-brand underline underline-offset-2">Terms of use</Link>
+          {" · "}
+          <Link to="/privacy" className="font-medium text-brand underline underline-offset-2">Privacy policy</Link>
+        </p>
         <Button
           size="lg"
           className="mt-6"

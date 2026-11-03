@@ -1,0 +1,22 @@
+# Runs the LandFinder backend; starts on boot and restarts itself if it ever stops.
+[Unit]
+Description=LandFinder backend
+After=network.target
+
+[Service]
+User=landfinder
+Group=landfinder
+WorkingDirectory=/opt/landfinder/backend
+# One process: the database is a single SQLite file and limits are kept in memory.
+# --proxy-headers: see each visitor's real address through Caddy (needed for login/search limits).
+ExecStart=/opt/landfinder/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips 127.0.0.1 --no-server-header
+Restart=always
+RestartSec=3
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/landfinder
+
+[Install]
+WantedBy=multi-user.target

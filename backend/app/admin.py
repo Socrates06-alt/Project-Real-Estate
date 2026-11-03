@@ -1,4 +1,4 @@
-"""Admin API. Prototype auth: one password (ADMIN_PASSWORD) -> signed, expiring token."""
+"""Admin API. Auth: each founder's password (ADMIN_PASSWORD, ADMIN_PASSWORD_2) -> signed, expiring token."""
 
 import hashlib
 import hmac
@@ -9,12 +9,13 @@ import time
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Query, Request, Response, UploadFile
 
 from app import geo, photos
 from app.config import get_settings
 from app.db import DB, many, now, one
 from app.models import LoginIn, NoteIn, PublishIn, VisitUpdate
+from app.ratelimit import RateLimiter, client_ip
 
 TOKEN_TTL = 7 * 24 * 3600
 
@@ -24,8 +25,20 @@ router = APIRouter(prefix="/api/admin")
 # --- Auth -----------------------------------------------------------------
 
 
+# 10 wrong passwords per 15 minutes per network address, then locked out for the rest of the window.
+login_limiter = RateLimiter(
+    limit=10, window_seconds=15 * 60, message="Too many login attempts. Please wait 15 minutes."
+)
+
+
+def _passwords() -> list[str]:
+    s = get_settings()
+    return [p for p in (s.admin_password, s.admin_password_2) if p]
+
+
 def _key() -> bytes:
-    return hashlib.sha256(b"nilayam-admin:" + get_settings().admin_password.encode()).digest()
+    # Changing any password signs everyone out.
+    return hashlib.sha256(b"nilayam-admin:" + "\n".join(_passwords()).encode()).digest()
 
 
 def make_token() -> str:
@@ -34,7 +47,7 @@ def make_token() -> str:
 
 
 def require_admin(authorization: str | None = Header(None)) -> None:
-    if not get_settings().admin_password:
+    if not _passwords():
         raise HTTPException(503, "Admin is disabled: set ADMIN_PASSWORD")
     token = (authorization or "").removeprefix("Bearer ").strip()
     exp, _, sig = token.partition(".")
@@ -44,11 +57,15 @@ def require_admin(authorization: str | None = Header(None)) -> None:
 
 
 @router.post("/login")
-def login(body: LoginIn) -> dict:
-    password = get_settings().admin_password
-    if not password:
+def login(body: LoginIn, request: Request) -> dict:
+    passwords = _passwords()
+    if not passwords:
         raise HTTPException(503, "Admin is disabled: set ADMIN_PASSWORD")
-    if not hmac.compare_digest(body.password.encode(), password.encode()):
+    given = body.password.encode()
+    # Check every password (no early exit) so timing doesn't reveal anything.
+    ok = [hmac.compare_digest(given, p.encode()) for p in passwords]
+    if not any(ok):
+        login_limiter.hit(client_ip(request))  # only wrong attempts count
         time.sleep(0.5)  # slow down guessing
         raise HTTPException(401, "Wrong password")
     return {"token": make_token()}

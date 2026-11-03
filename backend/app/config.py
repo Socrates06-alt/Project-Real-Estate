@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     admin_password: str = ""  # empty disables admin login
+    admin_password_2: str = ""  # optional second founder's own password
+    production: bool = False  # live server: strong passwords required, API docs hidden
     database_path: str = "nilayam.db"
     media_dir: str = "media"
     cors_origins: list[str] = ["http://localhost:5173"]

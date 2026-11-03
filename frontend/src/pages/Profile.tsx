@@ -139,6 +139,11 @@ function HowItWorks() {
         <Fee label="Buyer" tone="bg-sky text-sky-ink" value={`${config?.brokerage.buyer_pct ?? 1}%`} />
       </div>
       <p className="px-2 text-center text-xs text-sub">Listing is always free.</p>
+      <p className="px-2 text-center text-xs text-sub">
+        <Link to="/terms" className="underline underline-offset-2">Terms of use</Link>
+        {" · "}
+        <Link to="/privacy" className="underline underline-offset-2">Privacy policy</Link>
+      </p>
       {config && (
         <div className="grid grid-cols-2 gap-3">
           <a href={waLink(config.contact)} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "wa" })}>
