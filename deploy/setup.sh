@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
 # One-time setup of a fresh Ubuntu 24.04 server for LandFinder.
-# Usage (on the server):
-#   sudo bash setup.sh landfinder.in git@github.com:socrates06-alt/Project-Real-Estate.git [branch]
+# Usage (on the server), after cloning the code to /opt/landfinder (see DEPLOY.md step 5):
+#   sudo bash /opt/landfinder/deploy/setup.sh landfinder.in
 set -euo pipefail
 
-DOMAIN=${1:?Usage: sudo bash setup.sh <domain> <git-repo-url> [branch]}
-REPO=${2:?Usage: sudo bash setup.sh <domain> <git-repo-url> [branch]}
-BRANCH=${3:-main}
+DOMAIN=${1:?Usage: sudo bash setup.sh <domain>}
 APP=/opt/landfinder
 DATA=/var/lib/landfinder
 
@@ -34,17 +32,15 @@ chown -R landfinder:landfinder "$DATA"
 chmod 750 "$DATA"
 
 echo "==> Code"
-if [ ! -d "$APP/.git" ]; then
-  # A private repo needs the server's deploy key added on GitHub first (see DEPLOY.md, step 4).
-  install -d -o landfinder -g landfinder "$APP"
-  if [ -f /root/.ssh/landfinder_deploy ]; then
-    install -d -m 700 -o landfinder -g landfinder /home/landfinder/.ssh
-    install -m 600 -o landfinder -g landfinder /root/.ssh/landfinder_deploy /home/landfinder/.ssh/id_ed25519
-    ssh-keyscan github.com 2>/dev/null > /home/landfinder/.ssh/known_hosts
-    chown landfinder:landfinder /home/landfinder/.ssh/known_hosts
-  fi
-  sudo -u landfinder git clone --branch "$BRANCH" "$REPO" "$APP"
+test -d "$APP/.git" || { echo "Clone the code to $APP first (DEPLOY.md step 5)."; exit 1; }
+# The app user pulls updates with the server's read-only GitHub deploy key.
+if [ -f /root/.ssh/landfinder_deploy ]; then
+  install -d -m 700 -o landfinder -g landfinder /home/landfinder/.ssh
+  install -m 600 -o landfinder -g landfinder /root/.ssh/landfinder_deploy /home/landfinder/.ssh/id_ed25519
+  ssh-keyscan github.com 2>/dev/null > /home/landfinder/.ssh/known_hosts
+  chown landfinder:landfinder /home/landfinder/.ssh/known_hosts
 fi
+chown -R landfinder:landfinder "$APP"
 chmod 755 "$APP"
 
 echo "==> Backend"

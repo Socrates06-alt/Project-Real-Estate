@@ -34,29 +34,29 @@ It can take from a few minutes to a few hours to start working. Check with https
 In Lightsail, click your instance → **Connect using SSH**. A black terminal opens in the browser.
 Everything below is typed (or pasted) there. Paste with **Ctrl+Shift+V** or right-click.
 
-## 4. Let the server read the code from GitHub (private repo only)
+## 4. Let the server read the code from GitHub
 
-If the GitHub repo is **public**, skip this step.
+The repo is private, so the server gets its own **read-only key**:
 
 ```bash
-sudo ssh-keygen -t ed25519 -N "" -f /root/.ssh/landfinder_deploy -C landfinder-server
-sudo cat /root/.ssh/landfinder_deploy.pub
+sudo ssh-keygen -t ed25519 -N "" -f /root/.ssh/landfinder_deploy -C landfinder-server && sudo cat /root/.ssh/landfinder_deploy.pub
 ```
 
-Copy the line it prints. On GitHub: repo → **Settings → Deploy keys → Add deploy key** →
+Copy the line it prints (`ssh-ed25519 ...`). On GitHub: repo → **Settings → Deploy keys → Add deploy key** →
 title `landfinder-server`, paste the key, leave **Allow write access** off → **Add key**.
 
 ## 5. Install LandFinder (10 min)
 
-**Before this step:** on GitHub, merge the work branch (`claude/nilayam-v1-spec-w07mvc`) into `main`, so the
-server runs the finished code from `main`. Replace `landfinder.in` below with your domain.
+Copy the code to the server (the code from `main`):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/socrates06-alt/Project-Real-Estate/main/deploy/setup.sh -o setup.sh
-# Private repo: the line above won't work. Instead, paste the file from deploy/setup.sh with:  nano setup.sh
+sudo GIT_SSH_COMMAND="ssh -i /root/.ssh/landfinder_deploy -o StrictHostKeyChecking=accept-new" git clone git@github.com:Socrates06-alt/Project-Real-Estate.git /opt/landfinder
+```
 
-sudo bash setup.sh landfinder.in git@github.com:socrates06-alt/Project-Real-Estate.git main
-# Public repo: you can use https://github.com/socrates06-alt/Project-Real-Estate.git instead
+Run the setup (replace `landfinder.in` if your domain is different):
+
+```bash
+sudo bash /opt/landfinder/deploy/setup.sh landfinder.in
 ```
 
 The first run stops and asks you to fill in the settings:
@@ -72,10 +72,10 @@ Fill in:
 - `CONTACT_PHONE`, `CONTACT_WHATSAPP`: your real numbers, e.g. `+919847012345`.
 - `RERA_NUMBER`: if you have one (you can add it later).
 
-Save: **Ctrl+O**, Enter, **Ctrl+X**. Then run the same setup command again:
+Save: **Ctrl+O**, Enter, **Ctrl+X**. Then run the setup again:
 
 ```bash
-sudo bash setup.sh landfinder.in git@github.com:socrates06-alt/Project-Real-Estate.git main
+sudo bash /opt/landfinder/deploy/setup.sh landfinder.in
 ```
 
 It ends with **"Done. Open https://landfinder.in"**. The server refuses to start if a password is weak or
