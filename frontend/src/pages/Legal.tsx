@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 
 const UPDATED = "November 2026";
 // Contact number shown on the legal pages.
-const LEGAL_PHONE = "+91 907434337";
+const LEGAL_PHONE = "+91 9074343370";
 
 function Doc({ title, children }: { title: string; children: ReactNode }) {
   return (
