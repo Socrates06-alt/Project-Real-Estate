@@ -371,9 +371,9 @@ export default function Sell() {
         </ul>
         <p className="mt-3 text-sm text-sub">
           Full details:{" "}
-          <Link to="/terms" className="font-medium text-brand underline underline-offset-2">Terms of use</Link>
+          <Link to="/terms" className="font-medium text-brand underline underline-offset-2">Terms of Service</Link>
           {" · "}
-          <Link to="/privacy" className="font-medium text-brand underline underline-offset-2">Privacy policy</Link>
+          <Link to="/privacy" className="font-medium text-brand underline underline-offset-2">Privacy Policy</Link>
         </p>
         <Button
           size="lg"
