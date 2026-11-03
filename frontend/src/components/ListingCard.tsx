@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { BadgeCheck, CalendarDays, FileCheck2, Handshake, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
 import type { Contact, Listing } from "@/lib/api";
 import { cents, inr, isNew, perCent, typeLabel } from "@/lib/format";
@@ -6,6 +7,7 @@ import { PhotoCarousel } from "./PhotoCarousel";
 import { cn } from "@/lib/utils";
 import { TYPE_TAG } from "@/lib/propertyType";
 import { telLink, waLink } from "./contact";
+import { VisitSheet } from "./VisitSheet";
 
 const tag = "rounded-full px-3 py-1 text-[13px] font-semibold shadow-sm";
 const outlineTag = "bg-surface text-brand shadow-[inset_0_0_0_1.5px_var(--brand)]";
@@ -16,6 +18,7 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
   const nav = useNavigate();
   const sold = listing.status === "sold";
   const open = () => nav(`/p/${listing.id}`);
+  const [visitOpen, setVisitOpen] = useState(false);
 
   return (
     <article className="card overflow-hidden p-2">
@@ -86,11 +89,13 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
           <a href={waLink(contact, listing)} target="_blank" rel="noreferrer" className={cn(action, "bg-muted")}>
             <MessageCircle size={20} className="text-wa" /> WhatsApp
           </a>
-          <Link to={`/p/${listing.id}?visit=1`} className={cn(action, "bg-muted")}>
+          <button type="button" onClick={() => setVisitOpen(true)} className={cn(action, "bg-muted")}>
             <CalendarDays size={20} className="text-brand" /> Visit
-          </Link>
+          </button>
         </div>
       )}
+      {/* Visit request opens right here, without leaving the list */}
+      {!sold && <VisitSheet listingId={listing.id} open={visitOpen} onClose={() => setVisitOpen(false)} />}
     </article>
   );
 }
