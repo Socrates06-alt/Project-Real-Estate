@@ -1,15 +1,28 @@
 # LandFinder frontend
 
-React + Vite + TypeScript + Tailwind v4, with shadcn-style components in `src/components/ui`.
-Mobile-first, feed-style UI. All data goes through the FastAPI backend. Admin login is a
-single password in the prototype (Supabase Auth planned for V1).
+React + Vite + TypeScript + Tailwind v4, with shadcn-style components in `src/shared/ui`.
+Mobile-first, feed-style UI. All data goes through the FastAPI backend.
+
+Organised by feature. **Rules:** a feature may use `shared/`, but features never import from
+each other, and `shared/` never imports from features. Anything two features need goes to `shared/`.
 
 ```
 src/
-  pages/         Explore · ListingDetail · Sell · Profile   (public, no login)
-  admin/         lazy-loaded admin app at /admin (password login, checked on every API call)
-  components/    ListingCard, PhotoCarousel, VisitSheet, BottomNav, ui/*
-  lib/           api client + types, formatting, device token, data hook
+  app/                 App routes + layouts, main.tsx, BottomNav
+  features/
+    explore/           home page: feed, ListingCard, FilterTiles, saved area
+    listing/           property page
+    map/               area (radius) search with Leaflet
+    sell/              List your property form + unfinished-form memory
+    profile/           My listings, How it works
+    legal/             Terms of Service, Privacy Policy
+    admin/             lazy-loaded admin app at /admin
+  shared/
+    ui/                button, sheet, field, switch, segmented, badge, toast
+    components/        PageHeader, Logo, PhotoCarousel, VisitSheet, AreaInput, States...
+    api/               API client + types
+    lib/               formatting, place search, image shrinking, theme, data hook...
+    styles/            index.css (colour tokens, components)
 ```
 
 ## Run
