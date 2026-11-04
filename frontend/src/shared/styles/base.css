@@ -1,0 +1,30 @@
+/* Page-wide basics: body, headings, frosted surfaces. */
+
+/* Frosted surface that stays readable over photos and content. */
+.glass {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid var(--glass-line);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+body {
+  /* Flat, clean cool grey-blue (Facebook-like), white cards on top */
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  font-size: 16px;
+  /* Inter's modern alternates: single-storey a, open digits */
+  font-feature-settings: "cv11", "ss01", "ss03";
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.015em;
+}

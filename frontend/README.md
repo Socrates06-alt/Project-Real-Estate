@@ -13,16 +13,16 @@ src/
     explore/           home page: feed, ListingCard, FilterTiles, saved area
     listing/           property page
     map/               area (radius) search with Leaflet
-    sell/              List your property form + unfinished-form memory
+    sell/              List your property form, split into small parts + useSellDraft (form memory)
     profile/           My listings, How it works
     legal/             Terms of Service, Privacy Policy
-    admin/             lazy-loaded admin app at /admin
+    admin/             lazy-loaded admin app at /admin (property editor parts in admin/property/)
   shared/
     ui/                button, sheet, field, switch, segmented, badge, toast
     components/        PageHeader, Logo, PhotoCarousel, VisitSheet, AreaInput, States...
-    api/               API client + types
+    api/               client.ts (calls) + types.ts (data shapes)
     lib/               formatting, place search, image shrinking, theme, data hook...
-    styles/            index.css (colour tokens, components)
+    styles/            index.css -> tokens.css, base.css, components.css
 ```
 
 ## Run

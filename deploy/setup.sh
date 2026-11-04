@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-time setup of a fresh Ubuntu 24.04 server for LandFinder.
-# Usage (on the server), after cloning the code to /opt/landfinder (see DEPLOY.md step 5):
+# Usage (on the server), after cloning the code to /opt/landfinder (see docs/DEPLOY.md step 5):
 #   sudo bash /opt/landfinder/deploy/setup.sh landfinder.in
 set -euo pipefail
 
@@ -32,7 +32,7 @@ chown -R landfinder:landfinder "$DATA"
 chmod 750 "$DATA"
 
 echo "==> Code"
-test -d "$APP/.git" || { echo "Clone the code to $APP first (DEPLOY.md step 5)."; exit 1; }
+test -d "$APP/.git" || { echo "Clone the code to $APP first (docs/DEPLOY.md step 5)."; exit 1; }
 # The app user pulls updates with the server's read-only GitHub deploy key.
 if [ -f /root/.ssh/landfinder_deploy ]; then
   install -d -m 700 -o landfinder -g landfinder /home/landfinder/.ssh

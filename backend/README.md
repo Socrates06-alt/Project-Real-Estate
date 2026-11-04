@@ -44,11 +44,10 @@ uvicorn app.main:app --reload   # http://localhost:8000/docs
 
 Sample data (API running): `python seed_demo.py` · Tests: `pytest -q`
 
-## What the prototype keeps vs. drops
+## Built in
 
-Kept: seller identity never public, photo GPS stripping, immutable original submissions and
-published versions, versioned publishing, seller confirmation for big price changes.
+Seller identity never public, photo GPS stripping, immutable original submissions and published
+versions, versioned publishing, seller confirmation for big price changes, admin login limit,
+area-search rate limit, production setting checks.
 
-Dropped for now (planned for V1, see `docs/V1_PLAN.md`): PostgreSQL/Supabase, Supabase admin
-login, cloud photo storage, rate limiting, captcha, audit log, Docker, CI.
-
+Later (see `docs/V1_PLAN.md`): PostgreSQL, cloud photo storage, audit log.

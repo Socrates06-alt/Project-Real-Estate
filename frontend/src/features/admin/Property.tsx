@@ -1,21 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Check, FileCheck2, ImagePlus, ChevronDown, ChevronLeft, ExternalLink, Eye, EyeOff } from "lucide-react";
+import { Check, ChevronLeft, ExternalLink } from "lucide-react";
 import { ApiError, type PropertyType } from "@/shared/api/client";
-import { cents, inr, shortDate, typeLabel } from "@/shared/lib/format";
+import { inr } from "@/shared/lib/format";
 import { shrinkImage } from "@/shared/lib/image";
 import { useAsync } from "@/shared/lib/useAsync";
 import { cn } from "@/shared/lib/utils";
 import { ErrorState } from "@/shared/components/States";
 import { AffixInput, Field, Input, Textarea } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
-import { Sheet } from "@/shared/ui/sheet";
 import { Switch } from "@/shared/ui/switch";
 import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
 import { useAdmin } from "@/features/admin/auth";
 import { AreaInput } from "@/shared/components/AreaInput";
-import { ContactButtons, GroupBadge, PrivatePhoto, VisitCard } from "@/features/admin/ui";
+import { GroupBadge, VisitCard } from "@/features/admin/ui";
+import { SellerCard } from "./property/SellerCard";
+import { PhotoSelector } from "./property/PhotoSelector";
+import { DontListSheet } from "./property/DontListSheet";
 import type { Property, PublicForm } from "@/features/admin/types";
 
 const BIG_CHANGE_PCT = 5; // matches the backend default; the backend has the final say
@@ -38,7 +40,6 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   const [f, setF] = useState<PublicForm>(p.form);
   const [sellerConfirmed, setSellerConfirmed] = useState(false);
   const [forcePriceCheck, setForcePriceCheck] = useState(false);
-  const [showOriginal, setShowOriginal] = useState(false);
   const [dontListOpen, setDontListOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [areaText, setAreaText] = useState(String(p.form.land_area_cents));
@@ -67,7 +68,6 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
 
   const set = <K extends keyof PublicForm>(k: K, v: PublicForm[K]) => setF((x) => ({ ...x, [k]: v }));
 
-  const s = p.seller;
   const readOnly = p.group === "sold";
   const dirty = JSON.stringify(f) !== JSON.stringify(p.form);
   const priceChange = Math.abs(f.price - p.reference_price) / p.reference_price * 100;
@@ -122,76 +122,22 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         )}
       </header>
 
-      {/* Seller */}
-      <section className="card p-4">
-        <p className="text-xs text-sub">Seller</p>
-        <p className="text-lg font-semibold">{s.seller_name}</p>
-        <p className="text-sm text-sub">{s.seller_phone}</p>
-        {s.wants_doc_help && (
-          <p className="mt-2 flex items-center gap-2 rounded-2xl bg-accent-soft px-3 py-2 text-sm font-semibold">
-            <FileCheck2 size={16} /> Asked for documentation assistance (paid)
-          </p>
-        )}
-        {s.address && <p className="mt-1 mb-3 text-sm whitespace-pre-line">{s.address}</p>}
-        {!s.address && <div className="mb-3" />}
-        <ContactButtons phone={s.seller_phone} size="lg" />
-        <button onClick={() => setShowOriginal(!showOriginal)} className="mt-3 flex w-full items-center justify-between py-1 text-sm font-medium text-sub">
-          Seller's original details
-          <ChevronDown size={18} className={cn("transition-transform", showOriginal && "rotate-180")} />
-        </button>
-        {showOriginal && (
-          <dl className="mt-2 divide-y divide-line rounded-2xl bg-muted/60 text-sm">
-            {[
-              ["Type", typeLabel(s.property_type)],
-              ["Area", cents(s.land_area_cents)],
-              ["Asked price", inr(s.expected_price)],
-              ["Negotiable", s.negotiable ? "Yes" : "No"],
-              ["Documents", s.documents_available ? `Yes${s.documents_note ? ` — ${s.documents_note}` : ""}` : "Not yet uploaded"],
-              ["Location", s.location],
-              ["Full address", s.address || "—"],
-              ["Submitted", shortDate(s.created_at)],
-              ["Agreed to terms", `${s.consent_version} · ${shortDate(s.consent_at)}`],
-              ["Description", s.description],
-            ].map(([k, v]) => (
-              <div key={k} className="flex justify-between gap-4 px-4 py-2.5">
-                <dt className="text-sub">{k}</dt>
-                <dd className="text-right font-medium whitespace-pre-line">{v}</dd>
-              </div>
-            ))}
-            {s.status_note && <p className="px-4 py-3 text-sub">Note: {s.status_note}</p>}
-          </dl>
-        )}
-      </section>
+      <SellerCard seller={p.seller} />
 
       {/* What buyers see */}
       <fieldset disabled={readOnly} className="space-y-4 card p-4">
         <legend className="sr-only">What buyers see</legend>
         <p className="text-xs text-sub">What buyers see</p>
 
-        <div>
-          <p className="mb-1.5 text-sm font-semibold">Photos</p>
-          <div className="grid grid-cols-3 gap-2">
-            {photos.map((ph) => {
-              const on = f.photo_ids.includes(ph.id);
-              return (
-                <button key={ph.id} type="button" onClick={() => togglePhoto(ph.id)} className="relative">
-                  <PrivatePhoto url={ph.url} type={f.property_type} className={cn("aspect-square rounded-2xl transition", !on && "opacity-30 grayscale")} />
-                  <span className="absolute top-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/55 text-white">
-                    {on ? <Eye size={14} /> : <EyeOff size={14} />}
-                  </span>
-                </button>
-              );
-            })}
-            {!readOnly && photos.length < 3 && (
-              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border-2 border-dashed border-line text-sub transition hover:border-brand hover:text-brand">
-                <ImagePlus size={22} />
-                <span className="text-xs font-semibold">{uploading ? "Adding…" : "Add photo"}</span>
-                <input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden disabled={uploading} onChange={(e) => (addPhotos(e.target.files), (e.target.value = ""))} />
-              </label>
-            )}
-          </div>
-          {!photos.length && <p className="mt-1.5 text-xs text-sub">No photos yet. Add some so buyers can see the property.</p>}
-        </div>
+        <PhotoSelector
+          photos={photos}
+          selected={f.photo_ids}
+          type={f.property_type}
+          readOnly={readOnly}
+          uploading={uploading}
+          onToggle={togglePhoto}
+          onAdd={addPhotos}
+        />
 
         <Field label="Price" hint={inr(f.price || 0)}>
           <AffixInput prefix="₹" inputMode="numeric" value={f.price ? f.price.toLocaleString("en-IN") : ""} onChange={(e) => set("price", Number(e.target.value.replace(/\D/g, "")))} />
@@ -294,20 +240,5 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         }}
       />
     </div>
-  );
-}
-
-function DontListSheet({ open, onClose, onConfirm }: { open: boolean; onClose: () => void; onConfirm: (note: string) => void }) {
-  const [note, setNote] = useState("");
-  return (
-    <Sheet open={open} onClose={onClose} title="Don't list this property?">
-      <p className="mb-3 text-sm text-sub">The seller's details stay saved. You can still publish it later.</p>
-      <Field label="Reason (optional)">
-        <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Outside our area" />
-      </Field>
-      <Button size="lg" className="mt-5" onClick={() => onConfirm(note)}>
-        Don't list
-      </Button>
-    </Sheet>
   );
 }

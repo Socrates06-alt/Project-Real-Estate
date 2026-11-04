@@ -1,0 +1,134 @@
+/* Reusable component classes (cards, buttons, search bar, nav) and animations. */
+
+@layer components {
+  /* Soft surface: hairline edge + gentle depth instead of hard borders. */
+  .card {
+    background: var(--surface);
+    border-radius: 28px;
+    box-shadow: var(--card-shadow);
+  }
+  .card-sm {
+    background: var(--surface);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+  }
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--float-shadow);
+  }
+  .card-hover:active {
+    transform: scale(0.99);
+  }
+  /* Primary buttons: subtle top light + soft coloured glow. */
+  .btn-primary {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--brand) 82%, white), var(--brand));
+    color: var(--brand-ink);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.28),
+      0 8px 18px -10px color-mix(in srgb, var(--brand) 80%, transparent);
+  }
+  .btn-primary:hover {
+    filter: brightness(1.04);
+  }
+  /* Home search bar: mint edge + soft mint glow so it stands out. */
+  .search-pill {
+    /* Soft mint wash inside the bar, a little brighter on the left where the icon is. */
+    background: linear-gradient(
+      100deg,
+      color-mix(in srgb, var(--brand) 16%, var(--surface)) 0%,
+      color-mix(in srgb, var(--brand) 7%, var(--surface)) 55%,
+      color-mix(in srgb, var(--brand) 11%, var(--surface)) 100%
+    );
+    box-shadow:
+      0 0 0 1.5px color-mix(in srgb, var(--brand) 45%, transparent),
+      0 10px 24px -14px color-mix(in srgb, var(--brand) 70%, transparent);
+    transition: box-shadow 0.2s ease;
+  }
+  .search-pill input::placeholder {
+    color: color-mix(in srgb, var(--brand) 55%, var(--sub));
+  }
+  .search-pill:focus-within {
+    background: color-mix(in srgb, var(--brand) 6%, var(--surface));
+    box-shadow:
+      0 0 0 2px var(--brand),
+      0 0 0 6px color-mix(in srgb, var(--brand) 16%, transparent);
+  }
+  /* Filter chips: each its own soft gradient (light), solid gradient when selected. */
+  .chip-brand { background: linear-gradient(135deg, var(--brand-soft), color-mix(in srgb, var(--sky) 70%, var(--surface))); color: var(--brand); }
+  .chip-house { background: linear-gradient(135deg, var(--house-soft), color-mix(in srgb, var(--brand-soft) 60%, var(--surface))); color: var(--house); }
+  .chip-land { background: linear-gradient(135deg, var(--land-soft), color-mix(in srgb, var(--brand-soft) 50%, var(--land-soft))); color: var(--land); }
+  .chip-sold { background: linear-gradient(135deg, var(--sold-soft), var(--muted)); color: var(--sold); }
+  .chip-brand-on { background: linear-gradient(135deg, color-mix(in srgb, var(--brand) 80%, white), var(--brand)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--brand); }
+  .chip-house-on { background: linear-gradient(135deg, color-mix(in srgb, var(--house) 75%, white), var(--house)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--house); }
+  .chip-land-on { background: linear-gradient(135deg, color-mix(in srgb, var(--land) 75%, white), var(--land)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--land); }
+  .chip-sold-on { background: linear-gradient(135deg, color-mix(in srgb, var(--sold) 80%, white), var(--sold)); color: var(--surface); box-shadow: 0 6px 14px -8px var(--sold); }
+
+  /* Warm gold action button (Request visit, List property). */
+  .btn-accent {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, white), var(--accent));
+    color: var(--accent-ink);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.4),
+      0 8px 18px -10px color-mix(in srgb, var(--accent) 90%, transparent);
+  }
+  .btn-accent:hover {
+    filter: brightness(1.03);
+  }
+  .text-price {
+    color: var(--brand); /* prices in indigo: considered, readable */
+  }
+
+  /* Indigo brand band at the top of screens (white text). */
+  .brand-header {
+    background:
+      radial-gradient(120% 90% at 100% 0%, rgb(255 255 255 / 0.12), transparent 60%),
+      var(--brand-deep);
+    color: #fff;
+    border-radius: 0 0 28px 28px;
+  }
+
+  /* Bottom navigation: solid indigo pill, selected item in white. */
+  .nav-pill {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--brand-deep) 88%, white), var(--brand-deep));
+    box-shadow:
+      0 0 0 1px rgb(255 255 255 / 0.12) inset,
+      0 14px 32px -12px color-mix(in srgb, var(--brand-deep) 75%, black);
+  }
+
+  /* Loading placeholders that gently shimmer. */
+  .shimmer {
+    background: linear-gradient(90deg, var(--muted) 0%, color-mix(in srgb, var(--muted) 60%, var(--surface)) 50%, var(--muted) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-sheet { animation: sheet-up 0.28s cubic-bezier(0.2, 0.9, 0.3, 1); }
+.animate-fade { animation: fade-in 0.2s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-sheet, .animate-fade { animation: none; }
+}
