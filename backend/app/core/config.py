@@ -29,3 +29,9 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
+
+def public_contact() -> dict:
+    """LandFinder's own phone/WhatsApp, shown to buyers instead of the seller's."""
+    s = get_settings()
+    return {"phone": s.contact_phone, "whatsapp": s.contact_whatsapp}

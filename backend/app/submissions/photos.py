@@ -11,7 +11,7 @@ from pathlib import Path
 
 from PIL import Image, ImageOps
 
-from app.config import get_settings
+from app.core.config import get_settings
 
 Image.MAX_IMAGE_PIXELS = 50_000_000
 ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}

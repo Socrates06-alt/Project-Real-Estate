@@ -1,16 +1,12 @@
-"""SQLite storage: one file, schema created on startup."""
+"""Database schema, created on startup, and small in-place upgrades for older database files."""
 
-import json
 import logging
 import sqlite3
-from collections.abc import Iterator
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
-from typing import Annotated
 
-from fastapi import Depends
-
-from app.config import get_settings
+from app.core.config import get_settings
+from app.core.db import connect
 
 NOW = "(strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))"
 
@@ -117,15 +113,6 @@ create trigger if not exists published_versions_no_delete
 before delete on published_versions begin select raise(abort, 'published versions are immutable'); end;
 """
 
-BOOL_FIELDS = {"negotiable", "documents_available", "wants_doc_help"}
-
-
-def connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(get_settings().database_path, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("pragma foreign_keys = on")
-    return conn
-
 
 # Bump when SCHEMA changes in a way old database files can't use.
 SCHEMA_VERSION = 6
@@ -203,44 +190,3 @@ def init_db() -> None:
     conn.executescript(SCHEMA)
     conn.execute(f"pragma user_version = {SCHEMA_VERSION}")
     conn.close()
-
-
-def get_db() -> Iterator[sqlite3.Connection]:
-    """FastAPI dependency: one transaction per request."""
-    conn = connect()
-    try:
-        yield conn
-        conn.commit()
-    except BaseException:
-        conn.rollback()
-        raise
-    finally:
-        conn.close()
-
-
-def to_dict(row: sqlite3.Row | None) -> dict | None:
-    if row is None:
-        return None
-    d = dict(row)
-    for k in BOOL_FIELDS & d.keys():
-        d[k] = bool(d[k])
-    if "photo_ids" in d:
-        d["photo_ids"] = json.loads(d["photo_ids"])
-    if "snapshot" in d:
-        d["snapshot"] = json.loads(d["snapshot"])
-    return d
-
-
-def one(conn: sqlite3.Connection, sql: str, *args) -> dict | None:
-    return to_dict(conn.execute(sql, args).fetchone())
-
-
-def many(conn: sqlite3.Connection, sql: str, *args) -> list[dict]:
-    return [to_dict(r) for r in conn.execute(sql, args).fetchall()]
-
-
-def now() -> str:
-    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-DB = Annotated[sqlite3.Connection, Depends(get_db)]

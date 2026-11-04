@@ -10,7 +10,7 @@ import random
 import httpx
 from PIL import Image, ImageDraw, ImageFilter
 
-from app.config import get_settings
+from app.core.config import get_settings
 
 S = get_settings()
 API = os.environ.get("SEED_API", "http://localhost:8000")

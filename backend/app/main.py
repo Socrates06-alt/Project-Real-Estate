@@ -1,4 +1,5 @@
-import re
+"""LandFinder API: app setup only. Each feature has its own folder (routes, rules, schemas)."""
+
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -7,29 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from app import admin, photos, public
-from app.config import get_settings
-from app.db import init_db
-
-WEAK = {"change-me", "demo123", "secret", "password", "admin"}
-
-
-def check_production(settings) -> None:
-    """On the live server, refuse to start with weak admin passwords or the placeholder phone number."""
-    if not settings.production:
-        return
-    problems = []
-    for name in ("admin_password", "admin_password_2"):
-        pw = getattr(settings, name)
-        if name == "admin_password" or pw:
-            if len(pw) < 12 or pw.lower() in WEAK:
-                problems.append(f"{name.upper()} must be at least 12 characters and not a sample password")
-    for name in ("contact_phone", "contact_whatsapp"):
-        number = getattr(settings, name).replace(" ", "")
-        if not re.fullmatch(r"\+\d{11,14}", number) or "9999999999" in number:
-            problems.append(f"Set {name.upper()} to your real number with country code, e.g. +919847012345")
-    if problems:
-        raise RuntimeError("Production settings not ready:\n - " + "\n - ".join(problems))
+from app.admin import routes_auth as admin_auth
+from app.admin import routes_properties as admin_properties
+from app.core.config import get_settings
+from app.core.migrations import init_db
+from app.core.security import check_production
+from app.listings import routes as listings
+from app.site import routes as site
+from app.submissions import photos
+from app.submissions import routes as submissions
+from app.visits import routes as visits
 
 
 @asynccontextmanager
@@ -65,8 +53,16 @@ def create_app() -> FastAPI:
             # The web app runs on the frontend (http://localhost:5173); this server is the API.
             return RedirectResponse("/docs")
 
-    app.include_router(public.router)
-    app.include_router(admin.router)
+    for router in (
+        site.router,
+        listings.router,
+        submissions.router,
+        visits.router,
+        visits.admin_router,
+        admin_auth.router,
+        admin_properties.router,
+    ):
+        app.include_router(router)
 
     # Only published photo copies are public; seller originals stay private.
     public_dir = Path(settings.media_dir) / "public"
