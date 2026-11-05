@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Camera, ImagePlus, X } from "lucide-react";
-import { FormCard } from "./FormCard";
+import { FormCard } from "@/shared/components/form/FormCard";
 
 export const ACCEPT = ["image/jpeg", "image/png", "image/webp"];
 export type PickedPhoto = { file: File; url: string };

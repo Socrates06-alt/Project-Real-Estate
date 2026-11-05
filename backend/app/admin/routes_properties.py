@@ -4,7 +4,7 @@ import re
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
 from app.admin import service
 from app.admin.schemas import NoteIn, PublishIn
@@ -12,6 +12,8 @@ from app.core.config import get_settings
 from app.core.db import DB, many, one
 from app.core.security import require_admin
 from app.submissions import photos
+from app.submissions import service as submissions
+from app.submissions.schemas import SubmissionForm
 
 router = APIRouter(prefix="/api/admin", dependencies=[Depends(require_admin)])
 
@@ -82,6 +84,18 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
         args.append(f"%{phone}%")
     rows = many(db, f"{_ROW} where {' or '.join(conditions)} order by s.created_at desc limit 50", *args)
     return [_row(r) for r in rows]
+
+
+@router.post("/properties", status_code=201)
+def add_property(
+    form: Annotated[SubmissionForm, Form()],
+    db: DB,
+    photo_files: Annotated[list[UploadFile] | None, File(alias="photos")] = None,
+) -> dict:
+    """A founder enters a seller's property (e.g. after a visit or phone call). Seller must have agreed to the terms."""
+    submissions.check_consent(form)
+    images = submissions.read_photos(photo_files)
+    return submissions.create(db, form, submissions.ADMIN_ENTERED, images)
 
 
 @router.get("/properties/{submission_id}")

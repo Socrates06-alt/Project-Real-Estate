@@ -6,6 +6,7 @@ import Login from "@/features/admin/Login";
 import Inbox from "@/features/admin/Inbox";
 import Properties from "@/features/admin/Properties";
 import PropertyPage from "@/features/admin/Property";
+import AddProperty from "@/features/admin/AddProperty";
 
 export default function AdminApp() {
   return (
@@ -19,7 +20,7 @@ function Gate() {
   const { token } = useAdmin();
   const { pathname } = useLocation();
   if (!token) return <Login />;
-  const onPropertyPage = pathname.startsWith("/admin/p/");
+  const onPropertyPage = pathname.startsWith("/admin/p/") || pathname === "/admin/new";
 
   return (
     <>
@@ -28,6 +29,7 @@ function Gate() {
           <Route index element={<Inbox />} />
           <Route path="properties" element={<Properties />} />
           <Route path="p/:id" element={<PropertyPage />} />
+          <Route path="new" element={<AddProperty />} />
         </Routes>
       </main>
       {!onPropertyPage && <AdminNav />}

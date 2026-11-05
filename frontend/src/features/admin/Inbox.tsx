@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import { Link } from "react-router-dom";
-import { ChevronRight, FileCheck2, PartyPopper } from "lucide-react";
+import { ChevronRight, FileCheck2, PartyPopper, Plus } from "lucide-react";
 import { inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
@@ -26,6 +26,10 @@ export default function Inbox() {
           <ThemeSwitch />
         </div>
       </header>
+
+      <Link to="/admin/new" className="btn-accent flex h-[52px] items-center justify-center gap-2 rounded-full text-[15px] font-semibold">
+        <Plus size={20} strokeWidth={2.5} /> Add property
+      </Link>
 
       <div className="grid grid-cols-3 gap-2">
         {(["live", "sold", "not_listed"] as Group[]).map((g) => (

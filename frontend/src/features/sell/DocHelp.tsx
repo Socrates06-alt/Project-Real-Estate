@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FileCheck2, Info } from "lucide-react";
 import { Sheet } from "@/shared/ui/sheet";
 import { Button } from "@/shared/ui/button";
-import { Checkbox } from "./Checkbox";
+import { Checkbox } from "@/shared/components/form/Checkbox";
 
 const DOC_HELP: [string, string][] = [
   ["Sale Agreement & Sale Deed Registration", "Drafting the agreement and registering the sale deed at the Sub-Registrar Office."],

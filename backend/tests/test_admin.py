@@ -93,3 +93,33 @@ def test_production_refuses_weak_settings():
         production=True, admin_password="a-long-strong-password",
         contact_phone="+919847012345", contact_whatsapp="+919847012345",
     ))  # fmt: skip
+
+
+def admin_form(**overrides):
+    return {
+        "seller_name": "Mary Thomas", "seller_phone": "9446012345", "property_type": "house",
+        "land_area_cents": "8", "location": "Puliyoor", "address": "Thekkethil House", "description": "2BHK",
+        "expected_price": "4500000", "negotiable": "true", "documents_available": "false",
+        "consent": "true", "consent_version": "test-v1", **overrides,
+    }  # fmt: skip
+
+
+def test_admin_can_add_a_property_for_a_seller(client, admin):
+    files = [("photos", ("p.jpg", jpeg_with_gps(), "image/jpeg"))]
+    res = client.post("/api/admin/properties", data=admin_form(), files=files, headers=admin)
+    assert res.status_code == 201, res.text
+    sid, number = res.json()["id"], res.json()["number"]
+
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    assert prop["number"] == number and prop["group"] == "new"
+    assert prop["seller"]["seller_phone"] == "+919446012345" and len(prop["photos"]) == 1
+    assert publish(client, admin, sid).status_code == 200  # publishes like any other property
+
+    # Not tied to any seller device, so it never shows in someone's "My listings".
+    assert all(s["id"] != sid for s in client.get("/api/my/submissions", headers=DEVICE).json())
+
+
+def test_add_property_needs_admin_and_seller_consent(client, admin):
+    assert client.post("/api/admin/properties", data=admin_form()).status_code == 401
+    res = client.post("/api/admin/properties", data=admin_form(consent="false"), headers=admin)
+    assert res.status_code == 422

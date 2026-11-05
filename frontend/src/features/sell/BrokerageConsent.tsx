@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { PublicConfig } from "@/shared/api/client";
 import { Sheet } from "@/shared/ui/sheet";
 import { Button } from "@/shared/ui/button";
-import { Checkbox } from "./Checkbox";
+import { Checkbox } from "@/shared/components/form/Checkbox";
 
 /** "I agree to the brokerage terms" tick box, with a sheet summarising the terms. */
 export function BrokerageConsent({ agree, onChange, config }: { agree: boolean; onChange: (v: boolean) => void; config: PublicConfig | null | undefined }) {
