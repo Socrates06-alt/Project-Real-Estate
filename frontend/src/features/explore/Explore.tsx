@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
+import { ArrowUp, ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
 import { FilterTiles, type PropertyFilter } from "@/features/explore/FilterTiles";
 import { Sheet } from "@/shared/ui/sheet";
@@ -10,6 +10,7 @@ import { loadArea, markNearMeAsked, nearMeAsked, saveArea, type SavedArea } from
 import { api, getConfig, type Feed, type Listing } from "@/shared/api/client";
 import { cn } from "@/shared/lib/utils";
 import { useAsync } from "@/shared/lib/useAsync";
+import { useNewListings } from "./useNewListings";
 import { ListingCard, ListingCardSkeleton } from "@/features/explore/ListingCard";
 import { EmptyState, ErrorState } from "@/shared/components/States";
 import { Button } from "@/shared/ui/button";
@@ -69,6 +70,7 @@ export default function Explore() {
     return feed;
   }, [q, type, areaKey]);
   const config = useAsync(getConfig, []);
+  const fresh = useNewListings(data, () => query(0), reload);
 
   async function loadMore() {
     setLoadingMore(true);
@@ -109,6 +111,17 @@ export default function Explore() {
           )}
         </div>
       </header>
+
+      {fresh.hasNew && (
+        <div className="pointer-events-none sticky top-[calc(max(0.75rem,env(safe-area-inset-top))+150px)] z-40 flex h-0 justify-center">
+          <button
+            onClick={fresh.showNew}
+            className="animate-fade pointer-events-auto mt-2 flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-brand-ink shadow-float"
+          >
+            <ArrowUp size={16} strokeWidth={2.5} /> New properties
+          </button>
+        </div>
+      )}
 
       <div className="space-y-4 pt-4">
         <FilterTiles type={type} onType={setType} />
