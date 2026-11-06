@@ -91,8 +91,8 @@ export default function Explore() {
   return (
     <div>
       <header className="brand-header sticky top-0 z-30 -mx-4 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-4 shadow-float">
-        <div className="mb-3 flex items-center justify-between">
-          <Logo light />
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <Logo light className="shrink-0" />
           <LocationButton area={area} onClear={() => setArea(null)} />
         </div>
         <div className="search-pill flex h-[52px] min-w-0 items-center gap-3 rounded-full px-5">
@@ -164,6 +164,9 @@ function SellBanner() {
 }
 
 /** Top-right location: "All areas ▾" or "Puliyoor · 5 km ▾". Tap to choose on the map. */
+// Short label for the header chip (the full name shows on the map page).
+const chipPlace = (place: string) => (place === "Your location" ? "Near you" : place);
+
 function LocationButton({ area, onClear }: { area: SavedArea | null; onClear: () => void }) {
   const to = area
     ? `/map?lat=${area.lat}&lng=${area.lng}&r=${area.r}&place=${encodeURIComponent(area.place)}`
@@ -171,19 +174,20 @@ function LocationButton({ area, onClear }: { area: SavedArea | null; onClear: ()
   return (
     <div
       className={cn(
-        "flex h-10 max-w-[60%] items-center rounded-full text-sm font-medium transition duration-200",
+        "flex h-10 min-w-0 items-center rounded-full text-sm font-medium transition duration-200 max-[379px]:text-[13px]",
         area
           ? "bg-brand-soft text-brand shadow-[inset_0_0_0_1px_color-mix(in_srgb,var(--brand)_35%,transparent)]"
           : "bg-surface text-ink shadow-[0_0_0_1px_var(--hairline)]",
       )}
     >
-      <Link to={to} aria-label="Choose area" className="flex min-w-0 items-center gap-1.5 py-2 pr-2 pl-3">
-        <MapPin size={16} className="shrink-0" />
-        <span className="truncate">{area ? `${area.place} · ${area.r} km` : "All areas"}</span>
-        <ChevronDown size={16} className="shrink-0" />
+      <Link to={to} aria-label="Choose area" className={cn("flex min-w-0 items-center gap-1 py-2 pl-2.5", area ? "pr-0.5" : "pr-2")}>
+        <MapPin size={15} className="shrink-0" />
+        {/* A long place name shortens with "…"; the radius always stays visible. */}
+        <span className="truncate">{area ? chipPlace(area.place) : "All areas"}</span>
+        {area ? <span className="shrink-0 whitespace-nowrap opacity-75">{area.r} km</span> : <ChevronDown size={16} className="shrink-0" />}
       </Link>
       {area && (
-        <button aria-label="Show all areas" onClick={onClear} className="mr-1 grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-brand/10">
+        <button aria-label="Show all areas" onClick={onClear} className="mr-0.5 grid h-8 w-7 shrink-0 place-items-center rounded-full hover:bg-brand/10">
           <X size={15} />
         </button>
       )}
