@@ -123,3 +123,28 @@ def test_add_property_needs_admin_and_seller_consent(client, admin):
     assert client.post("/api/admin/properties", data=admin_form()).status_code == 401
     res = client.post("/api/admin/properties", data=admin_form(consent="false"), headers=admin)
     assert res.status_code == 422
+
+
+def seller_details(**overrides):
+    return {
+        "seller_name": "Mary T. Thomas", "seller_phone": "9446012300", "property_type": "land",
+        "land_area_cents": 10, "location": "Puliyoor", "address": "New address", "description": "Corrected",
+        "expected_price": 5000000, "negotiable": False, "documents_available": True,
+        "documents_note": "Title deed", "wants_doc_help": True, **overrides,
+    }  # fmt: skip
+
+
+def test_admin_can_correct_seller_details_only_on_properties_they_added(client, admin):
+    sid = client.post("/api/admin/properties", data=admin_form(), headers=admin).json()["id"]
+    assert client.get(f"/api/admin/properties/{sid}", headers=admin).json()["admin_entered"] is True
+    res = client.put(f"/api/admin/properties/{sid}/seller", json=seller_details(), headers=admin)
+    assert res.status_code == 200, res.text
+    seller = client.get(f"/api/admin/properties/{sid}", headers=admin).json()["seller"]
+    assert seller["seller_name"] == "Mary T. Thomas" and seller["seller_phone"] == "+919446012300"
+    assert seller["land_area_cents"] == 10 and seller["expected_price"] == 5000000 and seller["wants_doc_help"]
+
+    # A seller's own submission is their record: it can't be changed.
+    own = submit(client).json()["id"]
+    assert client.get(f"/api/admin/properties/{own}", headers=admin).json()["admin_entered"] is False
+    assert client.put(f"/api/admin/properties/{own}/seller", json=seller_details(), headers=admin).status_code == 409
+    assert client.put(f"/api/admin/properties/{sid}/seller", json=seller_details()).status_code == 401

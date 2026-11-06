@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
 from app.admin import service
-from app.admin.schemas import NoteIn, PublishIn
+from app.admin.schemas import NoteIn, PublishIn, SellerDetailsIn
 from app.core.config import get_settings
 from app.core.db import DB, many, one
 from app.core.security import require_admin
@@ -101,7 +101,7 @@ def add_property(
 @router.get("/properties/{submission_id}")
 def get_property(submission_id: str, db: DB) -> dict:
     sub = service.get_submission(db, submission_id)
-    sub.pop("device_hash")
+    admin_entered = sub.pop("device_hash") == submissions.ADMIN_ENTERED
     listing = one(db, "select * from listings where submission_id = ?", submission_id)
     photo_rows = many(db, "select id from photos where submission_id = ? order by position", submission_id)
     kind = {"house": "House", "land": "Land", "commercial": "Commercial property"}[sub["property_type"]]
@@ -133,6 +133,7 @@ def get_property(submission_id: str, db: DB) -> dict:
         "id": submission_id,
         "group": service.group_of(sub["status"]),
         "seller": sub,
+        "admin_entered": admin_entered,  # only these seller details can be corrected
         "photos": [{"id": p["id"], "url": f"/api/admin/photos/{p['id']}"} for p in photo_rows],
         "listing_id": listing["id"] if listing else None,
         "number": sub["number"],
@@ -140,6 +141,18 @@ def get_property(submission_id: str, db: DB) -> dict:
         "form": form,
         "visits": visits,
     }
+
+
+@router.put("/properties/{submission_id}/seller")
+def update_seller_details(submission_id: str, body: SellerDetailsIn, db: DB) -> dict:
+    """Correct the seller's details on a property a founder entered. A seller's own submission stays unchanged."""
+    sub = service.get_submission(db, submission_id)
+    if sub["device_hash"] != submissions.ADMIN_ENTERED:
+        raise HTTPException(409, "This is the seller's own submission, so its original details can't be changed")
+    values = body.model_dump()
+    sets = ", ".join(f"{k} = ?" for k in values)  # column names from the model only
+    db.execute(f"update submissions set {sets} where id = ?", (*values.values(), submission_id))
+    return {"id": submission_id}
 
 
 @router.post("/properties/{submission_id}/photos", status_code=201)

@@ -11,6 +11,7 @@ import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
 import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { FormCard } from "@/shared/components/form/FormCard";
+import { ExpectedPrice, expectedTotal } from "@/shared/components/form/ExpectedPrice";
 import { Checkbox } from "@/shared/components/form/Checkbox";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
 import { useAdmin } from "@/features/admin/auth";
@@ -69,7 +70,8 @@ export default function AddProperty() {
     f.set("wants_doc_help", String(docHelp));
     f.set("consent", "true");
     f.set("consent_version", config.consent_version);
-    f.set("expected_price", String(f.get("expected_price")).replace(/\D/g, ""));
+    f.set("expected_price", String(expectedTotal(f, type)));
+    f.delete("price_per_cent");
     if (area.lat != null && area.lng != null) {
       f.set("area_lat", String(area.lat));
       f.set("area_lng", String(area.lng));
@@ -136,9 +138,7 @@ export default function AddProperty() {
       </FormCard>
 
       <FormCard title="Price & documents">
-        <Field label="Seller's expected price">
-          <AffixInput name="expected_price" prefix="₹" required inputMode="numeric" placeholder="e.g. 25,00,000" />
-        </Field>
+        <ExpectedPrice type={type} label="Seller's expected price" />
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}

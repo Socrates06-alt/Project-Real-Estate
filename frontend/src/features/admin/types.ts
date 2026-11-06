@@ -66,6 +66,8 @@ export interface Property {
     property_type: PropertyType;
     land_area_cents: number;
     location: string;
+    area_lat: number | null;
+    area_lng: number | null;
     address: string;
     description: string;
     expected_price: number;
@@ -78,6 +80,7 @@ export interface Property {
     created_at: string;
     status_note: string | null;
   };
+  admin_entered: boolean; // entered by a founder, so the seller's details can be corrected
   photos: { id: string; url: string }[];
   form: PublicForm;
   visits: Visit[];

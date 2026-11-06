@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import Field, model_validator
 
-from app.core.validation import Cents, Location, Price, PropertyType, Short, Strict, text
+from app.core.validation import Cents, Location, Name, Phone, Price, PropertyType, Short, Strict, text
 
 
 class LoginIn(Strict):
@@ -37,3 +37,22 @@ class PublishIn(Strict):
         if (self.lat is None) != (self.lng is None):
             raise ValueError("Location needs both latitude and longitude")
         return self
+
+
+class SellerDetailsIn(Strict):
+    """Corrections to a property a founder entered for a seller (seller-entered originals can't change)."""
+
+    seller_name: Name
+    seller_phone: Phone
+    property_type: PropertyType
+    land_area_cents: Cents
+    location: Location
+    area_lat: Annotated[float, Field(ge=-90, le=90)] | None = None
+    area_lng: Annotated[float, Field(ge=-180, le=180)] | None = None
+    address: Annotated[str, text(0, 300)] = ""
+    description: Annotated[str, text(0, 4000)] = ""
+    expected_price: Price
+    negotiable: bool
+    documents_available: bool
+    documents_note: Short = ""
+    wants_doc_help: bool = False

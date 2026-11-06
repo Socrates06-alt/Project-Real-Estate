@@ -95,12 +95,14 @@ create table if not exists visit_requests (
     updated_at      text not null default {NOW}
 );
 
--- The seller's original submission never changes (only its workflow status).
+-- A seller's own submission never changes (only its workflow status): it is the record of what they
+-- sent and agreed to. Properties a founder entered for a seller (device_hash 'admin') can be corrected.
 create trigger if not exists submissions_immutable
 before update of number, device_hash, seller_name, seller_phone, property_type, land_area_cents, location,
     area_lat, area_lng, address, description, expected_price, negotiable, documents_available, documents_note,
     wants_doc_help, consent_version, consent_at
-on submissions begin select raise(abort, 'submission original fields are immutable'); end;
+on submissions when old.device_hash <> 'admin'
+begin select raise(abort, 'submission original fields are immutable'); end;
 
 create trigger if not exists submissions_no_delete
 before delete on submissions begin select raise(abort, 'submissions are immutable'); end;
@@ -115,7 +117,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -155,6 +157,10 @@ UPGRADES[5] = [_allow_commercial]
 UPGRADES[6] = [
     "alter table submissions add column wants_doc_help integer not null default 0",
     "drop trigger if exists submissions_immutable",  # recreated from SCHEMA with the new column
+]
+
+UPGRADES[7] = [
+    "drop trigger if exists submissions_immutable",  # recreated from SCHEMA: admin-entered rows can be corrected
 ]
 
 log = logging.getLogger("nilayam")

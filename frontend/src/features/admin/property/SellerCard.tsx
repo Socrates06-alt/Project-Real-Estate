@@ -1,16 +1,23 @@
 import { useState } from "react";
-import { ChevronDown, FileCheck2 } from "lucide-react";
+import { ChevronDown, FileCheck2, Pencil } from "lucide-react";
 import { cents, inr, shortDate, typeLabel } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
 import { ContactButtons } from "@/features/admin/ui";
 import type { Property } from "@/features/admin/types";
 
 /** The seller (private, founders only), with their original submission behind a toggle. */
-export function SellerCard({ seller: s }: { seller: Property["seller"] }) {
+export function SellerCard({ seller: s, onEdit }: { seller: Property["seller"]; onEdit?: () => void }) {
   const [showOriginal, setShowOriginal] = useState(false);
   return (
     <section className="card p-4">
-      <p className="text-xs text-sub">Seller</p>
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-sub">Seller{onEdit ? " · added by LandFinder" : ""}</p>
+        {onEdit && (
+          <button type="button" onClick={onEdit} className="flex items-center gap-1 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">
+            <Pencil size={13} /> Edit
+          </button>
+        )}
+      </div>
       <p className="text-lg font-semibold">{s.seller_name}</p>
       <p className="text-sm text-sub">{s.seller_phone}</p>
       {s.wants_doc_help && (

@@ -16,6 +16,7 @@ import { useAdmin } from "@/features/admin/auth";
 import { AreaInput } from "@/shared/components/AreaInput";
 import { GroupBadge, VisitCard } from "@/features/admin/ui";
 import { SellerCard } from "./property/SellerCard";
+import { EditSellerSheet } from "./property/EditSellerSheet";
 import { PhotoSelector } from "./property/PhotoSelector";
 import { DontListSheet } from "./property/DontListSheet";
 import type { Property, PublicForm } from "@/features/admin/types";
@@ -41,6 +42,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   const [sellerConfirmed, setSellerConfirmed] = useState(false);
   const [forcePriceCheck, setForcePriceCheck] = useState(false);
   const [dontListOpen, setDontListOpen] = useState(false);
+  const [editSeller, setEditSeller] = useState(false);
   const [busy, setBusy] = useState(false);
   const [areaText, setAreaText] = useState(String(p.form.land_area_cents));
   // Photos the admin adds here (when the seller didn't): shown and selected straight away.
@@ -122,7 +124,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         )}
       </header>
 
-      <SellerCard seller={p.seller} />
+      <SellerCard seller={p.seller} onEdit={p.admin_entered ? () => setEditSeller(true) : undefined} />
 
       {/* What buyers see */}
       <fieldset disabled={readOnly} className="space-y-4 card p-4">
@@ -230,6 +232,8 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           </div>
         </div>
       )}
+
+      {p.admin_entered && <EditSellerSheet property={p} open={editSeller} onClose={() => setEditSeller(false)} onSaved={reload} />}
 
       <DontListSheet
         open={dontListOpen}
