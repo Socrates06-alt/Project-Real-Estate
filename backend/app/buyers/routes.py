@@ -6,7 +6,8 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from app.buyers.schemas import BuyerIn
+from app.buyers.importer import read_csv
+from app.buyers.schemas import BuyerIn, BuyersImport
 from app.core.config import get_settings
 from app.core.db import DB, many, now, one
 from app.core.security import require_admin
@@ -106,6 +107,27 @@ def add_buyer(body: BuyerIn, db: DB) -> dict:
     )
     semantic.refresh_buyer(db, buyer_id)
     return _out(one(db, "select * from buyers where id = ?", buyer_id))
+
+
+@router.post("/import")
+def import_buyers(body: BuyersImport, db: DB) -> dict:
+    """Add many buyers from a spreadsheet (CSV). Rows already in the list (same name and phones) are skipped."""
+    rows, problems = read_csv(body.csv)
+    added = skipped = 0
+    for b in rows:
+        phones = json.dumps(b["phones"])
+        if one(db, "select 1 from buyers where name = ? and phones = ?", b["name"], phones):
+            skipped += 1
+            continue
+        buyer_id = str(uuid.uuid4())
+        db.execute(
+            "insert into buyers (id, name, phones, area, property_type, notes, wants_finance_help)"
+            " values (?, ?, ?, ?, ?, ?, 0)",
+            (buyer_id, b["name"], phones, b["area"], b["property_type"], b["notes"]),
+        )
+        semantic.refresh_buyer(db, buyer_id)
+        added += 1
+    return {"added": added, "skipped": skipped, "problems": problems}
 
 
 @router.put("/{buyer_id}")

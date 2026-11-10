@@ -1,0 +1,21 @@
+"""Importing buyers from a spreadsheet."""
+
+CSV = """No,Name,Phone,Other phone,Area,Type,Needs (notes)
+3,? (wife Niya),+966554268358,8921096822,Ala,Land,15 cents?
+4,Sruthi Nair,,,Puliyoor?,Land,Land for a house?
+23,?,+974 12?,,Othera,Commercial,10 cents
+"""
+
+
+def test_import_buyers(client, admin):
+    res = client.post("/api/admin/buyers/import", json={"csv": CSV}, headers=admin).json()
+    assert res["added"] == 3
+    buyers = {b["name"]: b for b in client.get("/api/admin/buyers", headers=admin).json()}
+    assert buyers["? (wife Niya)"]["phones"] == ["+966554268358", "+918921096822"]
+    assert "Phone missing" in buyers["Sruthi Nair"]["notes"]
+    assert buyers["Sruthi Nair"]["property_type"] == "land"
+    odd = buyers["Unknown (#23) ?"]
+    assert odd["property_type"] == "land" and odd["phones"] == []  # too short to be valid
+    assert "Phone to check: +974 12?" in odd["notes"]
+    again = client.post("/api/admin/buyers/import", json={"csv": CSV}, headers=admin).json()
+    assert again == {"added": 0, "skipped": 3, "problems": []}

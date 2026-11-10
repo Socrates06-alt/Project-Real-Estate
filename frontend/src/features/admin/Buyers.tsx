@@ -1,6 +1,6 @@
 import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { useEffect, useState, type FormEvent } from "react";
-import { ChevronDown, Landmark, MessageCircle, Pencil, Phone, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import { ChevronDown, Upload, Landmark, MessageCircle, Pencil, Phone, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import type { PropertyType } from "@/shared/api/client";
 import { cents, inr, typeLabel } from "@/shared/lib/format";
@@ -50,8 +50,9 @@ export default function Buyers() {
 
   return (
     <div className="space-y-4">
-      <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] flex items-center justify-between px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
-        <h1 className="text-2xl font-semibold">Buyers</h1>
+      <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] flex items-center gap-2 px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
+        <h1 className="mr-auto text-2xl font-semibold">Buyers</h1>
+        <ImportButton onDone={reload} />
         <button onClick={() => setEditing("new")} className="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[var(--brand-deep)] shadow-sm">
           <Plus size={18} strokeWidth={2.5} /> Add buyer
         </button>
@@ -197,7 +198,6 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
       notes: f.get("notes"),
       wants_finance_help: finance,
     };
-    if (!body.phones.length) return toast("Add at least one phone number");
     setBusy(true);
     try {
       await call(buyer ? `/buyers/${buyer.id}` : "/buyers", { method: buyer ? "PUT" : "POST", body });
@@ -236,7 +236,6 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
                 <PhoneInput
                   value={ph}
                   onChange={(v) => setPhones(phones.map((x, j) => (j === i ? v : x)))}
-                  required={i === 0}
                   aria-label={`Phone ${i + 1}`}
                 />
                 {phones.length > 1 && (
@@ -287,5 +286,33 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
         )}
       </form>
     </Sheet>
+  );
+}
+
+/** Add many buyers at once from a spreadsheet saved as CSV (all are saved as land buyers). */
+function ImportButton({ onDone }: { onDone: () => void }) {
+  const { call } = useAdmin();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+
+  async function pick(file: File | undefined) {
+    if (!file) return;
+    setBusy(true);
+    try {
+      const res = await call<{ added: number; skipped: number }>("/buyers/import", { method: "POST", body: { csv: await file.text() } });
+      toast(`Added ${res.added} buyers${res.skipped ? ` · ${res.skipped} already in the list` : ""}`);
+      onDone();
+    } catch (err) {
+      toast((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <label className="flex h-10 cursor-pointer items-center gap-1.5 rounded-full bg-white/15 px-3.5 text-sm font-semibold text-white">
+      <Upload size={16} /> {busy ? "Importing…" : "Import"}
+      <input type="file" accept=".csv,text/csv" className="hidden" disabled={busy} onChange={(e) => pick(e.target.files?.[0])} />
+    </label>
   );
 }

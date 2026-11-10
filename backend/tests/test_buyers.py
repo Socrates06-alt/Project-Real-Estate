@@ -32,7 +32,7 @@ def test_buyers_list_add_search_edit_delete(client, admin):
 
 
 def test_buyer_needs_a_valid_phone(client, admin):
-    assert client.post("/api/admin/buyers", json=buyer(phones=[]), headers=admin).status_code == 422
+    assert client.post("/api/admin/buyers", json=buyer(phones=[]), headers=admin).status_code == 201  # added later
     assert client.post("/api/admin/buyers", json=buyer(phones=["12345"]), headers=admin).status_code == 422
 
 

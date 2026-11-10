@@ -134,8 +134,8 @@ create table if not exists embeddings (
 -- A seller's own submission never changes (only its workflow status): it is the record of what they
 -- sent and agreed to. Properties a founder entered for a seller (device_hash 'admin') can be corrected.
 create trigger if not exists submissions_immutable
-before update of number, device_hash, seller_name, seller_phone, seller_phone2, property_type, land_area_cents, location,
-    area_lat, area_lng, address, description, expected_price, negotiable, documents_available, documents_note,
+before update of number, device_hash, seller_name, seller_phone, seller_phone2, property_type, land_area_cents,
+    location, area_lat, area_lng, address, description, expected_price, negotiable, documents_available, documents_note,
     wants_doc_help, wants_dev_help, consent_version, consent_at
 on submissions when old.device_hash <> 'admin'
 begin select raise(abort, 'submission original fields are immutable'); end;
