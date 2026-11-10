@@ -98,7 +98,7 @@ export default function Cleanup() {
       {data?.enabled && !total && (
         <div className="card p-5">
           <p className="text-[15px]">
-            Rewrites all <b>{data.listings.length}</b> live listings in simple English. You check each one before it changes.
+            Rewrites all live listings in simple English. You check each one before it changes.
           </p>
           <Button size="lg" className="mt-4" onClick={start} disabled={!data.listings.length}>
             <Languages size={18} /> Start
