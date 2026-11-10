@@ -25,6 +25,7 @@ GROUPS = {
     "not_listed": ("withdrawn", "rejected"),
 }
 Group = Literal["new", "live", "sold", "not_listed"]
+REMOVABLE = ("not_listed", "sold")  # take down or mark sold first; then a property can be removed from the lists
 
 # Listing fields buyers see (and the admin edits). Seller identity is never one of them.
 PUBLIC_FIELDS = (
@@ -42,6 +43,10 @@ def set_status(db: sqlite3.Connection, submission_id: str, status: str, note: st
         "update submissions set status = ?, status_note = coalesce(?, status_note), status_updated_at = ? where id = ?",
         (status, note, now(), submission_id),
     )
+
+
+def group_of_sub(sub: dict) -> str:
+    return "removed" if sub.get("removed_at") else group_of(sub["status"])
 
 
 def get_submission(db: sqlite3.Connection, submission_id: str) -> dict:
@@ -67,6 +72,8 @@ def publish(db: sqlite3.Connection, submission_id: str, body: PublishIn) -> dict
     sub = get_submission(db, submission_id)
     if sub["status"] == "sold":
         raise HTTPException(409, "This property is already sold")
+    if sub["removed_at"]:
+        raise HTTPException(409, "This property was removed. Restore it first")
     valid_photos = {
         p["id"]: p["path"] for p in many(db, "select id, path from photos where submission_id = ?", submission_id)
     }
@@ -136,3 +143,30 @@ def end_listing(db: sqlite3.Connection, submission_id: str, state: str, status: 
     )
     set_status(db, submission_id, status)
     return {"id": submission_id, "group": group_of(status)}
+
+
+def remove(db: sqlite3.Connection, submission_id: str) -> dict:
+    """Take a not-listed or sold property off all lists and the public site. The record is kept (the seller's
+    agreement, and for sold ones the brokerage record) and it can be restored; search by number still finds it."""
+    sub = get_submission(db, submission_id)
+    if sub["removed_at"]:
+        return {"id": submission_id, "group": "removed"}
+    if group_of(sub["status"]) not in REMOVABLE:
+        raise HTTPException(409, "Take it down or mark it sold first, then remove it")
+    db.execute("update submissions set removed_at = ? where id = ?", (now(), submission_id))
+    db.execute(
+        "update listings set state = 'withdrawn', updated_at = ? where submission_id = ? and state = 'sold'",
+        (now(), submission_id),
+    )
+    return {"id": submission_id, "group": "removed"}
+
+
+def restore(db: sqlite3.Connection, submission_id: str) -> dict:
+    sub = get_submission(db, submission_id)
+    db.execute("update submissions set removed_at = null where id = ?", (submission_id,))
+    if sub["status"] == "sold":  # back on the public site as sold
+        db.execute(
+            "update listings set state = 'sold', updated_at = ? where submission_id = ? and sold_at is not null",
+            (now(), submission_id),
+        )
+    return {"id": submission_id, "group": group_of(sub["status"])}

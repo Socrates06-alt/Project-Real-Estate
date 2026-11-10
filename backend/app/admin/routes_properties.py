@@ -23,6 +23,7 @@ router = APIRouter(prefix="/api/admin", dependencies=[Depends(require_admin)])
 
 _ROW = """
     select s.id, s.number, s.seller_name, s.seller_phone, s.property_type, s.location, s.status, s.created_at,
+           s.removed_at,
            s.wants_doc_help, s.wants_dev_help,
            coalesce(l.price, s.expected_price) as price, l.id as listing_id,
            coalesce(l.title, '') as title,
@@ -34,7 +35,8 @@ _ROW = """
 
 
 def _row(r: dict) -> dict:
-    r["group"] = service.group_of(r.pop("status"))
+    r["group"] = "removed" if r.pop("removed_at") else service.group_of(r["status"])
+    r.pop("status")
     r["cover_url"] = f"/api/admin/photos/{r['cover_photo_id']}" if r["cover_photo_id"] else None
     return r
 
@@ -45,7 +47,11 @@ def _row(r: dict) -> dict:
 @router.get("/inbox")
 def inbox(db: DB) -> dict:
     """Everything that needs a founder's attention, plus simple counts."""
-    new = many(db, f"{_ROW} where s.status in ('received', 'under_review') order by s.created_at desc limit 100")
+    new = many(
+        db,
+        f"{_ROW} where s.status in ('received', 'under_review') and s.removed_at is null"
+        " order by s.created_at desc limit 100",
+    )
     visits = many(
         db,
         """select v.id, v.name, v.phone, v.preferred_time, v.budget, v.status, v.created_at,
@@ -54,7 +60,7 @@ def inbox(db: DB) -> dict:
            where v.status in ('new', 'contacted', 'scheduled') order by v.created_at desc limit 100""",
     )
     counts = {g: 0 for g in service.GROUPS}
-    for r in db.execute("select status, count(*) from submissions group by status"):
+    for r in db.execute("select status, count(*) from submissions where removed_at is null group by status"):
         counts[service.group_of(r[0])] += r[1]
     return {"new": [_row(r) for r in new], "visits": visits, "counts": counts}
 
@@ -67,7 +73,8 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
         statuses = service.GROUPS[group]
         rows = many(
             db,
-            f"{_ROW} where s.status in ({','.join('?' * len(statuses))}) order by s.status_updated_at desc limit 500",
+            f"{_ROW} where s.status in ({','.join('?' * len(statuses))}) and s.removed_at is null"
+            " order by s.status_updated_at desc limit 500",
             *statuses,
         )
         return [_row(r) for r in rows]
@@ -159,7 +166,7 @@ def get_property(submission_id: str, db: DB) -> dict:
     )
     return {
         "id": submission_id,
-        "group": service.group_of(sub["status"]),
+        "group": service.group_of_sub(sub),
         "seller": sub,
         "admin_entered": admin_entered,  # only these seller details can be corrected
         "photos": [{"id": p["id"], "url": f"/api/admin/photos/{p['id']}"} for p in photo_rows],
@@ -263,6 +270,16 @@ def mark_sold(submission_id: str, db: DB) -> dict:
 @router.post("/properties/{submission_id}/take-down")
 def take_down(submission_id: str, db: DB) -> dict:
     return service.end_listing(db, submission_id, "withdrawn", "withdrawn")
+
+
+@router.post("/properties/{submission_id}/remove")
+def remove_property(submission_id: str, db: DB) -> dict:
+    return service.remove(db, submission_id)
+
+
+@router.post("/properties/{submission_id}/restore")
+def restore_property(submission_id: str, db: DB) -> dict:
+    return service.restore(db, submission_id)
 
 
 @router.post("/properties/{submission_id}/not-listed")

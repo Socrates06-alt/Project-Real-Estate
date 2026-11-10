@@ -1,6 +1,6 @@
 import type { PropertyType } from "@/shared/api/client";
 
-export type Group = "new" | "live" | "sold" | "not_listed";
+export type Group = "new" | "live" | "sold" | "not_listed" | "removed";
 
 export interface PropertyRow {
   id: string;

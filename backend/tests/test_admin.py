@@ -172,3 +172,37 @@ def test_admin_can_delete_a_photo(client, admin):
     # A new photo can be added again afterwards.
     more = [("photos", ("c.jpg", jpeg_with_gps(), "image/jpeg"))]
     assert client.post(f"/api/admin/properties/{sid}/photos", files=more, headers=admin).status_code == 201
+
+
+def test_remove_and_restore_a_not_listed_or_sold_property(client, admin):
+    def group_ids(group):
+        return [p["id"] for p in client.get("/api/admin/properties", params={"group": group}, headers=admin).json()]
+
+    sid = publish_new(client, admin)
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    lid, number = prop["listing_id"], prop["number"]
+
+    # A live property can't be removed: take it down or mark it sold first.
+    assert client.post(f"/api/admin/properties/{sid}/remove", headers=admin).status_code == 409
+    assert client.post(f"/api/admin/properties/{sid}/sold", headers=admin).status_code == 200
+    sold_before = client.get("/api/admin/inbox", headers=admin).json()["counts"]["sold"]
+    assert client.get(f"/api/listings/{lid}").status_code == 200  # sold page still public
+
+    assert client.post(f"/api/admin/properties/{sid}/remove").status_code == 401
+    assert client.post(f"/api/admin/properties/{sid}/remove", headers=admin).json()["group"] == "removed"
+    assert sid not in group_ids("sold")
+    assert client.get("/api/admin/inbox", headers=admin).json()["counts"]["sold"] == sold_before - 1
+    assert client.get(f"/api/listings/{lid}").status_code == 404  # off the public site
+    found = client.get("/api/admin/properties", params={"q": str(number)}, headers=admin).json()
+    assert [p["group"] for p in found if p["id"] == sid] == ["removed"]  # still findable by number
+    assert client.get(f"/api/admin/properties/{sid}", headers=admin).json()["group"] == "removed"
+    assert publish(client, admin, sid).status_code == 409  # restore first
+
+    assert client.post(f"/api/admin/properties/{sid}/restore", headers=admin).json()["group"] == "sold"
+    assert sid in group_ids("sold") and client.get(f"/api/listings/{lid}").status_code == 200
+
+    # A taken-down property can be removed too.
+    other = publish_new(client, admin)
+    assert client.post(f"/api/admin/properties/{other}/take-down", headers=admin).status_code == 200
+    assert client.post(f"/api/admin/properties/{other}/remove", headers=admin).status_code == 200
+    assert other not in group_ids("not_listed")

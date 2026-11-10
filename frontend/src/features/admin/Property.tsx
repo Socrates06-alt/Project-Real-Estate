@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Check, ChevronLeft, ExternalLink } from "lucide-react";
+import { Check, ChevronLeft, ExternalLink, Trash2 } from "lucide-react";
 import { ApiError, type PropertyType } from "@/shared/api/client";
 import { inr } from "@/shared/lib/format";
 import { shrinkImage } from "@/shared/lib/image";
@@ -83,7 +83,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
 
   const set = <K extends keyof PublicForm>(k: K, v: PublicForm[K]) => setF((x) => ({ ...x, [k]: v }));
 
-  const readOnly = p.group === "sold";
+  const readOnly = p.group === "sold" || p.group === "removed";
   const dirty = JSON.stringify(f) !== JSON.stringify(p.form);
   const priceChange = Math.abs(f.price - p.reference_price) / p.reference_price * 100;
   const needsConfirm = forcePriceCheck || priceChange > BIG_CHANGE_PCT;
@@ -116,7 +116,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       f.photo_ids.includes(pid) ? f.photo_ids.filter((x) => x !== pid) : photos.map((x) => x.id).filter((x) => x === pid || f.photo_ids.includes(x)),
     );
 
-  const mainLabel = { new: "Publish", live: "Save changes", not_listed: "Publish again", sold: "" }[p.group];
+  const mainLabel = { new: "Publish", live: "Save changes", not_listed: "Publish again", sold: "", removed: "" }[p.group];
   const mainDisabled = busy || (needsConfirm && !sellerConfirmed) || (p.group === "live" && !dirty);
 
   return (
@@ -210,6 +210,30 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       </fieldset>
 
       {/* Secondary actions */}
+      {p.group === "removed" && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-3 text-sm">
+          <span className="text-sub">Removed from your lists. The record is kept.</span>
+          <button
+            disabled={busy}
+            onClick={() => run(() => call(`/properties/${p.id}/restore`, { method: "POST" }), "Restored")}
+            className="shrink-0 font-semibold text-brand underline underline-offset-2"
+          >
+            Restore
+          </button>
+        </div>
+      )}
+      {(p.group === "not_listed" || p.group === "sold") && (
+        <button
+          disabled={busy}
+          onClick={() =>
+            window.confirm(`Remove #${p.number} from your lists? It's kept on record and can be restored from search.`) &&
+            run(() => call(`/properties/${p.id}/remove`, { method: "POST" }), "Removed")
+          }
+          className="flex w-full items-center justify-center gap-1.5 py-2 text-[15px] font-medium text-sold"
+        >
+          <Trash2 size={16} /> Remove property
+        </button>
+      )}
       {p.group === "new" && (
         <button onClick={() => setDontListOpen(true)} className="w-full py-2 text-center text-[15px] text-sub">
           Don't list this property

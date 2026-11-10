@@ -9,12 +9,13 @@ import { cn } from "@/shared/lib/utils";
 import { useAdmin, usePrivateImage } from "@/features/admin/auth";
 import type { Group, Visit } from "@/features/admin/types";
 
-export const GROUP_LABEL: Record<Group, string> = { new: "New", live: "Live", sold: "Sold", not_listed: "Not listed" };
+export const GROUP_LABEL: Record<Group, string> = { new: "New", live: "Live", sold: "Sold", not_listed: "Not listed", removed: "Removed" };
 const GROUP_TONE: Record<Group, "sky" | "brand" | "sold" | "gray"> = {
   new: "sky",
   live: "brand",
   sold: "sold",
   not_listed: "gray",
+  removed: "gray",
 };
 
 export const GroupBadge = ({ group }: { group: Group }) => <Badge tone={GROUP_TONE[group]}>{GROUP_LABEL[group]}</Badge>;

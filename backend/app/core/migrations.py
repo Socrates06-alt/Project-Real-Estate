@@ -36,7 +36,8 @@ create table if not exists submissions (
     status              text not null default 'received'
         check (status in ('received', 'under_review', 'listed', 'sold', 'withdrawn', 'rejected')),
     status_note         text,
-    status_updated_at   text not null default {NOW}
+    status_updated_at   text not null default {NOW},
+    removed_at          text  -- founder removed it from the lists (record kept; can be restored)
 );
 create index if not exists submissions_device on submissions (device_hash);
 
@@ -151,7 +152,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -220,6 +221,7 @@ UPGRADES[9] = [
 ]
 
 UPGRADES[10] = []  # embeddings table is created from SCHEMA
+UPGRADES[11] = [_add_column("submissions", "removed_at text")]
 
 log = logging.getLogger("nilayam")
 
