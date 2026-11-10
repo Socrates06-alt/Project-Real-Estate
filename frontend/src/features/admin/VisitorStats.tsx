@@ -8,10 +8,13 @@ type Stats = {
   last_30_days: number;
   views_30_days: number;
   series: { day: string; visitors: number; views: number }[];
+  months: { month: string; visitors: number; views: number }[];
   top_properties: { listing_id: string; property_id: string; number: number; title: string | null; location: string | null; views: number }[];
 };
 
 const n = (v: number) => v.toLocaleString("en-IN");
+/** "2026-11" → "Nov 2026" */
+const monthName = (m: string) => new Date(`${m}-01T00:00:00`).toLocaleDateString("en-IN", { month: "short", year: "numeric" });
 
 /** Website visitors (counted privately on our own server) and the most-viewed properties. */
 export function VisitorStats() {
@@ -53,6 +56,21 @@ export function VisitorStats() {
         ))}
       </div>
 
+      {data.months.length > 0 && (
+        <details className="mt-3 border-t border-line pt-2">
+          <summary className="cursor-pointer text-sm font-medium text-brand">By month</summary>
+          <ul className="mt-1 divide-y divide-line text-sm">
+            {data.months.map((m) => (
+              <li key={m.month} className="flex justify-between py-1.5">
+                <span>{monthName(m.month)}</span>
+                <span className="text-sub">
+                  <b className="font-semibold text-ink">{n(m.visitors)}</b> visitors · {n(m.views)} views
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </section>
   );
 }

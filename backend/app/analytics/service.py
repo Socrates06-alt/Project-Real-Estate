@@ -53,6 +53,16 @@ def cleanup(db: sqlite3.Connection) -> None:
     db.execute("delete from page_views where day < ?", (day_minus(today(), KEEP_DAYS),))
 
 
+def by_month(db: sqlite3.Connection) -> list[dict]:
+    """Visitors (unique per day, added up, like the other numbers) and page views for each month, newest first."""
+    return many(
+        db,
+        """select substr(day, 1, 7) as month, sum(visitors) as visitors, sum(views) as views from (
+               select day, count(distinct visitor) as visitors, count(*) as views from page_views group by day
+           ) group by month order by month desc""",
+    )
+
+
 def stats(db: sqlite3.Connection) -> dict:
     """Visitors (unique per day, added up), page views, a 30-day series and the most-viewed properties."""
     t = today()
@@ -97,5 +107,6 @@ def stats(db: sqlite3.Connection) -> dict:
         "last_30_days": visitors(30),
         "views_30_days": sum(p["views"] for p in series),
         "series": series,
+        "months": by_month(db),
         "top_properties": top,
     }

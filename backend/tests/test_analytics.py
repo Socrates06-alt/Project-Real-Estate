@@ -43,3 +43,17 @@ def test_visits_are_counted_privately_and_shown_to_admins(client, admin):
 
 def test_track_rejects_unknown_pages(client):
     assert client.post("/api/track", json={"page": "admin"}).status_code == 422
+
+
+def test_monthly_totals(client, admin):
+    from app.core.db import connect
+
+    db = connect()
+    with db:
+        rows = [("2026-09-01", "a"), ("2026-09-01", "a"), ("2026-09-02", "a"), ("2026-10-05", "b")]
+        for day, visitor in rows:
+            db.execute("insert into page_views (day, visitor, page) values (?, ?, 'home')", (day, visitor))
+    months = {m["month"]: m for m in client.get("/api/admin/stats", headers=admin).json()["months"]}
+    assert (months["2026-09"]["visitors"], months["2026-09"]["views"]) == (2, 3)
+    assert (months["2026-10"]["visitors"], months["2026-10"]["views"]) == (1, 1)
+    db.close()
