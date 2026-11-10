@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { createPortal } from "react-dom";
+import { ChevronDown, Search } from "lucide-react";
+import { Sheet } from "@/shared/ui/sheet";
 import { COUNTRIES, joinPhone, splitPhone } from "@/shared/lib/countries";
 import { cn } from "@/shared/lib/utils";
 import { Field } from "@/shared/ui/field";
@@ -22,6 +24,7 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
   const start = splitPhone(value ?? defaultValue);
   const [iso, setIso] = useState(start.iso);
   const [number, setNumber] = useState(start.number);
+  const [picking, setPicking] = useState(false);
   const hidden = useRef<HTMLInputElement>(null);
   const country = COUNTRIES.find((c) => c.iso === iso) ?? COUNTRIES[0];
 
@@ -35,24 +38,6 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
 
   return (
     <div className="flex h-12 w-full items-center rounded-[18px] border border-transparent bg-muted text-[15px] transition duration-200 focus-within:border-brand/40 focus-within:bg-surface focus-within:ring-4 focus-within:ring-brand/12">
-      <div className="relative flex h-full shrink-0 items-center border-r border-line pr-1 pl-3">
-        <span className="pointer-events-none flex items-center gap-1 font-medium">
-          <span aria-hidden>{country.flag}</span>+{country.dial}
-          <ChevronDown size={14} className="text-sub" />
-        </span>
-        <select
-          aria-label="Country code"
-          value={iso}
-          onChange={(e) => update(e.target.value, number)}
-          className="absolute inset-0 cursor-pointer opacity-0"
-        >
-          {COUNTRIES.map((c) => (
-            <option key={c.iso} value={c.iso}>
-              {c.flag} {c.name} +{c.dial}
-            </option>
-          ))}
-        </select>
-      </div>
       <input
         type="tel"
         inputMode="tel"
@@ -64,6 +49,26 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
         aria-label={rest["aria-label"]}
         className={cn("h-full min-w-0 flex-1 bg-transparent px-3 text-ink outline-none placeholder:text-sub/70")}
       />
+      <button
+        type="button"
+        onClick={() => setPicking(true)}
+        aria-label={`Country code +${country.dial}, change`}
+        className="order-first flex h-full shrink-0 items-center gap-1 border-r border-line pr-2 pl-3 font-medium"
+      >
+        <span aria-hidden>{country.flag}</span>+{country.dial}
+        <ChevronDown size={14} className="text-sub" />
+      </button>
+      {picking &&
+        createPortal(
+          <CountryPicker
+            onPick={(c) => {
+              update(c, number);
+              setPicking(false);
+            }}
+            onClose={() => setPicking(false)}
+          />,
+          document.body,
+        )}
       {name && <input ref={hidden} type="hidden" name={name} value={joinPhone(iso, number)} readOnly />}
     </div>
   );
@@ -82,5 +87,41 @@ export function ExtraPhone({ defaultValue }: { defaultValue?: string }) {
     <Field label="Another number (optional)">
       <PhoneInput name="seller_phone2" defaultValue={defaultValue} />
     </Field>
+  );
+}
+
+/** Searchable list of countries: type a name or a code ("971"). */
+function CountryPicker({ onPick, onClose }: { onPick: (iso: string) => void; onClose: () => void }) {
+  const [q, setQ] = useState("");
+  const term = q.trim().toLowerCase().replace(/^\+/, "");
+  const list = term
+    ? COUNTRIES.filter((c) => c.name.toLowerCase().includes(term) || c.dial.startsWith(term) || c.iso.toLowerCase() === term)
+    : COUNTRIES;
+  return (
+    <Sheet open onClose={onClose} title="Country code">
+      <div className="relative">
+        <Search size={17} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sub" />
+        <input
+          autoFocus
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search country or code"
+          aria-label="Search country or code"
+          className="h-12 w-full rounded-[18px] bg-muted pr-4 pl-11 text-[15px] outline-none focus:ring-4 focus:ring-brand/12"
+        />
+      </div>
+      <ul className="mt-3 max-h-[55vh] overflow-y-auto">
+        {list.map((c) => (
+          <li key={c.iso}>
+            <button type="button" onClick={() => onPick(c.iso)} className="flex w-full items-center gap-3 rounded-xl px-2 py-3 text-left hover:bg-muted">
+              <span className="text-xl" aria-hidden>{c.flag}</span>
+              <span className="flex-1">{c.name}</span>
+              <span className="text-sub">+{c.dial}</span>
+            </button>
+          </li>
+        ))}
+        {!list.length && <li className="px-2 py-6 text-center text-sm text-sub">No country found</li>}
+      </ul>
+    </Sheet>
   );
 }
