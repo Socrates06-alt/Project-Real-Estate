@@ -21,7 +21,7 @@ import { UploadProgress } from "./UploadProgress";
 import { SubmitDone } from "./SubmitDone";
 
 // Typed fields remembered in the draft (the consent tick is never remembered).
-const TEXT_FIELDS = ["land_area_cents", "address", "description", "expected_price", "price_per_cent", "documents_note", "seller_name", "seller_phone"];
+const TEXT_FIELDS = ["land_area_cents", "address", "description", "expected_price", "price_per_cent", "seller_name", "seller_phone"];
 const NO_AREA: Area = { name: "", lat: null, lng: null };
 
 /** "List your property": the seller's form. Photos are shrunk on the phone; the form is remembered if left unfinished. */
@@ -199,7 +199,6 @@ export default function Sell() {
         <ExpectedPrice type={type} defaultTotal={Number(saved.expected_price?.replace(/\D/g, "")) || undefined} defaultPerCent={saved.price_per_cent} />
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
-        {docs && <Input name="documents_note" defaultValue={saved.documents_note} maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
         <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} />
         <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} />
       </FormCard>

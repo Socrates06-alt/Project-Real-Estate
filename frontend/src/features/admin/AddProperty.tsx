@@ -145,7 +145,6 @@ export default function AddProperty() {
         <ExpectedPrice type={type} label="Seller's expected price" />
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
-        {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
         <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />
         <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} label="Seller wants property development assistance" />
       </FormCard>
