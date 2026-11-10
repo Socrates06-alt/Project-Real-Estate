@@ -12,8 +12,8 @@ const indian = (v: string) => (digits(v) ? Number(digits(v)).toLocaleString("en-
  * other types take the total. Reads the land size from the same form's "land_area_cents" field.
  * The form sends "price_per_cent" for land; use expectedTotal() when submitting.
  */
-export function ExpectedPrice(props: { type: PropertyType; defaultTotal?: number; defaultPerCent?: string; label?: string }) {
-  const { type, defaultTotal, defaultPerCent, label = "Expected price" } = props;
+export function ExpectedPrice(props: { type: PropertyType; defaultTotal?: number; defaultPerCent?: string; label?: string; examples?: boolean }) {
+  const { type, defaultTotal, defaultPerCent, label = "Expected price", examples = true } = props;
   const box = useRef<HTMLDivElement>(null);
   const [cents, setCents] = useState(0);
   const [perCent, setPerCent] = useState(defaultPerCent ? digits(defaultPerCent) : "");
@@ -40,13 +40,13 @@ export function ExpectedPrice(props: { type: PropertyType; defaultTotal?: number
       {type === "land" ? (
         <>
           <Field label={`${label} per cent`}>
-            <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix="/ cent" required inputMode="numeric" placeholder={EXAMPLES.land.price} />
+            <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix="/ cent" required inputMode="numeric" placeholder={examples ? EXAMPLES.land.price : undefined} />
           </Field>
           {total > 0 && <p className="mt-1.5 px-1 text-sm text-sub">Total {inr(total)} for {cents} cents</p>}
         </>
       ) : (
         <Field label={label}>
-          <AffixInput name="expected_price" defaultValue={defaultTotal ? indian(String(defaultTotal)) : undefined} prefix="₹" required inputMode="numeric" placeholder={EXAMPLES[type].price} />
+          <AffixInput name="expected_price" defaultValue={defaultTotal ? indian(String(defaultTotal)) : undefined} prefix="₹" required inputMode="numeric" placeholder={examples ? EXAMPLES[type].price : undefined} />
         </Field>
       )}
     </div>

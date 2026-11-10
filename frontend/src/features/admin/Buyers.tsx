@@ -38,7 +38,7 @@ type Buyer = {
   seen: boolean;
   updated_at: string;
 };
-type TypeChoice = PropertyType | "other"; // "other" is saved as no specific type
+type TypeChoice = PropertyType;
 
 /** People looking to buy (entered by founders): search, call or WhatsApp, add, edit, delete. */
 export default function Buyers() {
@@ -177,7 +177,9 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
           <p className="flex flex-wrap items-center gap-1.5 text-lg font-semibold">
             {b.name}
             {b.source === "website" && (
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.seen ? "bg-muted text-sub" : "bg-accent text-accent-ink"}`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.seen ? "bg-muted text-sub" : "bg-accent text-accent-ink"}`}
+              >
                 {b.seen ? "Website" : "New · Website"}
               </span>
             )}
@@ -232,7 +234,6 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
   );
 }
 
-
 function BuyerSheet({
   buyer,
   onClose,
@@ -247,7 +248,7 @@ function BuyerSheet({
   const [phones, setPhones] = useState<string[]>(
     buyer?.phones.length ? buyer.phones : [""],
   );
-  const [type, setType] = useState<TypeChoice>(buyer?.property_type ?? "other");
+  const [type, setType] = useState<TypeChoice>(buyer?.property_type ?? "land");
   const [finance, setFinance] = useState(buyer?.wants_finance_help ?? false);
   const [busy, setBusy] = useState(false);
 
@@ -258,7 +259,7 @@ function BuyerSheet({
       name: f.get("name"),
       phones: phones.map((p) => p.trim()).filter(Boolean),
       area: f.get("area"),
-      property_type: type === "other" ? null : type,
+      property_type: type,
       notes: f.get("notes"),
       wants_finance_help: finance,
     };
@@ -298,7 +299,6 @@ function BuyerSheet({
             required
             minLength={2}
             maxLength={80}
-            placeholder="Full name"
           />
         </Field>
 
@@ -316,6 +316,7 @@ function BuyerSheet({
                     setPhones(phones.map((x, j) => (j === i ? v : x)))
                   }
                   aria-label={`Phone ${i + 1}`}
+                  placeholder=""
                 />
                 {phones.length > 1 && (
                   <button
@@ -342,12 +343,7 @@ function BuyerSheet({
         </div>
 
         <Field label="Area they want">
-          <Input
-            name="area"
-            defaultValue={buyer?.area}
-            maxLength={120}
-            placeholder="e.g. Puliyoor, Mulakuzha"
-          />
+          <Input name="area" defaultValue={buyer?.area} maxLength={120} />
         </Field>
         <div>
           <p className="mb-1.5 px-1 text-sm font-medium">Looking for</p>
@@ -359,7 +355,6 @@ function BuyerSheet({
               { value: "land", label: "Land" },
               { value: "house", label: "House" },
               { value: "commercial", label: "Commercial" },
-              { value: "other", label: "Other" },
             ]}
           />
         </div>
@@ -370,7 +365,6 @@ function BuyerSheet({
             maxLength={2000}
             rows={3}
             className="min-h-0"
-            placeholder="Budget, size, road access, when they want to buy…"
           />
         </Field>
 
@@ -416,7 +410,7 @@ function ImportButton({ onDone }: { onDone: () => void }) {
           method: "POST",
           body: {
             csv: await file.text(),
-            property_type: type === "other" ? null : type,
+            property_type: type,
           },
         },
       );
@@ -455,7 +449,6 @@ function ImportButton({ onDone }: { onDone: () => void }) {
                   { value: "land", label: "Land" },
                   { value: "house", label: "House" },
                   { value: "commercial", label: "Commercial" },
-                  { value: "other", label: "Other" },
                 ]}
               />
             </div>
@@ -485,10 +478,14 @@ function RemoveAllButton({ onDone }: { onDone: () => void }) {
   const toast = useToast();
 
   async function removeAll() {
-    const typed = window.prompt("This deletes EVERY buyer and can't be undone.\nType DELETE to confirm.");
+    const typed = window.prompt(
+      "This deletes EVERY buyer and can't be undone.\nType DELETE to confirm.",
+    );
     if (typed?.trim() !== "DELETE") return;
     try {
-      const res = await call<{ deleted: number }>("/buyers?confirm=DELETE", { method: "DELETE" });
+      const res = await call<{ deleted: number }>("/buyers?confirm=DELETE", {
+        method: "DELETE",
+      });
       toast(`Removed ${res.deleted} buyers`);
       onDone();
     } catch (err) {
