@@ -31,25 +31,53 @@ def _score(buyer: dict, ptype: str, location: str, meaning: float | None) -> tup
     return score, reasons
 
 
-def buyers_for_property(db: sqlite3.Connection, submission_id: str, limit: int = 5) -> list[dict]:
-    sub = one(db, "select * from submissions where id = ?", submission_id)
-    if sub is None:
+def _live(db: sqlite3.Connection, ids: list[str] | None = None) -> list[dict]:
+    """Listed (live) properties: type and area as buyers see them."""
+    sql = """select l.submission_id as id, l.property_type, l.location from listings l
+             join submissions s on s.id = l.submission_id
+             where l.state = 'published' and s.removed_at is null"""
+    if ids is None:
+        return many(db, sql)
+    if not ids:
         return []
-    listing = one(db, "select * from listings where submission_id = ?", submission_id)
-    src = listing or sub
-    pvec = store.vectors(db, "property", [submission_id]).get(submission_id)
-    bvecs = store.vectors(db, "buyer") if pvec is not None else {}
+    return many(db, f"{sql} and l.submission_id in ({','.join('?' * len(ids))})", *ids)
+
+
+def _matches(buyers: list[dict], bvecs: dict, prop: dict, pvec) -> list[dict]:
     results = []
-    for b in many(db, "select * from buyers"):
+    for b in buyers:
         v = bvecs.get(b["id"])
         meaning = float(v @ pvec) if v is not None and pvec is not None and v.shape == pvec.shape else None
-        if scored := _score(b, src["property_type"], src["location"], meaning):
+        if scored := _score(b, prop["property_type"], prop["location"], meaning):
             score, reasons = scored
-            b["phones"] = json.loads(b["phones"])
-            b["wants_finance_help"] = bool(b["wants_finance_help"])
             results.append({**b, "score": round(score, 3), "reasons": reasons})
     results.sort(key=lambda r: r["score"], reverse=True)
-    return results[:limit]
+    return results
+
+
+def buyers_for_property(db: sqlite3.Connection, submission_id: str, limit: int = 5) -> list[dict]:
+    """Buyers a listed property may suit (empty for properties that aren't live)."""
+    live = _live(db, [submission_id])
+    if not live:
+        return []
+    pvec = store.vectors(db, "property", [submission_id]).get(submission_id)
+    bvecs = store.vectors(db, "buyer") if pvec is not None else {}
+    buyers = many(db, "select * from buyers")
+    for b in buyers:
+        b["phones"] = json.loads(b["phones"])
+        b["wants_finance_help"] = bool(b["wants_finance_help"])
+    return _matches(buyers, bvecs, live[0], pvec)[:limit]
+
+
+def match_counts(db: sqlite3.Connection, submission_ids: list[str]) -> dict[str, int]:
+    """How many buyers each listed property matches (for the Live list)."""
+    live = _live(db, submission_ids)
+    if not live:
+        return {}
+    buyers = many(db, "select id, property_type, area from buyers")
+    pvecs = store.vectors(db, "property", [p["id"] for p in live])
+    bvecs = store.vectors(db, "buyer") if pvecs else {}
+    return {p["id"]: len(_matches(buyers, bvecs, p, pvecs.get(p["id"]))) for p in live}
 
 
 def properties_for_buyer(db: sqlite3.Connection, buyer_id: str, limit: int = 3) -> list[dict]:
@@ -60,7 +88,8 @@ def properties_for_buyer(db: sqlite3.Connection, buyer_id: str, limit: int = 3) 
         db,
         """select l.id as listing_id, l.submission_id as property_id, l.number, l.property_type, l.location,
                   l.land_area_cents, l.price, l.title
-           from listings l where l.state = 'published'""",
+           from listings l join submissions s on s.id = l.submission_id
+           where l.state = 'published' and s.removed_at is null""",
     )
     bvec = store.vectors(db, "buyer", [buyer_id]).get(buyer_id)
     pvecs = store.vectors(db, "property", [r["property_id"] for r in live]) if bvec is not None else {}

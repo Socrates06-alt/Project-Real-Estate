@@ -15,6 +15,7 @@ export interface PropertyRow {
   group: Group;
   cover_url: string | null;
   open_visits: number;
+  matching_buyers?: number; // Live list only: buyers this listed property may suit
   wants_doc_help: boolean;
   wants_dev_help: boolean;
   created_at: string;

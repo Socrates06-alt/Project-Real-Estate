@@ -77,7 +77,12 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
             " order by s.status_updated_at desc limit 500",
             *statuses,
         )
-        return [_row(r) for r in rows]
+        found = [_row(r) for r in rows]
+        if group == "live":  # how many buyers each listed property matches
+            counts = matching.match_counts(db, [r["id"] for r in found])
+            for r in found:
+                r["matching_buyers"] = counts.get(r["id"], 0)
+        return found
 
     # A property link pasted from a buyer's WhatsApp message: .../p/<listing id>
     if m := re.search(r"/p/([0-9a-fA-F-]{36})", q):

@@ -118,3 +118,18 @@ def test_backfill_embeds_records_saved_while_the_model_was_off(client, admin):
             conn.close()
     finally:
         engine.use_model(None)
+
+
+def test_matching_is_for_listed_properties_with_counts_on_the_live_list(client, admin):
+    body = {"name": "Leela", "phones": ["9847099990"], "area": "Kurattissery", "property_type": "land", "notes": ""}
+    client.post("/api/admin/buyers", json=body, headers=admin)
+    data = admin_form_data(property_type="land", location="Kurattissery", description="Plot")
+    sid = client.post("/api/admin/properties", data=data, headers=admin).json()["id"]
+
+    # Not listed yet: no matches.
+    assert client.get(f"/api/admin/properties/{sid}/matches", headers=admin).json() == []
+
+    assert publish(client, admin, sid).status_code == 200
+    assert [m["name"] for m in client.get(f"/api/admin/properties/{sid}/matches", headers=admin).json()] == ["Leela"]
+    live = client.get("/api/admin/properties", params={"group": "live"}, headers=admin).json()
+    assert next(p for p in live if p["id"] == sid)["matching_buyers"] >= 1

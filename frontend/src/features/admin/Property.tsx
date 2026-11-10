@@ -250,7 +250,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         </div>
       )}
 
-      <MatchingBuyers propertyId={p.id} />
+      {p.group === "live" && <MatchingBuyers propertyId={p.id} />}
 
       {/* Visits */}
       {p.visits.length > 0 && (

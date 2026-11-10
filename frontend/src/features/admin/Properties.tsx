@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CalendarDays, ChevronRight, Plus, Search, X } from "lucide-react";
+import { CalendarDays, ChevronRight, Plus, Search, Sparkles, X } from "lucide-react";
 import { inr } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
@@ -91,6 +91,11 @@ export default function Properties() {
               {p.open_visits > 0 && (
                 <p className="mt-0.5 flex items-center gap-1 text-sm font-medium text-brand">
                   <CalendarDays size={14} /> {p.open_visits} visit request{p.open_visits > 1 ? "s" : ""}
+                </p>
+              )}
+              {!!p.matching_buyers && (
+                <p className="mt-0.5 flex items-center gap-1 text-sm font-medium text-brand">
+                  <Sparkles size={14} /> {p.matching_buyers} matching buyer{p.matching_buyers > 1 ? "s" : ""}
                 </p>
               )}
             </div>
