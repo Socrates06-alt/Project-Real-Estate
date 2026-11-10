@@ -73,7 +73,7 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
         rows = many(
             db,
             f"{_ROW} where s.status in ({','.join('?' * len(statuses))}) and s.removed_at is null"
-            " order by s.status_updated_at desc limit 500",
+            " order by s.number desc limit 500",
             *statuses,
         )
         found = [_row(r) for r in rows]
