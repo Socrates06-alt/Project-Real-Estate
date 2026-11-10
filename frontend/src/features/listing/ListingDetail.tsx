@@ -129,15 +129,6 @@ export default function ListingDetail() {
             <InfoRow icon={<BadgeCheck size={17} className="text-verified" />} label="Kerala RERA" value={config.data.rera_number} />
           )}
         </dl>
-        <div className="mt-4 flex items-center gap-3 rounded-2xl bg-brand-soft p-3 pl-4">
-          <p className="min-w-0 flex-1 text-sm font-medium text-brand">Call or message us for more details</p>
-          <a href={telLink(l.contact)} aria-label="Call" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent text-accent-ink shadow-sm transition active:scale-95">
-            <Phone size={18} />
-          </a>
-          <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface text-wa shadow-sm transition active:scale-95">
-            <MessageCircle size={19} />
-          </a>
-        </div>
       </section>
 
 
