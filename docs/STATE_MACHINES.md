@@ -9,7 +9,9 @@ Every place where something moves through steps. Change a rule in its **source o
 | Buyer request (website) | new (unseen) → seen when the Buyers page opens | `backend/app/buyers/requests.py` (`seen`) | `tests/test_buyer_requests.py` |
 | Visit request | new → contacted → scheduled → done; cancelled | `backend/app/core/validation.py` (`VisitStatus`, `OPEN_VISITS`) | `tests/test_journey.py` |
 | Meaning search model | off → loading → ready / failed | `backend/app/semantic/engine.py` (`state()`) | `tests/test_semantic.py` |
-| Seller's form (Sell page) | filling → shrinking photos → uploading % → done / error | `frontend/src/features/sell/Sell.tsx` | browser check |
+| Sending any form (Sell, Requirement, visit request, Add property, admin login) | idle → sending → done / error (a second tap while sending is ignored) | `frontend/src/shared/lib/useSubmit.ts` | browser check |
+| Sell photos and upload | shrinking photos on the phone; upload % while sending | `frontend/src/features/sell/Sell.tsx` | browser check |
+| Land size unit | cents ⇄ acres (always sent as cents) | `frontend/src/shared/components/form/SizeInput.tsx` | browser check |
 | Unfinished Sell form | none → saved draft → restored → discarded on submit | `frontend/src/features/sell/useSellDraft.ts` | browser check |
 
 ## Property

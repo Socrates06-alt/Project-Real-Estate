@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ApiError, getConfig, uploadForm, type PropertyType } from "@/shared/api/client";
+import { getConfig, uploadForm, type PropertyType } from "@/shared/api/client";
+import { useSubmit } from "@/shared/lib/useSubmit";
 import { shrinkImage } from "@/shared/lib/image";
 import { useAsync } from "@/shared/lib/useAsync";
 import { Field, Input, Textarea } from "@/shared/ui/field";
@@ -39,11 +40,9 @@ export default function Sell() {
   const [devHelp, setDevHelp] = useState(false);
   const [agree, setAgree] = useState(false);
   const [area, setArea] = useState<Area>(NO_AREA);
-  const [busy, setBusy] = useState(false);
+  const { sending: busy, done, error, send, fail } = useSubmit();
   const [preparing, setPreparing] = useState(false); // shrinking photos on the phone
   const [progress, setProgress] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [number, setNumber] = useState<number | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const max = config?.max_photos ?? 3;
 
@@ -52,7 +51,7 @@ export default function Sell() {
     textFields: TEXT_FIELDS,
     state: { type, negotiable, docs, docHelp, devHelp, area },
     photos,
-    disabled: number != null,
+    disabled: done,
     onRestore: (d) => {
       const st = d.state as { type?: PropertyType; negotiable?: boolean; docs?: boolean; docHelp?: boolean; devHelp?: boolean; area?: Area };
       if (st.type) setType(st.type);
@@ -115,7 +114,7 @@ export default function Sell() {
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!config) return;
-    if (!agree) return setError("Please accept the brokerage terms");
+    if (!agree) return fail("Please accept the brokerage terms");
     const f = new FormData(e.currentTarget);
     f.set("property_type", type);
     f.set("negotiable", String(negotiable));
@@ -131,23 +130,16 @@ export default function Sell() {
     f.set("expected_price", String(expectedTotal(f, type)));
     f.delete("price_per_cent");
     photos.forEach((p) => f.append("photos", p.file));
-    setBusy(true);
-    setError(null);
     setProgress(0);
-    try {
-      const res = await uploadForm<{ number: number }>("/api/submissions", f, setProgress, { device: true });
+    await send(async () => {
+      await uploadForm<{ number: number }>("/api/submissions", f, setProgress, { device: true });
       await draft.discard();
-      setNumber(res.number);
       window.scrollTo({ top: 0 });
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
-    } finally {
-      setBusy(false);
-      setProgress(null);
-    }
+    });
+    setProgress(null);
   }
 
-  if (number) return <SubmitDone contactWa={config ? waLink(config.contact) : undefined} />;
+  if (done) return <SubmitDone contactWa={config ? waLink(config.contact) : undefined} />;
 
   return (
     <form key={draft.formKey} ref={formRef} onSubmit={submit} onInput={draft.onTyping} className="space-y-4">

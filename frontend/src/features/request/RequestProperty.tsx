@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
-import { ApiError, api, type PropertyType } from "@/shared/api/client";
+import { api, type PropertyType } from "@/shared/api/client";
+import { useSubmit } from "@/shared/lib/useSubmit";
 import { AffixInput, Field, Input } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
 import { Button, buttonVariants } from "@/shared/ui/button";
@@ -22,17 +23,13 @@ export default function RequestProperty() {
   const [area, setArea] = useState<Area>({ name: "", lat: null, lng: null });
   const [finance, setFinance] = useState(false);
   const [sizeUnit, setSizeUnit] = useState<SizeUnit>("cents");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sent, setSent] = useState(false);
+  const { sending: busy, done: sent, error, send } = useSubmit();
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    setBusy(true);
-    setError(null);
-    try {
-      await api("/api/buyer-requests", {
+    await send(() =>
+      api("/api/buyer-requests", {
         body: {
           name: f.get("name"),
           phones: [f.get("phone"), f.get("phone2")].filter(Boolean),
@@ -45,14 +42,9 @@ export default function RequestProperty() {
           note: f.get("note") ?? "",
           wants_finance_help: finance,
         },
-      });
-      setSent(true);
-      window.scrollTo({ top: 0 });
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
-    } finally {
-      setBusy(false);
-    }
+      }),
+    );
+    window.scrollTo({ top: 0 });
   }
 
   if (sent)

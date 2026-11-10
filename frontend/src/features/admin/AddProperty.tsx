@@ -18,6 +18,7 @@ import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
 import { useAdmin } from "@/features/admin/auth";
+import { useSubmit } from "@/shared/lib/useSubmit";
 import { RephraseButton } from "./property/RephraseButton";
 import { SizeInput } from "@/shared/components/form/SizeInput";
 
@@ -39,8 +40,7 @@ export default function AddProperty() {
   const [devHelp, setDevHelp] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [preparing, setPreparing] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { sending: busy, error, send, fail } = useSubmit();
   const max = config?.max_photos ?? 3;
   const descRef = useRef<HTMLTextAreaElement>(null);
 
@@ -69,7 +69,7 @@ export default function AddProperty() {
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!config) return;
-    if (!agreed) return setError("Confirm the seller agreed to the brokerage terms");
+    if (!agreed) return fail("Confirm the seller agreed to the brokerage terms");
     const f = new FormData(e.currentTarget);
     f.set("property_type", type);
     f.set("negotiable", String(negotiable));
@@ -85,17 +85,10 @@ export default function AddProperty() {
       f.set("area_lng", String(area.lng));
     }
     photos.forEach((p) => f.append("photos", p.file));
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await call<{ id: string; number: number }>("/properties", { method: "POST", form: f });
-      toast(`Added #${res.number}. Review and publish.`);
-      nav(`/admin/p/${res.id}`, { replace: true });
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    const res = await send(() => call<{ id: string; number: number }>("/properties", { method: "POST", form: f }));
+    if (!res) return;
+    toast(`Added #${res.number}. Review and publish.`);
+    nav(`/admin/p/${res.id}`, { replace: true });
   }
 
   return (

@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from "react";
+import { type FormEvent } from "react";
+import { useSubmit } from "@/shared/lib/useSubmit";
 import { Lock } from "lucide-react";
 import { Field, Input } from "@/shared/ui/field";
 import { Button } from "@/shared/ui/button";
@@ -6,20 +7,12 @@ import { useAdmin } from "@/features/admin/auth";
 
 export default function Login() {
   const { login } = useAdmin();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { sending: busy, error, send } = useSubmit();
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setBusy(true);
-    setError(null);
-    try {
-      await login(String(new FormData(e.currentTarget).get("password")));
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setBusy(false);
-    }
+    const password = String(new FormData(e.currentTarget).get("password"));
+    await send(() => login(password));
   }
 
   return (

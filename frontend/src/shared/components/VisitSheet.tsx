@@ -1,40 +1,32 @@
-import { useState, type FormEvent } from "react";
+import { type FormEvent } from "react";
+import { useSubmit } from "@/shared/lib/useSubmit";
 import { CheckCircle2 } from "lucide-react";
-import { api, ApiError } from "@/shared/api/client";
+import { api } from "@/shared/api/client";
 import { Sheet } from "@/shared/ui/sheet";
 import { Field, Input } from "@/shared/ui/field";
 import { Button } from "@/shared/ui/button";
 
 export function VisitSheet({ listingId, open, onClose }: { listingId: string; open: boolean; onClose: () => void }) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const { sending: busy, done, error, send, reset } = useSubmit();
 
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    setBusy(true);
-    setError(null);
-    try {
-      await api(`/api/listings/${listingId}/visit-requests`, {
+    await send(() =>
+      api(`/api/listings/${listingId}/visit-requests`, {
         body: {
           name: f.get("name"),
           phone: f.get("phone"),
           preferred_time: f.get("when"),
           budget: f.get("budget"),
         },
-      });
-      setDone(true);
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
-    } finally {
-      setBusy(false);
-    }
+      }),
+    );
   }
 
   const close = () => {
     onClose();
-    setTimeout(() => setDone(false), 300);
+    setTimeout(reset, 300);
   };
 
   return (
