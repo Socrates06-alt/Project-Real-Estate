@@ -10,7 +10,7 @@ from fastapi import Depends
 
 from app.core.config import get_settings
 
-BOOL_FIELDS = {"negotiable", "documents_available", "wants_doc_help"}
+BOOL_FIELDS = {"negotiable", "documents_available", "wants_doc_help", "wants_dev_help", "wants_finance_help"}
 
 
 def connect() -> sqlite3.Connection:

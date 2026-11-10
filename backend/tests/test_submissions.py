@@ -53,3 +53,13 @@ def test_commercial_property_and_upgrade(client, admin):
     found = [i["id"] for i in client.get("/api/listings", params={"type": "commercial", "limit": 50}).json()["items"]]
     assert lid in found
     assert lid in [i["id"] for i in client.get("/api/listings", params={"q": "shop kollam"}).json()["items"]]
+
+
+def test_seller_can_ask_for_property_development_help(client, admin):
+    sid = submit(client, wants_dev_help="true").json()["id"]
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    assert prop["seller"]["wants_dev_help"] is True
+    new = client.get("/api/admin/inbox", headers=admin).json()["new"]
+    assert next(p for p in new if p["id"] == sid)["wants_dev_help"] is True
+    other = submit(client).json()["id"]
+    assert client.get(f"/api/admin/properties/{other}", headers=admin).json()["seller"]["wants_dev_help"] is False

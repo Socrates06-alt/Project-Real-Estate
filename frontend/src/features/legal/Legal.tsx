@@ -84,8 +84,13 @@ export function Terms() {
             the seller, or through any other person, within twelve (12) months of the introduction.
           </li>
           <li>
-            Additional services, such as documentation assistance, are optional and are charged separately. The
-            applicable charges will be communicated before the service begins.
+            Additional services, such as documentation assistance and property development assistance, are optional
+            and are charged separately. The applicable charges will be communicated before the service begins. Work by
+            partner professionals (such as surveyors or contractors) is carried out by them under their own terms.
+          </li>
+          <li>
+            Financial assistance is guidance in applying for loans with banks and lenders. LandFinder is not a lender,
+            and any loan is subject to the lender's approval and terms.
           </li>
         </ol>
       </section>

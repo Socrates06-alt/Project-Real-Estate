@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/admin", dependencies=[Depends(require_admin)])
 
 _ROW = """
     select s.id, s.number, s.seller_name, s.seller_phone, s.property_type, s.location, s.status, s.created_at,
-           s.wants_doc_help,
+           s.wants_doc_help, s.wants_dev_help,
            coalesce(l.price, s.expected_price) as price, l.id as listing_id,
            coalesce(l.title, '') as title,
            (select id from photos p where p.submission_id = s.id order by position limit 1) as cover_photo_id,

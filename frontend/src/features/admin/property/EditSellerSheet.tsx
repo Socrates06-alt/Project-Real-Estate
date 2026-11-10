@@ -8,6 +8,8 @@ import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
 import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { ExpectedPrice, expectedTotal } from "@/shared/components/form/ExpectedPrice";
+import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
+import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { useAdmin } from "@/features/admin/auth";
 import type { Property } from "@/features/admin/types";
 
@@ -21,6 +23,7 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
   const [negotiable, setNegotiable] = useState(s.negotiable);
   const [docs, setDocs] = useState(s.documents_available);
   const [docHelp, setDocHelp] = useState(s.wants_doc_help);
+  const [devHelp, setDevHelp] = useState(s.wants_dev_help);
   const [busy, setBusy] = useState(false);
 
   async function save(e: FormEvent<HTMLFormElement>) {
@@ -45,6 +48,7 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
           documents_available: docs,
           documents_note: docs ? f.get("documents_note") ?? "" : "",
           wants_doc_help: docHelp,
+          wants_dev_help: devHelp,
         },
       });
       toast("Seller details updated");
@@ -91,7 +95,8 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         {docs && <Input name="documents_note" defaultValue={s.documents_note} maxLength={500} placeholder="e.g. Title deed, tax receipt" />}
-        <Switch checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />
+        <AssistanceOption inline info={DOC_HELP} checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />
+        <AssistanceOption inline info={DEV_HELP} checked={devHelp} onChange={setDevHelp} label="Seller wants property development assistance" />
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? "Saving…" : "Save seller details"}
         </Button>

@@ -29,6 +29,7 @@ create table if not exists submissions (
     documents_available integer not null,
     documents_note      text not null default '',
     wants_doc_help      integer not null default 0,  -- seller asked for documentation assistance (paid)
+    wants_dev_help      integer not null default 0,  -- seller asked for property development assistance (paid)
     consent_version     text not null,
     consent_at          text not null default {NOW},
     created_at          text not null default {NOW},
@@ -114,6 +115,7 @@ create table if not exists buyers (
     area          text not null default '',
     property_type text check (property_type in ('house', 'land', 'commercial')),
     notes         text not null default '',
+    wants_finance_help integer not null default 0,  -- buyer needs help arranging a loan
     created_at    text not null default {NOW},
     updated_at    text not null default {NOW}
 );
@@ -123,7 +125,7 @@ create table if not exists buyers (
 create trigger if not exists submissions_immutable
 before update of number, device_hash, seller_name, seller_phone, property_type, land_area_cents, location,
     area_lat, area_lng, address, description, expected_price, negotiable, documents_available, documents_note,
-    wants_doc_help, consent_version, consent_at
+    wants_doc_help, wants_dev_help, consent_version, consent_at
 on submissions when old.device_hash <> 'admin'
 begin select raise(abort, 'submission original fields are immutable'); end;
 
@@ -140,7 +142,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -187,6 +189,26 @@ UPGRADES[7] = [
 ]
 
 UPGRADES[8] = []  # page_views and buyers tables are created from SCHEMA
+
+
+def _add_column(table: str, column_sql: str):
+    """Upgrade step: add a column if the table exists and doesn't have it yet (a missing table is created
+    from SCHEMA afterwards, already with the column)."""
+    name = column_sql.split()[0]
+
+    def step(conn: sqlite3.Connection) -> None:
+        cols = [r[1] for r in conn.execute(f"pragma table_info({table})")]
+        if cols and name not in cols:
+            conn.execute(f"alter table {table} add column {column_sql}")
+
+    return step
+
+
+UPGRADES[9] = [
+    _add_column("submissions", "wants_dev_help integer not null default 0"),
+    _add_column("buyers", "wants_finance_help integer not null default 0"),
+    "drop trigger if exists submissions_immutable",  # recreated from SCHEMA with the new column
+]
 
 log = logging.getLogger("nilayam")
 

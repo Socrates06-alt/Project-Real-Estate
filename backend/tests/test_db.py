@@ -40,8 +40,16 @@ def test_old_database_upgrades_to_allow_commercial(tmp_path):
             "  -- seller asked for documentation assistance (paid)\n",
             "",
         )
-        .replace("    wants_doc_help, consent_version, consent_at", "    consent_version, consent_at")
+        .replace(
+            "    wants_dev_help      integer not null default 0,"
+            "  -- seller asked for property development assistance (paid)\n",
+            "",
+        )
+        .replace("    wants_doc_help, wants_dev_help, consent_version, consent_at", "    consent_version, consent_at")
     )
+    # Tables added later (visit counting, buyers) didn't exist yet either.
+    start, end = old_schema.index("-- Visit counting"), old_schema.index("-- A seller's own submission")
+    old_schema = old_schema[:start] + old_schema[end:]
     conn.executescript(old_schema)
     conn.execute("pragma user_version = 4")
     conn.execute(

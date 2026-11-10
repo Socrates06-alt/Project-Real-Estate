@@ -56,3 +56,4 @@ class SellerDetailsIn(Strict):
     documents_available: bool
     documents_note: Short = ""
     wants_doc_help: bool = False
+    wants_dev_help: bool = False

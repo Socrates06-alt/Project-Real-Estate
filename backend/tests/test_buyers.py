@@ -34,3 +34,12 @@ def test_buyers_list_add_search_edit_delete(client, admin):
 def test_buyer_needs_a_valid_phone(client, admin):
     assert client.post("/api/admin/buyers", json=buyer(phones=[]), headers=admin).status_code == 422
     assert client.post("/api/admin/buyers", json=buyer(phones=["12345"]), headers=admin).status_code == 422
+
+
+def test_buyer_financial_assistance_flag_and_search(client, admin):
+    b = client.post("/api/admin/buyers", json=buyer(name="Anil", wants_finance_help=True), headers=admin).json()
+    assert b["wants_finance_help"] is True
+    ids = [x["id"] for x in client.get("/api/admin/buyers", params={"q": "finance"}, headers=admin).json()]
+    assert b["id"] in ids
+    changes = buyer(name="Anil", wants_finance_help=False)
+    assert client.put(f"/api/admin/buyers/{b['id']}", json=changes, headers=admin).json()["wants_finance_help"] is False

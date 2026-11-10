@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { MessageCircle, Pencil, Phone, Plus, Search, Trash2, X } from "lucide-react";
+import { Landmark, MessageCircle, Pencil, Phone, Plus, Search, Trash2, X } from "lucide-react";
 import type { PropertyType } from "@/shared/api/client";
 import { typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
@@ -10,8 +10,19 @@ import { Sheet } from "@/shared/ui/sheet";
 import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
 import { useAdmin } from "@/features/admin/auth";
+import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
+import { FINANCE_HELP } from "@/shared/lib/assistance";
 
-type Buyer = { id: string; name: string; phones: string[]; area: string; property_type: PropertyType | null; notes: string; updated_at: string };
+type Buyer = {
+  id: string;
+  name: string;
+  phones: string[];
+  area: string;
+  property_type: PropertyType | null;
+  notes: string;
+  wants_finance_help: boolean;
+  updated_at: string;
+};
 type TypeChoice = PropertyType | "any";
 
 /** People looking to buy (entered by founders): search, call or WhatsApp, add, edit, delete. */
@@ -90,6 +101,11 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
           <Pencil size={13} /> Edit
         </button>
       </div>
+      {b.wants_finance_help && (
+        <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold">
+          <Landmark size={13} /> Needs finance help
+        </p>
+      )}
       {b.notes && <p className="mt-2 text-[15px] whitespace-pre-line">{b.notes}</p>}
       <ul className="mt-3 space-y-2">
         {b.phones.map((ph) => (
@@ -113,6 +129,7 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
   const toast = useToast();
   const [phones, setPhones] = useState<string[]>(buyer?.phones.length ? buyer.phones : [""]);
   const [type, setType] = useState<TypeChoice>(buyer?.property_type ?? "any");
+  const [finance, setFinance] = useState(buyer?.wants_finance_help ?? false);
   const [busy, setBusy] = useState(false);
 
   async function save(e: FormEvent<HTMLFormElement>) {
@@ -124,6 +141,7 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
       area: f.get("area"),
       property_type: type === "any" ? null : type,
       notes: f.get("notes"),
+      wants_finance_help: finance,
     };
     if (!body.phones.length) return toast("Add at least one phone number");
     setBusy(true);
@@ -204,6 +222,8 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
         <Field label="Description">
           <Textarea name="notes" defaultValue={buyer?.notes} maxLength={2000} rows={3} className="min-h-0" placeholder="Budget, size, road access, when they want to buy…" />
         </Field>
+
+        <AssistanceOption inline info={FINANCE_HELP} checked={finance} onChange={setFinance} label="Needs financial assistance" />
 
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? "Saving…" : buyer ? "Save changes" : "Add buyer"}

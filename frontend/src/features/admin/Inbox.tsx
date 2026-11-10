@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import { Link } from "react-router-dom";
-import { ChevronRight, FileCheck2, PartyPopper, Plus } from "lucide-react";
+import { ChevronRight, FileCheck2, Hammer, PartyPopper, Plus } from "lucide-react";
 import { inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
@@ -69,9 +69,18 @@ export default function Inbox() {
                   <p className="truncate text-sm text-sub">
                     #{p.number} · {typeLabel(p.property_type)} · {p.location}
                   </p>
-                  {p.wants_doc_help && (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold">
-                      <FileCheck2 size={12} /> Needs documentation help
+                  {(p.wants_doc_help || p.wants_dev_help) && (
+                    <span className="mt-1 flex flex-wrap gap-1">
+                      {p.wants_doc_help && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold">
+                          <FileCheck2 size={12} /> Documentation help
+                        </span>
+                      )}
+                      {p.wants_dev_help && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-semibold">
+                          <Hammer size={12} /> Development help
+                        </span>
+                      )}
                     </span>
                   )}
                   <p className="text-sm">

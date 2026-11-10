@@ -16,6 +16,7 @@ export interface PropertyRow {
   cover_url: string | null;
   open_visits: number;
   wants_doc_help: boolean;
+  wants_dev_help: boolean;
   created_at: string;
 }
 
@@ -75,6 +76,7 @@ export interface Property {
     documents_available: boolean;
     documents_note: string;
     wants_doc_help: boolean;
+    wants_dev_help: boolean;
     consent_version: string;
     consent_at: string;
     created_at: string;

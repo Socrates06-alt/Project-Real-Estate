@@ -14,7 +14,8 @@ import { useSellDraft } from "./useSellDraft";
 import { FormCard } from "@/shared/components/form/FormCard";
 import { ExpectedPrice, expectedTotal } from "@/shared/components/form/ExpectedPrice";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
-import { DocHelp } from "./DocHelp";
+import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
+import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { BrokerageConsent } from "./BrokerageConsent";
 import { UploadProgress } from "./UploadProgress";
 import { SubmitDone } from "./SubmitDone";
@@ -32,6 +33,7 @@ export default function Sell() {
   const [negotiable, setNegotiable] = useState(true);
   const [docs, setDocs] = useState(false);
   const [docHelp, setDocHelp] = useState(false);
+  const [devHelp, setDevHelp] = useState(false);
   const [agree, setAgree] = useState(false);
   const [area, setArea] = useState<Area>(NO_AREA);
   const [busy, setBusy] = useState(false);
@@ -45,15 +47,16 @@ export default function Sell() {
   const draft = useSellDraft({
     formRef,
     textFields: TEXT_FIELDS,
-    state: { type, negotiable, docs, docHelp, area },
+    state: { type, negotiable, docs, docHelp, devHelp, area },
     photos,
     disabled: number != null,
     onRestore: (d) => {
-      const st = d.state as { type?: PropertyType; negotiable?: boolean; docs?: boolean; docHelp?: boolean; area?: Area };
+      const st = d.state as { type?: PropertyType; negotiable?: boolean; docs?: boolean; docHelp?: boolean; devHelp?: boolean; area?: Area };
       if (st.type) setType(st.type);
       if (st.negotiable != null) setNegotiable(st.negotiable);
       if (st.docs != null) setDocs(st.docs);
       if (st.docHelp != null) setDocHelp(st.docHelp);
+      if (st.devHelp != null) setDevHelp(st.devHelp);
       if (st.area) setArea(st.area);
       setPhotos(
         d.photos.map((b, i) => {
@@ -73,6 +76,7 @@ export default function Sell() {
       setNegotiable(true);
       setDocs(false);
       setDocHelp(false);
+      setDevHelp(false);
       setArea(NO_AREA);
       setPhotos([]);
       setAgree(false);
@@ -114,6 +118,7 @@ export default function Sell() {
     f.set("negotiable", String(negotiable));
     f.set("documents_available", String(docs));
     f.set("wants_doc_help", String(docHelp));
+    f.set("wants_dev_help", String(devHelp));
     f.set("consent", "true");
     if (area.lat != null && area.lng != null) {
       f.set("area_lat", String(area.lat));
@@ -195,7 +200,8 @@ export default function Sell() {
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         {docs && <Input name="documents_note" defaultValue={saved.documents_note} maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
-        <DocHelp checked={docHelp} onChange={setDocHelp} />
+        <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} />
+        <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} />
       </FormCard>
 
       <FormCard title="Your details">

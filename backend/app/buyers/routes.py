@@ -15,12 +15,13 @@ router = APIRouter(prefix="/api/admin/buyers", dependencies=[Depends(require_adm
 
 def _out(row: dict) -> dict:
     row["phones"] = json.loads(row["phones"])
+    row["wants_finance_help"] = bool(row["wants_finance_help"])
     return row
 
 
 def _values(body: BuyerIn) -> tuple:
     phones = list(dict.fromkeys(body.phones))  # drop repeats, keep order
-    return body.name, json.dumps(phones), body.area, body.property_type, body.notes
+    return body.name, json.dumps(phones), body.area, body.property_type, body.notes, body.wants_finance_help
 
 
 @router.get("")
@@ -29,7 +30,11 @@ def list_buyers(db: DB, q: str = Query("", max_length=100)) -> list[dict]:
     if not q:
         return [_out(r) for r in many(db, "select * from buyers order by updated_at desc limit 500")]
     digits = re.sub(r"\D", "", q)
-    conditions = ["lower(name || ' ' || area || ' ' || notes) like ?"]
+    # "finance" or "loan" also finds buyers who need financial assistance
+    conditions = [
+        "lower(name || ' ' || area || ' ' || notes"
+        " || case when wants_finance_help then ' finance loan' else '' end) like ?"
+    ]
     args: list = [f"%{q.lower()}%"]
     if len(digits) >= 4:  # part of a phone number, any format
         phone = digits[2:] if len(digits) == 12 and digits.startswith("91") else digits.lstrip("0")
@@ -43,7 +48,8 @@ def list_buyers(db: DB, q: str = Query("", max_length=100)) -> list[dict]:
 def add_buyer(body: BuyerIn, db: DB) -> dict:
     buyer_id = str(uuid.uuid4())
     db.execute(
-        "insert into buyers (id, name, phones, area, property_type, notes) values (?, ?, ?, ?, ?, ?)",
+        "insert into buyers (id, name, phones, area, property_type, notes, wants_finance_help)"
+        " values (?, ?, ?, ?, ?, ?, ?)",
         (buyer_id, *_values(body)),
     )
     return _out(one(db, "select * from buyers where id = ?", buyer_id))
@@ -52,7 +58,8 @@ def add_buyer(body: BuyerIn, db: DB) -> dict:
 @router.put("/{buyer_id}")
 def update_buyer(buyer_id: str, body: BuyerIn, db: DB) -> dict:
     cur = db.execute(
-        "update buyers set name = ?, phones = ?, area = ?, property_type = ?, notes = ?, updated_at = ? where id = ?",
+        "update buyers set name = ?, phones = ?, area = ?, property_type = ?, notes = ?, wants_finance_help = ?,"
+        " updated_at = ? where id = ?",
         (*_values(body), now(), buyer_id),
     )
     if cur.rowcount == 0:

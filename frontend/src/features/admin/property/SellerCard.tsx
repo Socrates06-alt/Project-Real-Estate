@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, FileCheck2, Pencil } from "lucide-react";
+import { ChevronDown, FileCheck2, Hammer, Pencil } from "lucide-react";
 import { cents, inr, shortDate, typeLabel } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
 import { ContactButtons } from "@/features/admin/ui";
@@ -23,6 +23,11 @@ export function SellerCard({ seller: s, onEdit }: { seller: Property["seller"]; 
       {s.wants_doc_help && (
         <p className="mt-2 flex items-center gap-2 rounded-2xl bg-accent-soft px-3 py-2 text-sm font-semibold">
           <FileCheck2 size={16} /> Asked for documentation assistance (paid)
+        </p>
+      )}
+      {s.wants_dev_help && (
+        <p className="mt-2 flex items-center gap-2 rounded-2xl bg-accent-soft px-3 py-2 text-sm font-semibold">
+          <Hammer size={16} /> Asked for property development assistance (paid)
         </p>
       )}
       {s.address && <p className="mt-1 mb-3 text-sm whitespace-pre-line">{s.address}</p>}

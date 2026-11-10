@@ -13,6 +13,8 @@ import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { FormCard } from "@/shared/components/form/FormCard";
 import { ExpectedPrice, expectedTotal } from "@/shared/components/form/ExpectedPrice";
 import { Checkbox } from "@/shared/components/form/Checkbox";
+import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
+import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
 import { useAdmin } from "@/features/admin/auth";
 
@@ -31,6 +33,7 @@ export default function AddProperty() {
   const [negotiable, setNegotiable] = useState(true);
   const [docs, setDocs] = useState(false);
   const [docHelp, setDocHelp] = useState(false);
+  const [devHelp, setDevHelp] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -68,6 +71,7 @@ export default function AddProperty() {
     f.set("negotiable", String(negotiable));
     f.set("documents_available", String(docs));
     f.set("wants_doc_help", String(docHelp));
+    f.set("wants_dev_help", String(devHelp));
     f.set("consent", "true");
     f.set("consent_version", config.consent_version);
     f.set("expected_price", String(expectedTotal(f, type)));
@@ -142,7 +146,8 @@ export default function AddProperty() {
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         {docs && <Input name="documents_note" maxLength={500} placeholder="e.g. Title deed, tax receipt, survey plan" />}
-        <Switch checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />
+        <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />
+        <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} label="Seller wants property development assistance" />
       </FormCard>
 
       <div className="flex items-start gap-3 card-sm p-3.5">

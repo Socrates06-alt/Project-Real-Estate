@@ -25,5 +25,6 @@ class SubmissionForm(BaseModel):
     documents_available: bool
     documents_note: Short = ""
     wants_doc_help: bool = False  # paid documentation assistance
+    wants_dev_help: bool = False  # paid property development assistance
     consent: bool
     consent_version: str
