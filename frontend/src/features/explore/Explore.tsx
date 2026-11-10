@@ -133,7 +133,6 @@ export default function Explore() {
             Looking to buy? {REQUEST_LABEL} →
           </Link>
         )}
-        {isHome && data && items.length > 0 && <h2 className="px-1 pt-1 font-semibold">All properties</h2>}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
         {data && contact && items.map((l) => <ListingCard key={l.id} listing={l} contact={contact} rera={config.data?.rera_number} />)}
