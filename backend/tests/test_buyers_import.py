@@ -19,3 +19,12 @@ def test_import_buyers(client, admin):
     assert "Phone to check: +974 12?" in odd["notes"]
     again = client.post("/api/admin/buyers/import", json={"csv": CSV}, headers=admin).json()
     assert again == {"added": 0, "skipped": 3, "problems": []}
+
+
+def test_import_with_chosen_type(client, admin):
+    csv = "Name,Phone\nAnu Mathew,9847011111\nBiju K,9847022222\n"
+    client.post("/api/admin/buyers/import", json={"csv": csv, "property_type": "house"}, headers=admin)
+    found = client.get("/api/admin/buyers", params={"q": "Anu Mathew"}, headers=admin).json()
+    assert found[0]["property_type"] == "house"
+    client.post("/api/admin/buyers/import", json={"csv": "Name\nCiya Other\n", "property_type": None}, headers=admin)
+    assert client.get("/api/admin/buyers", params={"q": "Ciya"}, headers=admin).json()[0]["property_type"] is None

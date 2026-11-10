@@ -1,6 +1,6 @@
 """Read a buyers spreadsheet (CSV) into buyer rows.
 
-Everyone is a land buyer; unclear phone numbers go into the notes to check.
+The property type is chosen for the whole file; unclear phone numbers go into the notes to check.
 """
 
 import csv
@@ -42,7 +42,6 @@ def read_csv(text: str) -> tuple[list[dict], list[str]]:
                 "name": name[:80],
                 "phones": list(dict.fromkeys(phones)),
                 "area": _col(row, "area")[:120],
-                "property_type": "land",  # the imported lists are land buyers
                 "notes": " · ".join(n for n in notes if n)[:2000],
             }
         )

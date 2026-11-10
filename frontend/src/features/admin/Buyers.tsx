@@ -1,7 +1,20 @@
 import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { useEffect, useState, type FormEvent } from "react";
-import { ChevronDown, Upload, Landmark, MessageCircle, Pencil, Phone, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import {
+  ChevronDown,
+  Upload,
+  Landmark,
+  MessageCircle,
+  Pencil,
+  Phone,
+  Plus,
+  Search,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
+import { createPortal } from "react-dom";
 import type { PropertyType } from "@/shared/api/client";
 import { cents, inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
@@ -34,14 +47,19 @@ export default function Buyers() {
   const [input, setInput] = useState("");
   const [q, setQ] = useState("");
   const [params, setParams] = useSearchParams();
-  const [editing, setEditing] = useState<Buyer | "new" | null>(params.get("add") ? "new" : null);
+  const [editing, setEditing] = useState<Buyer | "new" | null>(
+    params.get("add") ? "new" : null,
+  );
 
   // Opened from the Inbox's "Add buyer": show the form once, then tidy the address bar.
   useEffect(() => {
     if (params.get("add")) setParams({}, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const { data, error, reload } = useAsync(() => call<Buyer[]>(`/buyers?q=${encodeURIComponent(q)}`), [q]);
+  const { data, error, reload } = useAsync(
+    () => call<Buyer[]>(`/buyers?q=${encodeURIComponent(q)}`),
+    [q],
+  );
 
   useEffect(() => {
     const t = setTimeout(() => setQ(input.trim()), 300);
@@ -53,7 +71,10 @@ export default function Buyers() {
       <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] flex items-center gap-2 px-5 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
         <h1 className="mr-auto text-2xl font-semibold">Buyers</h1>
         <ImportButton onDone={reload} />
-        <button onClick={() => setEditing("new")} className="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[var(--brand-deep)] shadow-sm">
+        <button
+          onClick={() => setEditing("new")}
+          className="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[var(--brand-deep)] shadow-sm"
+        >
           <Plus size={18} strokeWidth={2.5} /> Add buyer
         </button>
       </header>
@@ -68,7 +89,11 @@ export default function Buyers() {
           className="min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-sub"
         />
         {input && (
-          <button aria-label="Clear" onClick={() => setInput("")} className="text-sub">
+          <button
+            aria-label="Clear"
+            onClick={() => setInput("")}
+            className="text-sub"
+          >
             <X size={16} />
           </button>
         )}
@@ -76,8 +101,14 @@ export default function Buyers() {
 
       {error && <ErrorState message={error.message} retry={reload} />}
       {!data && !error && <div className="h-32 shimmer rounded-[28px]" />}
-      {data && !data.length && q && <div className="card px-6 py-10 text-center text-sub">No buyers match your search.</div>}
-      {data?.map((b) => <BuyerCard key={b.id} buyer={b} onEdit={() => setEditing(b)} />)}
+      {data && !data.length && q && (
+        <div className="card px-6 py-10 text-center text-sub">
+          No buyers match your search.
+        </div>
+      )}
+      {data?.map((b) => (
+        <BuyerCard key={b.id} buyer={b} onEdit={() => setEditing(b)} />
+      ))}
 
       {editing && (
         <BuyerSheet
@@ -104,7 +135,11 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
             {b.area && ` · ${b.area}`}
           </p>
         </div>
-        <button onClick={onEdit} aria-label={`Edit ${b.name}`} className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand">
+        <button
+          onClick={onEdit}
+          aria-label={`Edit ${b.name}`}
+          className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand"
+        >
           <Pencil size={13} /> Edit
         </button>
       </div>
@@ -114,15 +149,29 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
           <Landmark size={13} /> Needs finance help
         </p>
       )}
-      {b.notes && <p className="mt-2 text-[15px] whitespace-pre-line">{b.notes}</p>}
+      {b.notes && (
+        <p className="mt-2 text-[15px] whitespace-pre-line">{b.notes}</p>
+      )}
       <ul className="mt-3 space-y-2">
         {b.phones.map((ph) => (
           <li key={ph} className="flex items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-[15px] font-medium">{ph}</span>
-            <a href={`tel:${ph}`} aria-label={`Call ${ph}`} className="grid h-10 w-10 place-items-center rounded-full bg-surface shadow-[0_0_0_1px_var(--hairline)]">
+            <span className="min-w-0 flex-1 truncate text-[15px] font-medium">
+              {ph}
+            </span>
+            <a
+              href={`tel:${ph}`}
+              aria-label={`Call ${ph}`}
+              className="grid h-10 w-10 place-items-center rounded-full bg-surface shadow-[0_0_0_1px_var(--hairline)]"
+            >
               <Phone size={17} className="text-brand" />
             </a>
-            <a href={`https://wa.me/${ph.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" aria-label={`WhatsApp ${ph}`} className="grid h-10 w-10 place-items-center rounded-full bg-wa text-white">
+            <a
+              href={`https://wa.me/${ph.replace(/\D/g, "")}`}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`WhatsApp ${ph}`}
+              className="grid h-10 w-10 place-items-center rounded-full bg-wa text-white"
+            >
               <MessageCircle size={17} />
             </a>
           </li>
@@ -133,7 +182,15 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
   );
 }
 
-type PropertyMatch = { property_id: string; number: number; property_type: PropertyType; location: string; land_area_cents: number; price: number; reasons: string[] };
+type PropertyMatch = {
+  property_id: string;
+  number: number;
+  property_type: PropertyType;
+  location: string;
+  land_area_cents: number;
+  price: number;
+  reasons: string[];
+};
 
 /** Live properties that may suit this buyer; loaded when opened. */
 function MatchingProperties({ buyerId }: { buyerId: string }) {
@@ -143,24 +200,44 @@ function MatchingProperties({ buyerId }: { buyerId: string }) {
 
   async function toggle() {
     setOpen(!open);
-    if (!items) setItems(await call<PropertyMatch[]>(`/buyers/${buyerId}/matches`).catch(() => []));
+    if (!items)
+      setItems(
+        await call<PropertyMatch[]>(`/buyers/${buyerId}/matches`).catch(
+          () => [],
+        ),
+      );
   }
 
   return (
     <div className="mt-3 border-t border-line pt-2.5">
-      <button type="button" onClick={toggle} aria-expanded={open} className="flex w-full items-center justify-between py-1 text-sm font-semibold text-brand">
+      <button
+        type="button"
+        onClick={toggle}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between py-1 text-sm font-semibold text-brand"
+      >
         <span className="flex items-center gap-1.5">
           <Sparkles size={15} /> Matching properties
         </span>
-        <ChevronDown size={17} className={open ? "rotate-180 transition" : "transition"} />
+        <ChevronDown
+          size={17}
+          className={open ? "rotate-180 transition" : "transition"}
+        />
       </button>
-      {open && items === null && <div className="mt-2 h-12 shimmer rounded-2xl" />}
-      {open && items?.length === 0 && <p className="mt-1.5 text-sm text-sub">No live properties match yet.</p>}
+      {open && items === null && (
+        <div className="mt-2 h-12 shimmer rounded-2xl" />
+      )}
+      {open && items?.length === 0 && (
+        <p className="mt-1.5 text-sm text-sub">No live properties match yet.</p>
+      )}
       {open && !!items?.length && (
         <ul className="mt-2 divide-y divide-line rounded-2xl bg-muted/50">
           {items.map((p) => (
             <li key={p.property_id}>
-              <Link to={`/admin/p/${p.property_id}`} className="block px-3.5 py-2.5 text-sm">
+              <Link
+                to={`/admin/p/${p.property_id}`}
+                className="block px-3.5 py-2.5 text-sm"
+              >
                 <span className="flex justify-between gap-3">
                   <span className="min-w-0 truncate font-medium">
                     #{p.number} {typeLabel(p.property_type)} · {p.location}
@@ -179,10 +256,20 @@ function MatchingProperties({ buyerId }: { buyerId: string }) {
   );
 }
 
-function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose: () => void; onSaved: () => void }) {
+function BuyerSheet({
+  buyer,
+  onClose,
+  onSaved,
+}: {
+  buyer: Buyer | null;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const { call } = useAdmin();
   const toast = useToast();
-  const [phones, setPhones] = useState<string[]>(buyer?.phones.length ? buyer.phones : [""]);
+  const [phones, setPhones] = useState<string[]>(
+    buyer?.phones.length ? buyer.phones : [""],
+  );
   const [type, setType] = useState<TypeChoice>(buyer?.property_type ?? "other");
   const [finance, setFinance] = useState(buyer?.wants_finance_help ?? false);
   const [busy, setBusy] = useState(false);
@@ -200,7 +287,10 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
     };
     setBusy(true);
     try {
-      await call(buyer ? `/buyers/${buyer.id}` : "/buyers", { method: buyer ? "PUT" : "POST", body });
+      await call(buyer ? `/buyers/${buyer.id}` : "/buyers", {
+        method: buyer ? "PUT" : "POST",
+        body,
+      });
       toast(buyer ? "Buyer updated" : "Buyer added");
       onSaved();
     } catch (err) {
@@ -225,21 +315,38 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
     <Sheet open onClose={onClose} title={buyer ? "Edit buyer" : "Add buyer"}>
       <form onSubmit={save} className="space-y-3.5">
         <Field label="Name">
-          <Input name="name" defaultValue={buyer?.name} required minLength={2} maxLength={80} placeholder="Full name" />
+          <Input
+            name="name"
+            defaultValue={buyer?.name}
+            required
+            minLength={2}
+            maxLength={80}
+            placeholder="Full name"
+          />
         </Field>
 
         <div>
           <p className="mb-1.5 px-1 text-sm font-medium">Phone numbers</p>
           <div className="space-y-2">
             {phones.map((ph, i) => (
-              <div key={`${i}-${phones.length}`} className="flex items-center gap-2">
+              <div
+                key={`${i}-${phones.length}`}
+                className="flex items-center gap-2"
+              >
                 <PhoneInput
                   value={ph}
-                  onChange={(v) => setPhones(phones.map((x, j) => (j === i ? v : x)))}
+                  onChange={(v) =>
+                    setPhones(phones.map((x, j) => (j === i ? v : x)))
+                  }
                   aria-label={`Phone ${i + 1}`}
                 />
                 {phones.length > 1 && (
-                  <button type="button" aria-label={`Remove phone ${i + 1}`} onClick={() => setPhones(phones.filter((_, j) => j !== i))} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-muted text-sub">
+                  <button
+                    type="button"
+                    aria-label={`Remove phone ${i + 1}`}
+                    onClick={() => setPhones(phones.filter((_, j) => j !== i))}
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-muted text-sub"
+                  >
                     <X size={16} />
                   </button>
                 )}
@@ -247,14 +354,23 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
             ))}
           </div>
           {phones.length < 5 && (
-            <button type="button" onClick={() => setPhones([...phones, ""])} className="mt-2 flex items-center gap-1 px-1 text-sm font-semibold text-brand">
+            <button
+              type="button"
+              onClick={() => setPhones([...phones, ""])}
+              className="mt-2 flex items-center gap-1 px-1 text-sm font-semibold text-brand"
+            >
               <Plus size={16} /> Add another number
             </button>
           )}
         </div>
 
         <Field label="Area they want">
-          <Input name="area" defaultValue={buyer?.area} maxLength={120} placeholder="e.g. Puliyoor, Mulakuzha" />
+          <Input
+            name="area"
+            defaultValue={buyer?.area}
+            maxLength={120}
+            placeholder="e.g. Puliyoor, Mulakuzha"
+          />
         </Field>
         <div>
           <p className="mb-1.5 px-1 text-sm font-medium">Looking for</p>
@@ -271,16 +387,32 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
           />
         </div>
         <Field label="Description">
-          <Textarea name="notes" defaultValue={buyer?.notes} maxLength={2000} rows={3} className="min-h-0" placeholder="Budget, size, road access, when they want to buy…" />
+          <Textarea
+            name="notes"
+            defaultValue={buyer?.notes}
+            maxLength={2000}
+            rows={3}
+            className="min-h-0"
+            placeholder="Budget, size, road access, when they want to buy…"
+          />
         </Field>
 
-        <AssistanceOption inline info={FINANCE_HELP} checked={finance} onChange={setFinance} />
+        <AssistanceOption
+          inline
+          info={FINANCE_HELP}
+          checked={finance}
+          onChange={setFinance}
+        />
 
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? "Saving…" : buyer ? "Save changes" : "Add buyer"}
         </Button>
         {buyer && (
-          <button type="button" onClick={remove} className="flex w-full items-center justify-center gap-1.5 py-2 text-[15px] text-sold">
+          <button
+            type="button"
+            onClick={remove}
+            className="flex w-full items-center justify-center gap-1.5 py-2 text-[15px] text-sold"
+          >
             <Trash2 size={16} /> Delete buyer
           </button>
         )}
@@ -289,18 +421,32 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
   );
 }
 
-/** Add many buyers at once from a spreadsheet saved as CSV (all are saved as land buyers). */
+/** Add many buyers at once from a spreadsheet saved as CSV; one property type is chosen for the whole file. */
 function ImportButton({ onDone }: { onDone: () => void }) {
   const { call } = useAdmin();
   const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState<TypeChoice>("land");
   const [busy, setBusy] = useState(false);
 
   async function pick(file: File | undefined) {
     if (!file) return;
     setBusy(true);
     try {
-      const res = await call<{ added: number; skipped: number }>("/buyers/import", { method: "POST", body: { csv: await file.text() } });
-      toast(`Added ${res.added} buyers${res.skipped ? ` · ${res.skipped} already in the list` : ""}`);
+      const res = await call<{ added: number; skipped: number }>(
+        "/buyers/import",
+        {
+          method: "POST",
+          body: {
+            csv: await file.text(),
+            property_type: type === "other" ? null : type,
+          },
+        },
+      );
+      toast(
+        `Added ${res.added} buyers${res.skipped ? ` · ${res.skipped} already in the list` : ""}`,
+      );
+      setOpen(false);
       onDone();
     } catch (err) {
       toast((err as Error).message);
@@ -310,9 +456,52 @@ function ImportButton({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <label className="flex h-10 cursor-pointer items-center gap-1.5 rounded-full bg-white/15 px-3.5 text-sm font-semibold text-white">
-      <Upload size={16} /> {busy ? "Importing…" : "Import"}
-      <input type="file" accept=".csv,text/csv" className="hidden" disabled={busy} onChange={(e) => pick(e.target.files?.[0])} />
-    </label>
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex h-10 items-center gap-1.5 rounded-full bg-white/15 px-3.5 text-sm font-semibold text-white"
+      >
+        <Upload size={16} /> Import
+      </button>
+      {createPortal(
+        <Sheet open={open} onClose={() => setOpen(false)} title="Import buyers">
+          <div className="space-y-4">
+            <div>
+              <p className="mb-1.5 px-1 text-sm font-medium">
+                All buyers in this file want
+              </p>
+              <Segmented
+                value={type}
+                onChange={setType}
+                options={[
+                  { value: "land", label: "Land" },
+                  { value: "house", label: "House" },
+                  { value: "commercial", label: "Commercial" },
+                  { value: "other", label: "Other" },
+                ]}
+              />
+            </div>
+            <p className="px-1 text-sm text-sub">
+              Choose a spreadsheet saved as CSV (columns: Name, Phone, Other
+              phone, Area, Needs).
+            </p>
+            <label
+              className={`flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brand font-semibold text-brand-ink ${busy ? "opacity-60" : ""}`}
+            >
+              <Upload size={18} /> {busy ? "Importing…" : "Choose CSV file"}
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                disabled={busy}
+                onChange={(e) => pick(e.target.files?.[0])}
+              />
+            </label>
+          </div>
+        </Sheet>,
+        document.body,
+      )}
+    </>
   );
 }

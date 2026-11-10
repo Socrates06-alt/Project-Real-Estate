@@ -123,7 +123,7 @@ def import_buyers(body: BuyersImport, db: DB) -> dict:
         db.execute(
             "insert into buyers (id, name, phones, area, property_type, notes, wants_finance_help)"
             " values (?, ?, ?, ?, ?, ?, 0)",
-            (buyer_id, b["name"], phones, b["area"], b["property_type"], b["notes"]),
+            (buyer_id, b["name"], phones, b["area"], body.property_type, b["notes"]),
         )
         semantic.refresh_buyer(db, buyer_id)
         added += 1
