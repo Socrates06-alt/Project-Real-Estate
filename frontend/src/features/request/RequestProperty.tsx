@@ -10,7 +10,6 @@ import { FormCard } from "@/shared/components/form/FormCard";
 import { ExtraPhone, PhoneInput } from "@/shared/components/form/PhoneInput";
 import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { EXAMPLES } from "@/shared/lib/examples";
-import { REQUEST_LABEL } from "@/shared/lib/labels";
 
 const num = (v: FormDataEntryValue | null) => (v && Number(v) > 0 ? Number(v) : null);
 
@@ -66,7 +65,7 @@ export default function RequestProperty() {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <PageHeader title={REQUEST_LABEL} subtitle="Tell us what you need. We'll call you." />
+      <PageHeader title="Your requirement" subtitle="We'll call you when we find a match." />
 
       <FormCard title="Looking for">
         <Segmented
@@ -113,7 +112,7 @@ export default function RequestProperty() {
 
       {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm font-medium text-sold">{error}</p>}
       <Button type="submit" variant="accent" size="lg" disabled={busy}>
-        {busy ? "Sending…" : "Send request"}
+        {busy ? "Sending…" : "Submit requirement"}
       </Button>
     </form>
   );

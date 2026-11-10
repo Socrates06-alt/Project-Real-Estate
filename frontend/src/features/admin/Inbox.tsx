@@ -55,7 +55,7 @@ export default function Inbox() {
 
       {!!data?.buyer_requests && (
         <Link to="/admin/buyers" className="flex items-center gap-2.5 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-semibold">
-          <UserPlus size={18} /> <span className="flex-1">{data.buyer_requests} new buyer request{data.buyer_requests > 1 ? "s" : ""}</span>
+          <UserPlus size={18} /> <span className="flex-1">{data.buyer_requests} new requirement{data.buyer_requests > 1 ? "s" : ""}</span>
           <ChevronRight size={16} />
         </Link>
       )}

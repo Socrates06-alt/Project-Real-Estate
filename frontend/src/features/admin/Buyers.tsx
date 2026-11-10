@@ -180,7 +180,7 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
               <span
                 className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.seen ? "bg-muted text-sub" : "bg-accent text-accent-ink"}`}
               >
-                {b.seen ? "Website" : "New · Website"}
+                {b.seen ? "Requirement" : "New · Requirement"}
               </span>
             )}
           </p>
