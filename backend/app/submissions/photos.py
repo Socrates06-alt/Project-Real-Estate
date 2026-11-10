@@ -93,6 +93,25 @@ def ensure_small_copies() -> None:
                 pass
 
 
+THUMB_SIDE = 200  # admin list thumbnails
+
+
+def _thumb_path(rel: str) -> Path:
+    full = media_root() / rel
+    return full.with_name(f"{full.stem}-thumb.webp")
+
+
+def read_thumb(rel: str) -> bytes:
+    """A small copy of a private photo for admin lists; made once, then reused."""
+    thumb = _thumb_path(rel)
+    if not thumb.exists():
+        with Image.open(media_root() / rel) as img:
+            img.thumbnail((THUMB_SIDE, THUMB_SIDE))
+            img.save(thumb, "WEBP", quality=75)
+    return thumb.read_bytes()
+
+
 def delete_files(rels: list[str]) -> None:
     for rel in rels:
         (media_root() / rel).unlink(missing_ok=True)
+        _thumb_path(rel).unlink(missing_ok=True)

@@ -229,3 +229,20 @@ def test_seller_can_give_a_foreign_number_and_another_number(client, admin):
     assert seller["seller_phone"] == "+971501234567" and seller["seller_phone2"] == "+919847022222"
     found = client.get("/api/admin/properties?q=22222", headers=admin).json()
     assert any(r["id"] == sub["id"] for r in found)
+
+
+def test_list_uses_small_thumbnails(client, admin):
+    sid = submit(client).json()["id"]  # the helper adds one photo
+    row = next(
+        r for r in client.get("/api/admin/properties", params={"group": "new"}, headers=admin).json() if r["id"] == sid
+    )
+    assert row["cover_url"].endswith("?size=thumb")
+    thumb = client.get(row["cover_url"], headers=admin)
+    full = client.get(row["cover_url"].split("?")[0], headers=admin)
+    assert thumb.status_code == 200 and thumb.headers["content-type"] == "image/webp"
+    assert full.status_code == 200
+    from io import BytesIO
+
+    from PIL import Image
+
+    assert max(Image.open(BytesIO(thumb.content)).size) <= 200

@@ -3,7 +3,7 @@
 import json
 import re
 import uuid
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
@@ -37,7 +37,7 @@ _ROW = f"""
 def _row(r: dict) -> dict:
     r["group"] = "removed" if r.pop("removed_at") else service.group_of(r["status"])
     r.pop("status")
-    r["cover_url"] = f"/api/admin/photos/{r['cover_photo_id']}" if r["cover_photo_id"] else None
+    r["cover_url"] = f"/api/admin/photos/{r['cover_photo_id']}?size=thumb" if r["cover_photo_id"] else None
     return r
 
 
@@ -253,15 +253,16 @@ def add_photos(submission_id: str, db: DB, photo_files: Annotated[list[UploadFil
 
 
 @router.get("/photos/{photo_id}")
-def get_private_photo(photo_id: str, db: DB) -> Response:
+def get_private_photo(photo_id: str, db: DB, size: Literal["full", "thumb"] = "full") -> Response:
+    """A private photo; size=thumb gives a small copy for lists (much faster on phones)."""
     row = one(db, "select path from photos where id = ?", photo_id)
     try:
-        data = photos.read(row["path"]) if row else None
+        data = (photos.read_thumb if size == "thumb" else photos.read)(row["path"]) if row else None
     except OSError:
         data = None
     if data is None:
         raise HTTPException(404, "Photo not found")
-    return Response(data, media_type="image/webp", headers={"Cache-Control": "private, max-age=300"})
+    return Response(data, media_type="image/webp", headers={"Cache-Control": "private, max-age=86400"})
 
 
 @router.delete("/photos/{photo_id}")
