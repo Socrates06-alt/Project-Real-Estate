@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import { Link } from "react-router-dom";
-import { ChevronRight, FileCheck2, Hammer, Languages, PartyPopper, Plus } from "lucide-react";
+import { ChevronRight, FileCheck2, Hammer, PartyPopper, Plus } from "lucide-react";
 import { inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
@@ -55,10 +55,6 @@ export default function Inbox() {
 
       <VisitorStats />
 
-      {/* TEMPORARY one-time tool: remove this link when the clean-up is done */}
-      <Link to="/admin/cleanup" className="flex items-center gap-2.5 rounded-2xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand">
-        <Languages size={18} /> <span className="flex-1">Clean up listings to English</span> <ChevronRight size={16} />
-      </Link>
 
       {!data && <div className="h-40 shimmer rounded-[28px]" />}
       {empty && (
