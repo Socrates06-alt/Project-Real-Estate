@@ -1,9 +1,9 @@
 import { NavLink } from "react-router-dom";
-import { House, PlusCircle, UserRound } from "lucide-react";
+import { PlusCircle, Search, UserRound } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 const ITEMS = [
-  { to: "/", label: "Home", icon: House, end: true },
+  { to: "/", label: "Buy", icon: Search, end: true }, // the property list is the buying page
   { to: "/sell", label: "Sell", icon: PlusCircle, end: false },
   { to: "/me", label: "Profile", icon: UserRound, end: false },
 ];
