@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { COUNTRIES, joinPhone, splitPhone } from "@/shared/lib/countries";
 import { cn } from "@/shared/lib/utils";
+import { Field } from "@/shared/ui/field";
 
 type Props = {
   /** Form field name: a hidden input carries the full number, e.g. "+971501234567". */
@@ -65,5 +66,21 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
       />
       {name && <input ref={hidden} type="hidden" name={name} value={joinPhone(iso, number)} readOnly />}
     </div>
+  );
+}
+
+/** Optional second number, hidden behind a small link until needed. */
+export function ExtraPhone({ defaultValue }: { defaultValue?: string }) {
+  const [open, setOpen] = useState(Boolean(defaultValue));
+  if (!open)
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="px-1 text-sm font-semibold text-brand">
+        + Add another number
+      </button>
+    );
+  return (
+    <Field label="Another number (optional)">
+      <PhoneInput name="seller_phone2" defaultValue={defaultValue} />
+    </Field>
   );
 }

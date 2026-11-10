@@ -14,7 +14,7 @@ import { useSellDraft } from "./useSellDraft";
 import { FormCard } from "@/shared/components/form/FormCard";
 import { ExpectedPrice, expectedTotal } from "@/shared/components/form/ExpectedPrice";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
-import { PhoneInput } from "@/shared/components/form/PhoneInput";
+import { ExtraPhone, PhoneInput } from "@/shared/components/form/PhoneInput";
 import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { BrokerageConsent } from "./BrokerageConsent";
@@ -225,18 +225,3 @@ export default function Sell() {
   );
 }
 
-/** Optional second number, hidden behind a small link until needed. */
-function ExtraPhone({ defaultValue }: { defaultValue?: string }) {
-  const [open, setOpen] = useState(Boolean(defaultValue));
-  if (!open)
-    return (
-      <button type="button" onClick={() => setOpen(true)} className="px-1 text-sm font-semibold text-brand">
-        + Add another number
-      </button>
-    );
-  return (
-    <Field label="Another number (optional)">
-      <PhoneInput name="seller_phone2" defaultValue={defaultValue} />
-    </Field>
-  );
-}
