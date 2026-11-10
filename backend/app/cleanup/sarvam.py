@@ -12,21 +12,34 @@ from app.core.config import get_settings
 FIELDS = ("title", "location", "description", "documents_note")
 
 SYSTEM = """You clean up property listing text for LandFinder, a property brokerage in Chengannur, Kerala.
+Buyers read it on their phones, many in English as a second language, so write simple, good English.
 
-For each field you receive:
-- Fix spelling mistakes.
-- Translate any Malayalam (or Malayalam written in English letters) into English.
-- Rewrite it as clear, natural, correct English. Keep it short and factual.
+You receive four fields. For every field: fix spelling mistakes and translate any Malayalam (or Malayalam
+written in English letters) into English.
 
-Rules:
-- Keep every fact exactly: numbers, sizes (cents, sq ft), prices, distances, rooms, roads, landmarks and place names.
-- Do not add facts, opinions or marketing claims, and do not drop any fact.
-- Write Kerala place names in their usual English spelling (for example Chengannur, Puliyoor, Mulakuzha).
+"description":
+- Rewrite it as a few short, simple, well-phrased English sentences that read naturally.
+- Keep every detail the seller gave: land size, built-up area, rooms, floors, road access and width, water,
+  electricity, distances, nearby places and landmarks, and anything else mentioned. Do not drop any detail.
+- Remove list numbering and bullets ("1.", "2)", "-", "*") and turn the points into normal sentences.
+- Remove phone numbers, names of people and other contact details.
+- Do not add anything the seller did not say: no opinions, no marketing words like "beautiful" or "best".
+
+"title": a short, simple English title. If it is a generic one like "Land for sale" or "House for sale",
+return it unchanged.
+
+"location": the place name only (one or two words, no sentence), in its usual English spelling, for example
+Chengannur, Puliyoor, Mulakuzha, Pandanad.
+
+"documents_note": the documents as a short plain list in English, for example
+"Title deed, tax receipt, possession certificate".
+
+In all fields:
+- Keep numbers that are facts exactly as given (sizes such as 10 cents or 1200 sq ft, distances such as 400 m,
+  prices, number of rooms).
 - For land types that matter legally, keep the Malayalam word in brackets after the English, e.g.
   "paddy land (nilam)", "garden land (purayidam)".
-- "location" is a place name only (one or two words), not a sentence.
-- If a field is empty, return it empty. If "title" is a generic one like "Land for sale" or "House for sale",
-  return it unchanged.
+- If a field is empty, return it empty.
 
 Reply with only a JSON object with exactly these keys: "title", "location", "description", "documents_note"."""
 
@@ -57,6 +70,17 @@ def _parse(content: str) -> dict | None:
         if isinstance(data, dict) and any(k in data for k in FIELDS):
             found = data  # keep the last complete answer in the reply
     return {k: str(found.get(k) or "").strip() for k in FIELDS} if found else None
+
+
+_PHONE = re.compile(r"(?:\+?91[\s-]*)?(?<!\d)[6-9](?:[\s-]?\d){9}(?!\d)")
+
+
+def scrub_contacts(text: str) -> str:
+    """Remove Indian mobile numbers (they must never be public) and tidy the spacing left behind."""
+    text = _PHONE.sub("", text)
+    text = re.sub(r"\(\s*\)|\[\s*\]", "", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+    return re.sub(r"\s+([.,;:])", r"\1", text).strip()
 
 
 def _ask(payload: dict, headers: dict) -> tuple[str, str]:
@@ -98,4 +122,4 @@ def clean(fields: dict) -> dict:
         log.warning("Sarvam reply had no result (finish=%s, %d chars): %r", finish, len(content), content[:400])
         reason = "it ran out of room" if finish == "length" else f"finish: {finish or 'unknown'}"
         raise CleanupError(f"The AI reply had no result ({reason}, {len(content)} characters)")
-    return result
+    return {k: scrub_contacts(v) for k, v in result.items()}

@@ -128,3 +128,20 @@ def test_answer_with_extra_text_and_braces_is_still_read(client, admin, sarvam):
     sarvam.reply = FakeReply("Here is the cleaned text:\n" + json.dumps(good) + "\nHope this helps {:)}")
     prev = client.post(f"/api/admin/cleanup/{sid}/preview", headers=admin).json()
     assert prev["after"]["description"] == "A level plot {fenced}."
+
+
+def test_prompt_rules_and_phone_numbers_removed(client, admin, sarvam):
+    from app.cleanup.sarvam import SYSTEM, scrub_contacts
+
+    for rule in ("simple", "Remove list numbering", "Keep every detail", "phone numbers", "place name only"):
+        assert rule.lower() in SYSTEM.lower()
+    assert scrub_contacts("Call 98470 12345 for details.") == "Call for details."
+    assert scrub_contacts("Owner (+91-9446012345) lives nearby") == "Owner lives nearby"
+    assert scrub_contacts("10 cents, 400 m from road, 1200 sq ft") == "10 cents, 400 m from road, 1200 sq ft"
+
+    sid = live_listing(client, admin, "Plot")
+    reply = {"title": "Land for sale", "location": "Ala", "documents_note": "Title deed",
+             "description": "Level plot of 12 cents. Contact 9847012345."}  # fmt: skip
+    sarvam.reply = FakeReply(json.dumps(reply))
+    prev = client.post(f"/api/admin/cleanup/{sid}/preview", headers=admin).json()
+    assert prev["after"]["description"] == "Level plot of 12 cents. Contact."
