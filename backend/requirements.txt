@@ -6,6 +6,6 @@ pillow>=11
 # search by meaning (small local AI model; the app works without it)
 fastembed>=0.4,<1
 numpy>=1.26
+httpx>=0.27  # calls to Sarvam (temporary clean-up tool); also used by tests
 # dev
 pytest>=8
-httpx>=0.27

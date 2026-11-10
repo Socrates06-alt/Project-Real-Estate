@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     semantic_strong_score: float = 0.6  # ...and when other results already match the words
     match_min_score: float = 0.45  # buyer <-> property matching
 
+    # TEMPORARY one-time English clean-up of listings (Sarvam AI). Empty key = tool switched off.
+    sarvam_api_key: str = ""
+    sarvam_model: str = "sarvam-105b"
+    sarvam_url: str = "https://api.sarvam.ai/v1/chat/completions"
+
     first_property_number: int = 1001
     max_photos: int = 3
     max_photo_bytes: int = 8 * 1024 * 1024

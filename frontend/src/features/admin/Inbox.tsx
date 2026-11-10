@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import { Link } from "react-router-dom";
-import { ChevronRight, FileCheck2, Hammer, PartyPopper, Plus } from "lucide-react";
+import { ChevronRight, FileCheck2, Hammer, Languages, PartyPopper, Plus } from "lucide-react";
 import { inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
@@ -30,6 +30,18 @@ export default function Inbox() {
 
       <Link to="/admin/new" className="btn-accent flex h-[52px] items-center justify-center gap-2 rounded-full text-[15px] font-semibold">
         <Plus size={20} strokeWidth={2.5} /> Add property
+      </Link>
+
+      {/* TEMPORARY one-time tool: remove this link when the clean-up is done */}
+      <Link to="/admin/cleanup" className="flex items-center gap-3 card p-4">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
+          <Languages size={20} />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Clean up listings to English</span>
+          <span className="block text-xs text-sub">One-time: spelling, Malayalam → English, better sentences</span>
+        </span>
+        <ChevronRight size={18} className="shrink-0 text-sub" />
       </Link>
 
       <div className="grid grid-cols-3 gap-2">

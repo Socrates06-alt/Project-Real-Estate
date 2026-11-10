@@ -8,6 +8,7 @@ import Properties from "@/features/admin/Properties";
 import PropertyPage from "@/features/admin/Property";
 import AddProperty from "@/features/admin/AddProperty";
 import Buyers from "@/features/admin/Buyers";
+import Cleanup from "@/features/admin/Cleanup"; // TEMPORARY one-time tool
 
 export default function AdminApp() {
   return (
@@ -21,7 +22,7 @@ function Gate() {
   const { token } = useAdmin();
   const { pathname } = useLocation();
   if (!token) return <Login />;
-  const onPropertyPage = pathname.startsWith("/admin/p/") || pathname === "/admin/new";
+  const onPropertyPage = pathname.startsWith("/admin/p/") || pathname === "/admin/new" || pathname === "/admin/cleanup";
 
   return (
     <>
@@ -32,6 +33,7 @@ function Gate() {
           <Route path="p/:id" element={<PropertyPage />} />
           <Route path="new" element={<AddProperty />} />
           <Route path="buyers" element={<Buyers />} />
+          <Route path="cleanup" element={<Cleanup />} />
         </Routes>
       </main>
       {!onPropertyPage && <AdminNav />}
