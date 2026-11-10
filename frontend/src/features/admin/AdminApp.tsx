@@ -1,5 +1,5 @@
 import { NavLink, Route, Routes, useLocation } from "react-router-dom";
-import { Building2, Inbox as InboxIcon, LogOut } from "lucide-react";
+import { Building2, Inbox as InboxIcon, LogOut, Users } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { AdminAuthProvider, useAdmin } from "@/features/admin/auth";
 import Login from "@/features/admin/Login";
@@ -7,6 +7,7 @@ import Inbox from "@/features/admin/Inbox";
 import Properties from "@/features/admin/Properties";
 import PropertyPage from "@/features/admin/Property";
 import AddProperty from "@/features/admin/AddProperty";
+import Buyers from "@/features/admin/Buyers";
 
 export default function AdminApp() {
   return (
@@ -30,6 +31,7 @@ function Gate() {
           <Route path="properties" element={<Properties />} />
           <Route path="p/:id" element={<PropertyPage />} />
           <Route path="new" element={<AddProperty />} />
+          <Route path="buyers" element={<Buyers />} />
         </Routes>
       </main>
       {!onPropertyPage && <AdminNav />}
@@ -41,7 +43,7 @@ function AdminNav() {
   const { signOut } = useAdmin();
   const item = ({ isActive }: { isActive: boolean }) =>
     cn(
-      "flex min-h-[52px] min-w-[76px] flex-col items-center justify-center gap-0.5 rounded-full px-3 text-[12px] font-medium transition-colors",
+      "flex min-h-[52px] min-w-[66px] flex-col items-center justify-center gap-0.5 rounded-full px-2.5 text-[12px] font-medium transition-colors",
       isActive ? "bg-white text-[var(--brand-deep)] shadow-md" : "text-white/80",
     );
   return (
@@ -52,6 +54,9 @@ function AdminNav() {
         </NavLink>
         <NavLink to="/admin/properties" className={item}>
           <Building2 size={22} /> Properties
+        </NavLink>
+        <NavLink to="/admin/buyers" className={item}>
+          <Users size={22} /> Buyers
         </NavLink>
         <button onClick={() => window.confirm("Sign out?") && signOut()} className={item({ isActive: false })}>
           <LogOut size={21} /> Sign out

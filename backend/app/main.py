@@ -12,6 +12,7 @@ from app.admin import routes_auth as admin_auth
 from app.admin import routes_properties as admin_properties
 from app.analytics import routes as analytics
 from app.analytics import service as analytics_service
+from app.buyers import routes as buyers
 from app.core.config import get_settings
 from app.core.db import connect
 from app.core.migrations import init_db
@@ -72,6 +73,7 @@ def create_app() -> FastAPI:
         admin_properties.router,
         analytics.router,
         analytics.admin_router,
+        buyers.router,
     ):
         app.include_router(router)
 
