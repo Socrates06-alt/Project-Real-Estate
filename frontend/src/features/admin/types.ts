@@ -66,6 +66,7 @@ export interface Property {
   seller: {
     seller_name: string;
     seller_phone: string;
+    seller_phone2?: string;
     property_type: PropertyType;
     land_area_cents: number;
     location: string;

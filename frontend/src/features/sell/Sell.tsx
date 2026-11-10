@@ -14,6 +14,7 @@ import { useSellDraft } from "./useSellDraft";
 import { FormCard } from "@/shared/components/form/FormCard";
 import { ExpectedPrice, expectedTotal } from "@/shared/components/form/ExpectedPrice";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
+import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { BrokerageConsent } from "./BrokerageConsent";
@@ -21,7 +22,7 @@ import { UploadProgress } from "./UploadProgress";
 import { SubmitDone } from "./SubmitDone";
 
 // Typed fields remembered in the draft (the consent tick is never remembered).
-const TEXT_FIELDS = ["land_area_cents", "address", "description", "expected_price", "price_per_cent", "seller_name", "seller_phone"];
+const TEXT_FIELDS = ["land_area_cents", "address", "description", "expected_price", "price_per_cent", "seller_name", "seller_phone", "seller_phone2"];
 const NO_AREA: Area = { name: "", lat: null, lng: null };
 
 /** "List your property": the seller's form. Photos are shrunk on the phone; the form is remembered if left unfinished. */
@@ -208,8 +209,9 @@ export default function Sell() {
           <Input name="seller_name" defaultValue={saved.seller_name} required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
         </Field>
         <Field label="Phone">
-          <Input name="seller_phone" defaultValue={saved.seller_phone} required inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number" />
+          <PhoneInput name="seller_phone" defaultValue={saved.seller_phone} required autoComplete="tel" />
         </Field>
+        <ExtraPhone defaultValue={saved.seller_phone2} />
       </FormCard>
 
       <BrokerageConsent agree={agree} onChange={setAgree} config={config} />
@@ -220,5 +222,21 @@ export default function Sell() {
         {busy ? (progress != null && progress < 100 ? `Uploading ${progress}%` : "Submitting…") : "Submit property"}
       </Button>
     </form>
+  );
+}
+
+/** Optional second number, hidden behind a small link until needed. */
+function ExtraPhone({ defaultValue }: { defaultValue?: string }) {
+  const [open, setOpen] = useState(Boolean(defaultValue));
+  if (!open)
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="px-1 text-sm font-semibold text-brand">
+        + Add another number
+      </button>
+    );
+  return (
+    <Field label="Another number (optional)">
+      <PhoneInput name="seller_phone2" defaultValue={defaultValue} />
+    </Field>
   );
 }

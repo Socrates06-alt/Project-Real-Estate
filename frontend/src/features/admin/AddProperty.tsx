@@ -13,6 +13,7 @@ import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { FormCard } from "@/shared/components/form/FormCard";
 import { ExpectedPrice, expectedTotal } from "@/shared/components/form/ExpectedPrice";
 import { Checkbox } from "@/shared/components/form/Checkbox";
+import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
@@ -110,7 +111,10 @@ export default function AddProperty() {
           <Input name="seller_name" required minLength={2} maxLength={80} placeholder="Full name" />
         </Field>
         <Field label="Phone">
-          <Input name="seller_phone" required inputMode="tel" placeholder="10-digit mobile number" />
+          <PhoneInput name="seller_phone" required />
+        </Field>
+        <Field label="Another number (optional)">
+          <PhoneInput name="seller_phone2" />
         </Field>
       </FormCard>
 

@@ -1,3 +1,4 @@
+import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { useEffect, useState, type FormEvent } from "react";
 import { ChevronDown, Landmark, MessageCircle, Pencil, Phone, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -231,13 +232,11 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
           <p className="mb-1.5 px-1 text-sm font-medium">Phone numbers</p>
           <div className="space-y-2">
             {phones.map((ph, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <Input
+              <div key={`${i}-${phones.length}`} className="flex items-center gap-2">
+                <PhoneInput
                   value={ph}
-                  onChange={(e) => setPhones(phones.map((x, j) => (j === i ? e.target.value : x)))}
-                  inputMode="tel"
+                  onChange={(v) => setPhones(phones.map((x, j) => (j === i ? v : x)))}
                   required={i === 0}
-                  placeholder="10-digit mobile number"
                   aria-label={`Phone ${i + 1}`}
                 />
                 {phones.length > 1 && (

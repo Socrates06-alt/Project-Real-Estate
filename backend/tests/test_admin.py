@@ -206,3 +206,26 @@ def test_remove_and_restore_a_not_listed_or_sold_property(client, admin):
     assert client.post(f"/api/admin/properties/{other}/take-down", headers=admin).status_code == 200
     assert client.post(f"/api/admin/properties/{other}/remove", headers=admin).status_code == 200
     assert other not in group_ids("not_listed")
+
+
+def test_phone_with_country_code_and_extra_number():
+    from app.core.validation import normalize_phone
+
+    assert normalize_phone("98470 12345") == "+919847012345"
+    assert normalize_phone("+91 98470 12345") == "+919847012345"
+    assert normalize_phone("+971 50 123 4567") == "+971501234567"
+    assert normalize_phone("+1 415 555 0100") == "+14155550100"
+    for bad in ("+12", "12345", "+0 1234 5678"):
+        try:
+            normalize_phone(bad)
+            raise AssertionError(bad)
+        except ValueError:
+            pass
+
+
+def test_seller_can_give_a_foreign_number_and_another_number(client, admin):
+    sub = submit(client, seller_phone="+971 50 123 4567", seller_phone2="98470 22222").json()
+    seller = client.get(f"/api/admin/properties/{sub['id']}", headers=admin).json()["seller"]
+    assert seller["seller_phone"] == "+971501234567" and seller["seller_phone2"] == "+919847022222"
+    found = client.get("/api/admin/properties?q=22222", headers=admin).json()
+    assert any(r["id"] == sub["id"] for r in found)

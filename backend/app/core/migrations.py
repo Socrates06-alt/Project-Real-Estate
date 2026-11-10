@@ -17,6 +17,7 @@ create table if not exists submissions (
     device_hash         text not null,
     seller_name         text not null,
     seller_phone        text not null,
+    seller_phone2       text not null default '',  -- another number, optional
     property_type       text not null check (property_type in ('house', 'land', 'commercial')),
     land_area_cents     real not null check (land_area_cents > 0),
     location            text not null,  -- area name (public), e.g. "Puliyoor"
@@ -133,7 +134,7 @@ create table if not exists embeddings (
 -- A seller's own submission never changes (only its workflow status): it is the record of what they
 -- sent and agreed to. Properties a founder entered for a seller (device_hash 'admin') can be corrected.
 create trigger if not exists submissions_immutable
-before update of number, device_hash, seller_name, seller_phone, property_type, land_area_cents, location,
+before update of number, device_hash, seller_name, seller_phone, seller_phone2, property_type, land_area_cents, location,
     area_lat, area_lng, address, description, expected_price, negotiable, documents_available, documents_note,
     wants_doc_help, wants_dev_help, consent_version, consent_at
 on submissions when old.device_hash <> 'admin'
@@ -152,7 +153,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 11
+SCHEMA_VERSION = 12
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -222,6 +223,10 @@ UPGRADES[9] = [
 
 UPGRADES[10] = []  # embeddings table is created from SCHEMA
 UPGRADES[11] = [_add_column("submissions", "removed_at text")]
+UPGRADES[12] = [
+    _add_column("submissions", "seller_phone2 text not null default ''"),
+    "drop trigger if exists submissions_immutable",  # recreated from SCHEMA with the new column
+]
 
 log = logging.getLogger("nilayam")
 

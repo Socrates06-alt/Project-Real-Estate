@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.core.validation import Cents, Location, Name, Phone, Price, PropertyType, Short, text
+from app.core.validation import Cents, Location, Name, OptionalPhone, Phone, Price, PropertyType, Short, text
 
 
 class SubmissionForm(BaseModel):
@@ -13,6 +13,7 @@ class SubmissionForm(BaseModel):
 
     seller_name: Name
     seller_phone: Phone
+    seller_phone2: OptionalPhone = ""  # another number, optional
     property_type: PropertyType
     land_area_cents: Cents
     location: Location  # area name, shown to buyers

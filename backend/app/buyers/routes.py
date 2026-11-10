@@ -72,8 +72,8 @@ def _found_through_properties(db, q: str, digits: str, seen: set[str]) -> list[d
         args.append(int(digits))
     if len(digits) >= 4:
         phone = digits[2:] if len(digits) == 12 and digits.startswith("91") else digits.lstrip("0")
-        conditions.append("s.seller_phone like ?")
-        args.append(f"%{phone}%")
+        conditions.append("(s.seller_phone like ? or s.seller_phone2 like ?)")
+        args += [f"%{phone}%", f"%{phone}%"]
     props = many(
         db, f"select s.id, s.number, s.seller_name from submissions s where {' or '.join(conditions)} limit 20", *args
     )

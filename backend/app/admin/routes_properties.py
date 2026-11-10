@@ -96,8 +96,8 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
         args.append(int(digits))
     if len(digits) >= 4:  # (part of) a phone number, any format: +91, spaces, leading 0
         phone = digits[2:] if len(digits) == 12 and digits.startswith("91") else digits.lstrip("0")
-        conditions.append("s.seller_phone like ?")
-        args.append(f"%{phone}%")
+        conditions.append("(s.seller_phone like ? or s.seller_phone2 like ?)")
+        args += [f"%{phone}%", f"%{phone}%"]
     rows = many(db, f"{_ROW} where {' or '.join(conditions)} order by s.created_at desc limit 50", *args)
     found = [_row(r) for r in rows]
     if re.search(r"[a-zA-Z]", q):  # words: also search descriptions, areas and meaning

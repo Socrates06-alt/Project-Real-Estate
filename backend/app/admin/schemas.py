@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import Field, model_validator
 
-from app.core.validation import Cents, Location, Name, Phone, Price, PropertyType, Short, Strict, text
+from app.core.validation import Cents, Location, Name, OptionalPhone, Phone, Price, PropertyType, Short, Strict, text
 
 
 class LoginIn(Strict):
@@ -44,6 +44,7 @@ class SellerDetailsIn(Strict):
 
     seller_name: Name
     seller_phone: Phone
+    seller_phone2: OptionalPhone = ""  # another number, optional
     property_type: PropertyType
     land_area_cents: Cents
     location: Location

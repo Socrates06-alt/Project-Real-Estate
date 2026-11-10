@@ -20,6 +20,7 @@ export function SellerCard({ seller: s, onEdit }: { seller: Property["seller"]; 
       </div>
       <p className="text-lg font-semibold">{s.seller_name}</p>
       <p className="text-sm text-sub">{s.seller_phone}</p>
+      {s.seller_phone2 && <p className="text-sm text-sub">{s.seller_phone2} (another number)</p>}
       {s.wants_doc_help && (
         <p className="mt-2 flex items-center gap-2 rounded-2xl bg-accent-soft px-3 py-2 text-sm font-semibold">
           <FileCheck2 size={16} /> Asked for documentation assistance (paid)
@@ -33,6 +34,11 @@ export function SellerCard({ seller: s, onEdit }: { seller: Property["seller"]; 
       {s.address && <p className="mt-1 mb-3 text-sm whitespace-pre-line">{s.address}</p>}
       {!s.address && <div className="mb-3" />}
       <ContactButtons phone={s.seller_phone} size="lg" />
+      {s.seller_phone2 && (
+        <div className="mt-2">
+          <ContactButtons phone={s.seller_phone2} />
+        </div>
+      )}
       <button onClick={() => setShowOriginal(!showOriginal)} className="mt-3 flex w-full items-center justify-between py-1 text-sm font-medium text-sub">
         Seller's original details
         <ChevronDown size={18} className={cn("transition-transform", showOriginal && "rotate-180")} />

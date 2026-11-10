@@ -1,3 +1,4 @@
+import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { useState, type FormEvent } from "react";
 import type { PropertyType } from "@/shared/api/client";
 import { AffixInput, Field, Input, Textarea } from "@/shared/ui/field";
@@ -36,6 +37,7 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
         body: {
           seller_name: f.get("seller_name"),
           seller_phone: f.get("seller_phone"),
+          seller_phone2: f.get("seller_phone2") ?? "",
           property_type: type,
           land_area_cents: Number(f.get("land_area_cents")),
           location: area.name,
@@ -68,7 +70,10 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
           <Input name="seller_name" defaultValue={s.seller_name} required minLength={2} maxLength={80} />
         </Field>
         <Field label="Seller's phone">
-          <Input name="seller_phone" defaultValue={s.seller_phone} required inputMode="tel" />
+          <PhoneInput name="seller_phone" defaultValue={s.seller_phone} required />
+        </Field>
+        <Field label="Another number (optional)">
+          <PhoneInput name="seller_phone2" defaultValue={s.seller_phone2} />
         </Field>
         <Segmented
           value={type}
