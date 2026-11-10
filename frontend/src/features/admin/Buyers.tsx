@@ -20,7 +20,6 @@ import { ErrorState } from "@/shared/components/States";
 import { Field, Input, Textarea } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
 import { Sheet } from "@/shared/ui/sheet";
-import { Switch } from "@/shared/ui/switch";
 import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
 import { useAdmin } from "@/features/admin/auth";
@@ -389,19 +388,10 @@ function ImportButton({ onDone }: { onDone: () => void }) {
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<TypeChoice>("land");
-  const [replace, setReplace] = useState(false);
   const [busy, setBusy] = useState(false);
-  const typeName = type === "other" ? "Other" : typeLabel(type);
 
   async function pick(file: File | undefined) {
     if (!file) return;
-    if (
-      replace &&
-      !window.confirm(
-        `Delete all ${typeName} buyers now in the app, and add the ones in this file?`,
-      )
-    )
-      return;
     setBusy(true);
     try {
       const res = await call<{ added: number; skipped: number }>(
@@ -411,7 +401,6 @@ function ImportButton({ onDone }: { onDone: () => void }) {
           body: {
             csv: await file.text(),
             property_type: type === "other" ? null : type,
-            replace,
           },
         },
       );
@@ -454,15 +443,6 @@ function ImportButton({ onDone }: { onDone: () => void }) {
                 ]}
               />
             </div>
-            <Switch
-              checked={replace}
-              onChange={setReplace}
-              label={`Replace all ${typeName} buyers with this file`}
-            />
-            <p className="px-1 text-sm text-sub">
-              Choose a spreadsheet saved as CSV (columns: Name, Phone, Other
-              phone, Area, Needs).
-            </p>
             <label
               className={`flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-brand font-semibold text-brand-ink ${busy ? "opacity-60" : ""}`}
             >

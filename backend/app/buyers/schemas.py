@@ -18,5 +18,4 @@ class BuyerIn(Strict):
 
 class BuyersImport(Strict):
     csv: Annotated[str, text(1, 500_000)]
-    replace: bool = False  # first remove every buyer of this type (to match the paper list exactly)
     property_type: PropertyType | None = "land"  # for every buyer in the file (None = other / any)

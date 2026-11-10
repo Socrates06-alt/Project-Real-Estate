@@ -42,15 +42,6 @@ def test_same_person_on_land_and_house_lists(client, admin):
     assert kinds == ["house", "land"]
 
 
-def test_replace_matches_the_paper_list(client, admin):
-    client.post("/api/admin/buyers", json={"name": "Old Land", "phones": [], "property_type": "land"}, headers=admin)
-    csv = "No,Name,Phone\n1,Sai wife,\n2,Sai wife,\n"  # the paper repeats a person: both rows stay
-    res = client.post("/api/admin/buyers/import", json={"csv": csv, "replace": True}, headers=admin).json()
-    assert res["added"] == 2
-    names = [b["name"] for b in client.get("/api/admin/buyers", headers=admin).json() if b["property_type"] == "land"]
-    assert sorted(names) == ["Sai wife", "Sai wife"]
-
-
 def test_remove_all_buyers(client, admin):
     client.post("/api/admin/buyers/import", json={"csv": "Name\nAnu\nBiju\n"}, headers=admin)
     assert client.delete("/api/admin/buyers", headers=admin).status_code == 400  # must type DELETE
