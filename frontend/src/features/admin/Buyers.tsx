@@ -61,6 +61,9 @@ export default function Buyers() {
     [q],
   );
 
+  const [kind, setKind] = useState<"all" | PropertyType>("all");
+  const shown = kind === "all" ? data : data?.filter((b) => b.property_type === kind);
+
   useEffect(() => {
     const t = setTimeout(() => setQ(input.trim()), 300);
     return () => clearTimeout(t);
@@ -99,6 +102,23 @@ export default function Buyers() {
         )}
       </div>
 
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]" role="group" aria-label="Show buyers who want">
+        {(["all", "land", "house", "commercial"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => setKind(t)}
+            aria-pressed={kind === t}
+            className={`h-9 shrink-0 rounded-full px-3.5 text-sm font-semibold transition ${
+              kind === t ? "bg-brand text-brand-ink shadow-sm" : "bg-surface text-sub shadow-[0_0_0_1px_var(--hairline)]"
+            }`}
+          >
+            {t === "all" ? "All" : typeLabel(t)}
+            {data && <span className="ml-1 opacity-70">{t === "all" ? data.length : data.filter((b) => b.property_type === t).length}</span>}
+          </button>
+        ))}
+      </div>
+
       {error && <ErrorState message={error.message} retry={reload} />}
       {!data && !error && <div className="h-32 shimmer rounded-[28px]" />}
       {data && !data.length && q && (
@@ -106,7 +126,10 @@ export default function Buyers() {
           No buyers match your search.
         </div>
       )}
-      {data?.map((b) => (
+      {shown && !shown.length && data?.length ? (
+        <div className="card px-6 py-10 text-center text-sub">No {typeLabel(kind as PropertyType).toLowerCase()} buyers.</div>
+      ) : null}
+      {shown?.map((b) => (
         <BuyerCard key={b.id} buyer={b} onEdit={() => setEditing(b)} />
       ))}
 
