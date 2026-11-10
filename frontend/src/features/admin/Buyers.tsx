@@ -145,6 +145,7 @@ export default function Buyers() {
       {shown?.map((b) => (
         <BuyerCard key={b.id} buyer={b} onEdit={() => setEditing(b)} />
       ))}
+      {!!data?.length && !q && <RemoveAllButton onDone={reload} />}
 
       {editing && (
         <BuyerSheet
@@ -479,5 +480,33 @@ function ImportButton({ onDone }: { onDone: () => void }) {
         document.body,
       )}
     </>
+  );
+}
+
+/** Delete every buyer, after typing DELETE (can't be undone). */
+function RemoveAllButton({ onDone }: { onDone: () => void }) {
+  const { call } = useAdmin();
+  const toast = useToast();
+
+  async function removeAll() {
+    const typed = window.prompt("This deletes EVERY buyer and can't be undone.\nType DELETE to confirm.");
+    if (typed?.trim() !== "DELETE") return;
+    try {
+      const res = await call<{ deleted: number }>("/buyers?confirm=DELETE", { method: "DELETE" });
+      toast(`Removed ${res.deleted} buyers`);
+      onDone();
+    } catch (err) {
+      toast((err as Error).message);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={removeAll}
+      className="mx-auto mt-2 flex items-center gap-1.5 rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 dark:bg-red-500/10 dark:text-red-400"
+    >
+      <Trash2 size={15} /> Remove all buyers
+    </button>
   );
 }

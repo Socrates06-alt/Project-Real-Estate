@@ -113,6 +113,16 @@ def update_buyer(buyer_id: str, body: BuyerIn, db: DB) -> dict:
     return _out(one(db, "select * from buyers where id = ?", buyer_id))
 
 
+@router.delete("")
+def delete_all_buyers(db: DB, confirm: str = Query("")) -> dict:
+    """Remove every buyer (the screen asks the founder to type DELETE first)."""
+    if confirm != "DELETE":
+        raise HTTPException(400, "Type DELETE to remove every buyer")
+    count = db.execute("delete from buyers").rowcount
+    db.execute("delete from embeddings where kind = 'buyer'")
+    return {"deleted": count}
+
+
 @router.delete("/{buyer_id}")
 def delete_buyer(buyer_id: str, db: DB) -> dict:
     if db.execute("delete from buyers where id = ?", (buyer_id,)).rowcount == 0:

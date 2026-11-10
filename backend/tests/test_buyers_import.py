@@ -49,3 +49,10 @@ def test_replace_matches_the_paper_list(client, admin):
     assert res["added"] == 2
     names = [b["name"] for b in client.get("/api/admin/buyers", headers=admin).json() if b["property_type"] == "land"]
     assert sorted(names) == ["Sai wife", "Sai wife"]
+
+
+def test_remove_all_buyers(client, admin):
+    client.post("/api/admin/buyers/import", json={"csv": "Name\nAnu\nBiju\n"}, headers=admin)
+    assert client.delete("/api/admin/buyers", headers=admin).status_code == 400  # must type DELETE
+    assert client.delete("/api/admin/buyers", params={"confirm": "DELETE"}, headers=admin).json()["deleted"] >= 2
+    assert client.get("/api/admin/buyers", headers=admin).json() == []
