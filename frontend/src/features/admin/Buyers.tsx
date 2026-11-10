@@ -23,7 +23,7 @@ type Buyer = {
   wants_finance_help: boolean;
   updated_at: string;
 };
-type TypeChoice = PropertyType | "any";
+type TypeChoice = PropertyType | "other"; // "other" is saved as no specific type
 
 /** People looking to buy (entered by founders): search, call or WhatsApp, add, edit, delete. */
 export default function Buyers() {
@@ -65,11 +65,7 @@ export default function Buyers() {
 
       {error && <ErrorState message={error.message} retry={reload} />}
       {!data && !error && <div className="h-32 shimmer rounded-[28px]" />}
-      {data && !data.length && (
-        <div className="card px-6 py-10 text-center text-sub">
-          {q ? "No buyers match your search." : "No buyers yet. Add people who are looking to buy, so you can match them with new properties."}
-        </div>
-      )}
+      {data && !data.length && q && <div className="card px-6 py-10 text-center text-sub">No buyers match your search.</div>}
       {data?.map((b) => <BuyerCard key={b.id} buyer={b} onEdit={() => setEditing(b)} />)}
 
       {editing && (
@@ -93,7 +89,7 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
         <div className="min-w-0">
           <p className="text-lg font-semibold">{b.name}</p>
           <p className="text-sm text-sub">
-            {b.property_type ? typeLabel(b.property_type) : "Any type"}
+            {b.property_type ? typeLabel(b.property_type) : "Other"}
             {b.area && ` · ${b.area}`}
           </p>
         </div>
@@ -128,7 +124,7 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
   const { call } = useAdmin();
   const toast = useToast();
   const [phones, setPhones] = useState<string[]>(buyer?.phones.length ? buyer.phones : [""]);
-  const [type, setType] = useState<TypeChoice>(buyer?.property_type ?? "any");
+  const [type, setType] = useState<TypeChoice>(buyer?.property_type ?? "other");
   const [finance, setFinance] = useState(buyer?.wants_finance_help ?? false);
   const [busy, setBusy] = useState(false);
 
@@ -139,7 +135,7 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
       name: f.get("name"),
       phones: phones.map((p) => p.trim()).filter(Boolean),
       area: f.get("area"),
-      property_type: type === "any" ? null : type,
+      property_type: type === "other" ? null : type,
       notes: f.get("notes"),
       wants_finance_help: finance,
     };
@@ -215,7 +211,7 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
               { value: "land", label: "Land" },
               { value: "house", label: "House" },
               { value: "commercial", label: "Commercial" },
-              { value: "any", label: "Any" },
+              { value: "other", label: "Other" },
             ]}
           />
         </div>

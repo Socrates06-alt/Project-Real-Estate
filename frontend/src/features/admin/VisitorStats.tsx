@@ -76,10 +76,6 @@ export function VisitorStats() {
           </ul>
         </div>
       )}
-      <p className="mt-3 text-[11px] text-sub">
-        Real visitors only: founders' devices, bots and quick bounces (under 2 seconds) aren't counted. A person counts once
-        per day. Counted on our own server, no cookies.
-      </p>
     </section>
   );
 }
