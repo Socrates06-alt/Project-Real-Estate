@@ -23,6 +23,7 @@ type Buyer = {
   notes: string;
   wants_finance_help: boolean;
   updated_at: string;
+  via?: string; // search only: why it was found ("Matches #1004 (Saraswathy K)")
 };
 type TypeChoice = PropertyType | "other"; // "other" is saved as no specific type
 
@@ -98,6 +99,7 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
           <Pencil size={13} /> Edit
         </button>
       </div>
+      {b.via && <p className="mt-1 text-sm font-medium text-brand">{b.via}</p>}
       {b.wants_finance_help && (
         <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold">
           <Landmark size={13} /> Needs finance help

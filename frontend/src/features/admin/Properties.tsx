@@ -93,6 +93,7 @@ export default function Properties() {
                   <CalendarDays size={14} /> {p.open_visits} visit request{p.open_visits > 1 ? "s" : ""}
                 </p>
               )}
+              {p.via && <p className="mt-0.5 truncate text-sm font-medium text-brand">{p.via}</p>}
               {!!p.matching_buyers && (
                 <p className="mt-0.5 flex items-center gap-1 text-sm font-medium text-brand">
                   <Sparkles size={14} /> {p.matching_buyers} matching buyer{p.matching_buyers > 1 ? "s" : ""}

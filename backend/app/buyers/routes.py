@@ -58,7 +58,34 @@ def list_buyers(db: DB, q: str = Query("", max_length=100)) -> list[dict]:
             close_words = keyword_score(query_words, f"{r['name']} {buyer_text(r)}") == 1
             if close_words or (meaning.get(r["id"]) or -1) >= s.semantic_min_score:
                 found.append(_out(r))
+    found += _found_through_properties(db, q, digits, {r["id"] for r in found})
     return found
+
+
+def _found_through_properties(db, q: str, digits: str, seen: set[str]) -> list[dict]:
+    """A seller's name or phone, or a property number: the buyers who match those listed properties."""
+    if len(q) < 3 and len(digits) < 4:
+        return []
+    conditions, args = ["lower(s.seller_name) like ?"], [f"%{q.lower()}%"]
+    if digits and len(digits) <= 6:
+        conditions.append("s.number = ?")
+        args.append(int(digits))
+    if len(digits) >= 4:
+        phone = digits[2:] if len(digits) == 12 and digits.startswith("91") else digits.lstrip("0")
+        conditions.append("s.seller_phone like ?")
+        args.append(f"%{phone}%")
+    props = many(
+        db, f"select s.id, s.number, s.seller_name from submissions s where {' or '.join(conditions)} limit 20", *args
+    )
+    via: dict[str, str] = {}
+    for p in props:
+        for m in matching.buyers_for_property(db, p["id"], limit=50):
+            via.setdefault(m["id"], f"Matches #{p['number']} ({p['seller_name']})")
+    ids = [i for i in via if i not in seen]
+    if not ids:
+        return []
+    rows = {r["id"]: r for r in many(db, f"select * from buyers where id in ({','.join('?' * len(ids))})", *ids)}
+    return [{**_out(rows[i]), "via": via[i]} for i in ids if i in rows]
 
 
 @router.get("/{buyer_id}/matches")

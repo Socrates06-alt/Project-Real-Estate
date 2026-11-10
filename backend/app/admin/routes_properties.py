@@ -106,7 +106,43 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
         if extra:
             by_id = {r["id"]: r for r in many(db, f"{_ROW} where s.id in ({','.join('?' * len(extra))})", *extra)}
             found += [_row(by_id[i]) for i in extra if i in by_id]
+    found += _found_through_buyers(db, q, digits, {r["id"] for r in found})
     return found
+
+
+def _found_through_buyers(db, q: str, digits: str, seen: set[str]) -> list[dict]:
+    """A buyer's name or phone: properties they asked to visit, and listed properties that match them."""
+    if len(q) < 3 and len(digits) < 4:
+        return []
+    name, phone = f"%{q.lower()}%", f"%{_phone_part(digits)}%"
+    use_phone = len(digits) >= 4
+    via: dict[str, str] = {}
+    visits = many(
+        db,
+        "select l.submission_id as sid, v.name from visit_requests v join listings l on l.id = v.listing_id"
+        f" where lower(v.name) like ?{' or v.phone like ?' if use_phone else ''}",
+        *([name, phone] if use_phone else [name]),
+    )
+    for v in visits:
+        via.setdefault(v["sid"], f"Visit request: {v['name']}")
+    buyers = many(
+        db,
+        f"select id, name from buyers where lower(name) like ?{' or phones like ?' if use_phone else ''} limit 20",
+        *([name, phone] if use_phone else [name]),
+    )
+    for b in buyers:
+        for sid in matching.property_ids_matching(db, [b["id"]]):
+            via.setdefault(sid, f"Matches buyer: {b['name']}")
+    ids = [i for i in via if i not in seen][:50]
+    if not ids:
+        return []
+    rows = {r["id"]: r for r in many(db, f"{_ROW} where s.id in ({','.join('?' * len(ids))})", *ids)}
+    return [{**_row(rows[i]), "via": via[i]} for i in ids if i in rows]
+
+
+def _phone_part(digits: str) -> str:
+    """The part of a phone number to look for, whatever the format (+91, spaces, leading 0)."""
+    return digits[2:] if len(digits) == 12 and digits.startswith("91") else digits.lstrip("0")
 
 
 def _described_like(db, q: str) -> list[str]:
