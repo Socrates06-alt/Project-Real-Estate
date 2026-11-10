@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes, ReactNode, TextareaHTMLAttributes } from "react";
+import type { ComponentProps, InputHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/shared/lib/utils";
 
 const base =
@@ -8,7 +8,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return <input className={cn(base, "h-12", className)} {...props} />;
 }
 
-export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Textarea({ className, ...props }: ComponentProps<"textarea">) {
   return <textarea className={cn(base, "min-h-28 resize-y", className)} {...props} />;
 }
 

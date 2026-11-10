@@ -70,6 +70,30 @@ class ApplyIn(Strict):
     documents_note: str = ""
 
 
+class RephraseIn(Strict):
+    title: str = ""
+    location: str = ""
+    description: str = ""
+    documents_note: str = ""
+
+
+rephrase_router = APIRouter(prefix="/api/admin/rephrase", dependencies=[Depends(require_admin)])
+
+
+@rephrase_router.post("")
+def rephrase(body: RephraseIn) -> dict:
+    """The Rephrase button: the same clean-up for text being typed (nothing is saved here)."""
+    before = body.model_dump()
+    try:
+        cleaned = sarvam.clean(before)
+    except sarvam.CleanupError as exc:
+        raise HTTPException(502, str(exc)) from exc
+    after = {k: _safe(before[k], cleaned[k], k) for k in sarvam.FIELDS}
+    if not before["title"]:
+        after["title"] = ""
+    return after
+
+
 @router.post("/{submission_id}/apply")
 def apply(submission_id: str, body: ApplyIn, db: DB) -> dict:
     listing = _listing(db, submission_id)

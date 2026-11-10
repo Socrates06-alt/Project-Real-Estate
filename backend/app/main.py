@@ -78,6 +78,7 @@ def create_app() -> FastAPI:
         analytics.admin_router,
         buyers.router,
         cleanup.router,
+        cleanup.rephrase_router,
     ):
         app.include_router(router)
 

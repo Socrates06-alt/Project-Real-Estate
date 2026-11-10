@@ -1,5 +1,5 @@
 """Sarvam AI (Indian-language AI) client: fixes spelling, translates Malayalam and rewrites listing text in
-good English. Used only by the temporary one-time clean-up tool."""
+good English. Used by the Rephrase button on each property and the one-time clean-up tool."""
 
 import json
 import logging
@@ -35,6 +35,8 @@ Chengannur, Puliyoor, Mulakuzha, Pandanad.
 "Title deed, tax receipt, possession certificate".
 
 In all fields:
+- Use normal sentence capitalization: no words or sentences in ALL CAPITALS and no Capital Letter On Every
+  Word. Only names (places, institutions) and abbreviations (MC Road, KSRTC) keep capitals.
 - Keep numbers that are facts exactly as given (sizes such as 10 cents or 1200 sq ft, distances such as 400 m,
   prices, number of rooms).
 - For land types that matter legally, keep the Malayalam word in brackets after the English, e.g.

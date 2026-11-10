@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { getConfig, type PropertyType } from "@/shared/api/client";
@@ -18,6 +18,7 @@ import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
 import { useAdmin } from "@/features/admin/auth";
+import { RephraseButton } from "./property/RephraseButton";
 
 /**
  * A founder enters a seller's property directly (after a visit or a call).
@@ -40,6 +41,7 @@ export default function AddProperty() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const max = config?.max_photos ?? 3;
+  const descRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
 
@@ -138,8 +140,15 @@ export default function AddProperty() {
           <Textarea name="address" maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, landmark, PIN" />
         </Field>
         <Field label="Description">
-          <Textarea name="description" maxLength={4000} placeholder="Road access, water, bedrooms, nearby places…" />
+          <Textarea ref={descRef} name="description" maxLength={4000} placeholder="Road access, water, bedrooms, nearby places…" />
         </Field>
+        <RephraseButton
+          get={() => ({ location: area.name, description: descRef.current?.value ?? "" })}
+          onDone={(r) => {
+            if (descRef.current) descRef.current.value = r.description;
+            if (r.location) setArea((a) => ({ ...a, name: r.location }));
+          }}
+        />
       </FormCard>
 
       <FormCard title="Price & documents">

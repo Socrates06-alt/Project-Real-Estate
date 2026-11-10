@@ -145,3 +145,23 @@ def test_prompt_rules_and_phone_numbers_removed(client, admin, sarvam):
     sarvam.reply = FakeReply(json.dumps(reply))
     prev = client.post(f"/api/admin/cleanup/{sid}/preview", headers=admin).json()
     assert prev["after"]["description"] == "Level plot of 12 cents. Contact."
+
+
+def test_rephrase_button_cleans_typed_text_without_saving(client, admin, sarvam):
+    cleaned = {
+        "title": "",
+        "location": "Puliyoor",
+        "description": "A 10 cent plot near the main road.",
+        "documents_note": "",
+    }
+    sarvam.reply = FakeReply(json.dumps(cleaned))
+    typed = {"location": "പുലിയൂർ", "description": "10 CENT PLOT MAIN ROAD NEAR"}
+    res = client.post("/api/admin/rephrase", json=typed, headers=admin).json()
+    assert res == {
+        "title": "",
+        "location": "Puliyoor",
+        "description": "A 10 cent plot near the main road.",
+        "documents_note": "",
+    }
+    assert "ALL CAPITALS" in sarvam.sent[0]["json"]["messages"][0]["content"]
+    assert client.post("/api/admin/rephrase", json=typed).status_code == 401

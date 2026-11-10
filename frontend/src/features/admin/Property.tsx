@@ -16,6 +16,7 @@ import { useAdmin } from "@/features/admin/auth";
 import { AreaInput } from "@/shared/components/AreaInput";
 import { GroupBadge, VisitCard } from "@/features/admin/ui";
 import { SellerCard } from "./property/SellerCard";
+import { RephraseButton } from "./property/RephraseButton";
 import { EditSellerSheet } from "./property/EditSellerSheet";
 import { PhotoSelector } from "./property/PhotoSelector";
 import { DontListSheet } from "./property/DontListSheet";
@@ -203,6 +204,10 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         <Field label="Description">
           <Textarea rows={5} value={f.description} onChange={(e) => set("description", e.target.value)} />
         </Field>
+        <RephraseButton
+          get={() => ({ title: f.title, location: f.location, description: f.description, documents_note: f.documents_note })}
+          onDone={(r) => setF((x) => ({ ...x, ...r, title: r.title || x.title, location: r.location || x.location }))}
+        />
         <Switch checked={f.negotiable} onChange={(v) => set("negotiable", v)} label="Negotiable" />
         <Switch checked={f.documents_available} onChange={(v) => set("documents_available", v)} label="Documents available" />
         {f.documents_available && <Input value={f.documents_note} placeholder="Title deed, tax receipt…" onChange={(e) => set("documents_note", e.target.value)} />}
