@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { api, ApiError } from "@/shared/api/client";
+import { markFounderDevice } from "@/shared/api/track";
 
 const KEY = "nilayam.admin";
 
@@ -23,6 +24,11 @@ function stored(): string | null {
 /** Prototype admin auth: one password -> signed token from the backend. */
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(stored);
+
+  // A device that has used admin belongs to a founder: the visitor counter leaves it out.
+  useEffect(() => {
+    if (token) markFounderDevice();
+  }, [token]);
 
   const save = (t: string | null) => {
     setToken(t);

@@ -14,7 +14,10 @@ from app.core.db import many
 
 IST = timedelta(hours=5, minutes=30)  # India time, so "today" matches the founders' day
 KEEP_DAYS = 400
-_BOTS = ("bot", "crawl", "spider", "slurp", "facebookexternalhit", "whatsapp", "telegram", "preview", "curl", "python")
+_BOTS = (
+    "bot", "crawl", "spider", "slurp", "facebookexternalhit", "whatsapp", "telegram", "preview", "curl", "python",
+    "headless", "lighthouse", "phantom", "selenium", "puppeteer", "playwright", "wget", "go-http",
+)  # fmt: skip
 
 
 def today() -> str:

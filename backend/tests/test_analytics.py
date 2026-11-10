@@ -20,6 +20,7 @@ def test_visits_are_counted_privately_and_shown_to_admins(client, admin):
     assert client.post("/api/track", json={"page": "home"}, headers=other).status_code == 204
     # Link previews and bots aren't counted.
     client.post("/api/track", json={"page": "home"}, headers={"User-Agent": "WhatsApp/2.23"})
+    client.post("/api/track", json={"page": "home"}, headers={"User-Agent": "Mozilla/5.0 HeadlessChrome/130"})
 
     stats = client.get("/api/admin/stats", headers=admin).json()
     assert stats["today"] - before["today"] == 2  # two different visitors today
