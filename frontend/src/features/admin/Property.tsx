@@ -210,7 +210,6 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         />
         <Switch checked={f.negotiable} onChange={(v) => set("negotiable", v)} label="Negotiable" />
         <Switch checked={f.documents_available} onChange={(v) => set("documents_available", v)} label="Documents available" />
-        {f.documents_available && <Input value={f.documents_note} placeholder="Title deed, tax receipt…" onChange={(e) => set("documents_note", e.target.value)} />}
       </fieldset>
 
       {/* Secondary actions */}

@@ -48,7 +48,7 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
           expected_price: expectedTotal(f, type),
           negotiable,
           documents_available: docs,
-          documents_note: docs ? f.get("documents_note") ?? "" : "",
+          documents_note: docs ? s.documents_note : "",
           wants_doc_help: docHelp,
           wants_dev_help: devHelp,
         },
@@ -99,7 +99,6 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
         <ExpectedPrice type={type} defaultTotal={s.expected_price} />
         <Switch checked={negotiable} onChange={setNegotiable} label="Negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
-        {docs && <Input name="documents_note" defaultValue={s.documents_note} maxLength={500} placeholder="e.g. Title deed, tax receipt" />}
         <AssistanceOption inline info={DOC_HELP} checked={docHelp} onChange={setDocHelp} />
         <AssistanceOption inline info={DEV_HELP} checked={devHelp} onChange={setDevHelp} />
         <Button type="submit" size="lg" disabled={busy}>
