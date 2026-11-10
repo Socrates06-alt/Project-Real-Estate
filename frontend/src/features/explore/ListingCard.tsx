@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BadgeCheck, CalendarDays, FileCheck2, Handshake, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
 import type { Contact, Listing } from "@/shared/api/client";
-import { cents, inr, isNew, perCent, typeLabel } from "@/shared/lib/format";
+import { cents, isNew, priceDisplay, typeLabel } from "@/shared/lib/format";
 import { PhotoCarousel } from "@/shared/components/PhotoCarousel";
 import { cn } from "@/shared/lib/utils";
 import { TYPE_TAG } from "@/shared/lib/propertyType";
@@ -17,6 +17,7 @@ const fact = "flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-ink
 export function ListingCard({ listing, contact, rera }: { listing: Listing; contact: Contact; rera?: string | null }) {
   const nav = useNavigate();
   const sold = listing.status === "sold";
+  const price = priceDisplay(listing.price, listing.property_type, listing.land_area_cents);
   const open = () => nav(`/p/${listing.id}`);
   const [visitOpen, setVisitOpen] = useState(false);
 
@@ -51,11 +52,10 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
       <button onClick={open} className="block w-full px-3 pt-3 text-left">
         <div className="flex items-baseline justify-between gap-3">
           <p className={sold ? "text-[24px] font-bold text-sub line-through" : "text-price text-[24px] font-bold tracking-tight"}>
-            {inr(listing.price)}
+            {price.main}
+            {price.unit && <span className="ml-0.5 text-base font-semibold">{price.unit}</span>}
           </p>
-          {listing.property_type === "land" && !sold && (
-            <span className="text-sm font-medium text-sub">{perCent(listing.price, listing.land_area_cents)}</span>
-          )}
+          {price.side && !sold && <span className="text-sm font-medium text-sub">{price.side}</span>}
         </div>
         <p className="mt-1 flex items-center gap-1.5 text-sm text-sub">
           <MapPin size={15} className="shrink-0" />

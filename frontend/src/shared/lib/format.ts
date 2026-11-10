@@ -27,10 +27,13 @@ export function timeAgo(iso: string) {
 
 export const typeLabel = (t: string) => ({ house: "House", land: "Land", commercial: "Commercial" })[t] ?? t;
 
-/** Kerala buyers compare land by price per cent: "₹1.8 L/cent". */
-export function perCent(price: number, cents: number): string | null {
-  if (!cents) return null;
-  return `${inr(price / cents)}/cent`;
+/**
+ * How a listing's price is shown. Land is quoted per cent in Kerala, so for land the per-cent price is the main
+ * figure and the total is secondary; houses and commercial show the total.
+ */
+export function priceDisplay(price: number, type: string, landCents: number): { main: string; unit: string; side: string | null } {
+  if (type === "land" && landCents > 0) return { main: inr(price / landCents), unit: "/cent", side: `${inr(price)} total` };
+  return { main: inr(price), unit: "", side: null };
 }
 
 /** Listed within the last 7 days. */

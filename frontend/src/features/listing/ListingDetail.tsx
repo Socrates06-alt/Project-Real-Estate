@@ -3,7 +3,7 @@ import { TYPE_TONE } from "@/shared/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { AlignLeft, BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/shared/api/client";
-import { cents, inr, perCent, shortDate, typeLabel } from "@/shared/lib/format";
+import { cents, priceDisplay, shortDate, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { PhotoCarousel } from "@/shared/components/PhotoCarousel";
 import { Sheet } from "@/shared/ui/sheet";
@@ -60,6 +60,7 @@ export default function ListingDetail() {
   if (!l) return <div className="-mx-4 aspect-square animate-pulse bg-muted" />;
 
   const sold = l.status === "sold";
+  const price = priceDisplay(l.price, l.property_type, l.land_area_cents);
   // Solid white buttons + a soft dark fade at the top: visible on any photo (bright sky, white walls, dark trees).
   const overBtn =
     "pointer-events-auto flex h-11 items-center justify-center rounded-full bg-white text-[#1a1d2e] shadow-[0_2px_10px_rgba(0,0,0,0.35)] ring-1 ring-black/5 transition active:scale-95";
@@ -95,9 +96,12 @@ export default function ListingDetail() {
           <Badge tone={TYPE_TONE[l.property_type]}>{typeLabel(l.property_type)}</Badge>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
-          <h1 className={cn("text-[32px] leading-none font-bold tracking-tight", sold ? "text-sub" : "text-price")}>{inr(l.price)}</h1>
+          <h1 className={cn("text-[32px] leading-none font-bold tracking-tight", sold ? "text-sub" : "text-price")}>
+            {price.main}
+            {price.unit && <span className="ml-0.5 text-lg font-semibold">{price.unit}</span>}
+          </h1>
           {l.negotiable && !sold && <span className="text-sm font-semibold text-brand">Negotiable</span>}
-          {l.property_type === "land" && !sold && <span className="ml-auto text-sm font-medium text-sub">{perCent(l.price, l.land_area_cents)}</span>}
+          {price.side && !sold && <span className="ml-auto text-sm font-medium text-sub">{price.side}</span>}
         </div>
         {!isAutoTitle(l.title) && <p className="mt-2 text-lg font-medium">{l.title}</p>}
         <p className={cn("flex items-center gap-1 text-sm text-sub", isAutoTitle(l.title) ? "mt-2" : "mt-1")}>
