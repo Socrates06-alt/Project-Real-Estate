@@ -18,15 +18,24 @@ def _num(v: float) -> str:
     return f"{v:g}"
 
 
+def _size(cents: float) -> str:
+    """Acres from 100 cents (1 acre = 100 cents), like the rest of the app."""
+    return f"{_num(cents / 100)} acres" if cents >= 100 else f"{_num(cents)} cents"
+
+
+def _size_range(lo: float, hi: float) -> str:
+    return f"{_num(lo / 100)}-{_num(hi / 100)} acres" if lo >= 100 else f"{_num(lo)}-{_num(hi)} cents"
+
+
 def needs_note(body: BuyerRequestIn) -> str:
     """'5-10 cents · about 1200 sq ft · budget up to 40 lakh · 2 BHK': the format the Buyers list already uses."""
     parts = []
     lo, hi = body.min_cents, body.max_cents
     if lo and hi:
         lo, hi = min(lo, hi), max(lo, hi)
-        parts.append(f"{_num(lo)} cents" if lo == hi else f"{_num(lo)}-{_num(hi)} cents")
+        parts.append(_size(lo) if lo == hi else _size_range(lo, hi))
     elif lo or hi:
-        parts.append(f"{'at least ' if lo else 'up to '}{_num(lo or hi)} cents")
+        parts.append(f"{'at least ' if lo else 'up to '}{_size(lo or hi)}")
     if body.sqft:
         parts.append(f"about {_num(body.sqft)} sq ft")
     if body.budget_lakh:

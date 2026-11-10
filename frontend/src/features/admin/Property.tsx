@@ -21,6 +21,7 @@ import { EditSellerSheet } from "./property/EditSellerSheet";
 import { PhotoSelector } from "./property/PhotoSelector";
 import { DontListSheet } from "./property/DontListSheet";
 import type { Property, PropertyAction, PublicForm } from "@/features/admin/types";
+import { SizeInput } from "@/shared/components/form/SizeInput";
 
 const BIG_CHANGE_PCT = 5; // matches the backend default; the backend has the final say
 
@@ -45,7 +46,6 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   const [dontListOpen, setDontListOpen] = useState(false);
   const [editSeller, setEditSeller] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [areaText, setAreaText] = useState(String(p.form.land_area_cents));
   // Photos the admin adds here (when the seller didn't): shown and selected straight away.
   const [added, setAdded] = useState<{ id: string; url: string }[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -190,11 +190,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           ]}
         />
         <Field label="Land size">
-          <AffixInput suffix="cents" inputMode="decimal" value={areaText}
-            onChange={(e) => {
-              setAreaText(e.target.value);
-              set("land_area_cents", Number(e.target.value) || 0);
-            }} />
+          <SizeInput defaultCents={p.form.land_area_cents} onCents={(c) => set("land_area_cents", c ?? 0)} />
         </Field>
         <Field label="Location" hint={f.lat != null ? "On map search" : "Not on map search"}>
           <AreaInput

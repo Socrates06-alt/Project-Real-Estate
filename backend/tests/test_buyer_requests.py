@@ -39,3 +39,10 @@ def test_request_needs_name_phone_and_type_and_is_rate_limited(client):
         ask(client, phones=[f"98470{i:05d}"])
     assert ask(client, phones=["9847055555"]).status_code == 429
     request_limiter.reset()
+
+
+def test_large_sizes_are_written_in_acres(client, admin):
+    request_limiter.reset()
+    ask(client, name="Acre Buyer", phones=["9847088888"], min_cents=100, max_cents=250)
+    found = client.get("/api/admin/buyers", params={"q": "9847088888"}, headers=admin).json()
+    assert found[0]["notes"] == "1-2.5 acres"

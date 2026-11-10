@@ -1,7 +1,7 @@
 import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { useState, type FormEvent } from "react";
 import type { PropertyType } from "@/shared/api/client";
-import { AffixInput, Field, Input, Textarea } from "@/shared/ui/field";
+import { Field, Input, Textarea } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
 import { Sheet } from "@/shared/ui/sheet";
 import { Switch } from "@/shared/ui/switch";
@@ -13,6 +13,7 @@ import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { useAdmin } from "@/features/admin/auth";
 import type { Property } from "@/features/admin/types";
+import { SizeInput } from "@/shared/components/form/SizeInput";
 
 /** Correct the seller's details on a property a founder entered (seller-entered originals can't change). */
 export function EditSellerSheet({ property, open, onClose, onSaved }: { property: Property; open: boolean; onClose: () => void; onSaved: () => void }) {
@@ -85,7 +86,7 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" defaultValue={String(s.land_area_cents)} suffix="cents" required inputMode="decimal" pattern="\d+(\.\d{1,2})?" />
+          <SizeInput name="land_area_cents" defaultCents={s.land_area_cents} required />
         </Field>
         <Field label="Location">
           <AreaInput name="location" required value={area} onChange={setArea} />

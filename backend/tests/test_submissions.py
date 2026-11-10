@@ -63,3 +63,9 @@ def test_seller_can_ask_for_property_development_help(client, admin):
     assert next(p for p in new if p["id"] == sid)["wants_dev_help"] is True
     other = submit(client).json()["id"]
     assert client.get(f"/api/admin/properties/{other}", headers=admin).json()["seller"]["wants_dev_help"] is False
+
+
+def test_search_understands_acres():
+    assert parse_query("land above 1.5 acres").min_cents == 150
+    assert parse_query("plot under 2 acre").max_cents == 200
+    assert parse_query("10 cents").min_cents == 10

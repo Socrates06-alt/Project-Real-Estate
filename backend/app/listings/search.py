@@ -50,7 +50,7 @@ _MAX = r"under|below|less than|upto|up to|within|max|maximum|budget"
 _MIN = r"above|over|more than|min|minimum|atleast|at least"
 _NUM = r"(\d+(?:\.\d+)?)"
 
-_CENTS_RE = re.compile(rf"(?:\b({_MAX}|{_MIN})\s+)?{_NUM}\s*cents?\b")
+_CENTS_RE = re.compile(rf"(?:\b({_MAX}|{_MIN})\s+)?{_NUM}\s*(cents?|acres?)\b")  # 1 acre = 100 cents
 _PRICE_RE = re.compile(rf"\b({_MAX}|{_MIN})\s+(?:rs\.?\s*|₹\s*)?{_NUM}\s*(lakhs?|lacs?|l|crores?|cr|k)?\b")
 _UNIT = {"l": 100_000, "lakh": 100_000, "lac": 100_000, "cr": 10_000_000, "crore": 10_000_000, "k": 1_000}
 
@@ -78,7 +78,7 @@ def parse_query(q: str) -> ParsedQuery:
     s = q.lower().replace(",", " ")
 
     def take_cents(m: re.Match) -> str:
-        op, val = m.group(1), float(m.group(2))
+        op, val = m.group(1), float(m.group(2)) * (100 if m.group(3).startswith("acre") else 1)
         if op and re.fullmatch(_MAX, op):
             out.max_cents = val
         else:

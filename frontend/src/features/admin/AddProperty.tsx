@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { getConfig, type PropertyType } from "@/shared/api/client";
 import { shrinkImage } from "@/shared/lib/image";
 import { useAsync } from "@/shared/lib/useAsync";
-import { AffixInput, Field, Input, Textarea } from "@/shared/ui/field";
+import { Field, Input, Textarea } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
 import { Switch } from "@/shared/ui/switch";
 import { Button } from "@/shared/ui/button";
@@ -19,6 +19,7 @@ import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
 import { useAdmin } from "@/features/admin/auth";
 import { RephraseButton } from "./property/RephraseButton";
+import { SizeInput } from "@/shared/components/form/SizeInput";
 
 /**
  * A founder enters a seller's property directly (after a visit or a call).
@@ -131,7 +132,7 @@ export default function AddProperty() {
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" pattern="\d+(\.\d{1,2})?" />
+          <SizeInput name="land_area_cents" required />
         </Field>
         <Field label="Location" hint={area.lat != null ? "On map search" : undefined}>
           <AreaInput name="location" required value={area} onChange={setArea} placeholder="" />

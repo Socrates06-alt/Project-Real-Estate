@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ApiError, getConfig, uploadForm, type PropertyType } from "@/shared/api/client";
 import { shrinkImage } from "@/shared/lib/image";
 import { useAsync } from "@/shared/lib/useAsync";
-import { AffixInput, Field, Input, Textarea } from "@/shared/ui/field";
+import { Field, Input, Textarea } from "@/shared/ui/field";
 import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { Segmented } from "@/shared/ui/segmented";
@@ -21,6 +21,7 @@ import { BrokerageConsent } from "./BrokerageConsent";
 import { UploadProgress } from "./UploadProgress";
 import { EXAMPLES } from "@/shared/lib/examples";
 import { SubmitDone } from "./SubmitDone";
+import { SizeInput } from "@/shared/components/form/SizeInput";
 
 // Typed fields remembered in the draft (the consent tick is never remembered).
 const TEXT_FIELDS = ["land_area_cents", "address", "description", "expected_price", "price_per_cent", "seller_name", "seller_phone", "seller_phone2"];
@@ -173,7 +174,7 @@ export default function Sell() {
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" defaultValue={saved.land_area_cents} suffix="cents" required inputMode="decimal" placeholder={EXAMPLES[type].cents} pattern="\d+(\.\d{1,2})?" />
+          <SizeInput name="land_area_cents" defaultCents={saved.land_area_cents} required placeholder={EXAMPLES[type].cents} />
         </Field>
         <Field label="Location">
           <AreaInput name="location" required value={area} onChange={setArea} />

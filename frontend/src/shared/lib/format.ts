@@ -9,8 +9,14 @@ function trim(v: number, digits: number) {
   return v.toFixed(digits).replace(/\.?0+$/, "");
 }
 
+/** Land size: "10 cents" below an acre, "1.5 acres" from 100 cents (1 acre = 100 cents). */
 export function cents(v: number | string) {
-  return `${Number(v).toLocaleString("en-IN", { maximumFractionDigits: 2 })} cents`;
+  const n = Number(v);
+  if (n >= 100) {
+    const acres = Number((n / 100).toFixed(2));
+    return `${acres.toLocaleString("en-IN", { maximumFractionDigits: 2 })} ${acres === 1 ? "acre" : "acres"}`;
+  }
+  return `${n.toLocaleString("en-IN", { maximumFractionDigits: 2 })} cents`;
 }
 
 export function shortDate(iso: string) {

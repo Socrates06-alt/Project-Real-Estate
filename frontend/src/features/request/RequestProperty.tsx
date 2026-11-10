@@ -12,6 +12,7 @@ import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { EXAMPLES } from "@/shared/lib/examples";
 import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { FINANCE_HELP } from "@/shared/lib/assistance";
+import { SizeInput, UnitSwitch, type SizeUnit } from "@/shared/components/form/SizeInput";
 
 const num = (v: FormDataEntryValue | null) => (v && Number(v) > 0 ? Number(v) : null);
 
@@ -20,6 +21,7 @@ export default function RequestProperty() {
   const [type, setType] = useState<PropertyType>("land");
   const [area, setArea] = useState<Area>({ name: "", lat: null, lng: null });
   const [finance, setFinance] = useState(false);
+  const [sizeUnit, setSizeUnit] = useState<SizeUnit>("cents");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -84,13 +86,17 @@ export default function RequestProperty() {
         <Field label="Place">
           <AreaInput name="area" value={area} onChange={setArea} placeholder="Any place" />
         </Field>
-        <Field label="Land size">
-          <div className="flex items-center gap-2">
-            <AffixInput name="min_cents" suffix="cents" inputMode="decimal" placeholder="5" pattern="\d+(\.\d{1,2})?" aria-label="Land size from" />
-            <span className="text-sub">–</span>
-            <AffixInput name="max_cents" suffix="cents" inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" aria-label="Land size to" />
+        <div>
+          <div className="mb-1.5 flex items-center justify-between px-1">
+            <span className="text-sm font-medium">Land size</span>
+            <UnitSwitch unit={sizeUnit} onChange={setSizeUnit} />
           </div>
-        </Field>
+          <div className="flex items-center gap-2">
+            <SizeInput name="min_cents" unit={sizeUnit} hint={false} className="min-w-0 flex-1" placeholder={sizeUnit === "acres" ? "1" : "5"} aria-label="Land size from" />
+            <span className="text-sub">–</span>
+            <SizeInput name="max_cents" unit={sizeUnit} hint={false} className="min-w-0 flex-1" placeholder={sizeUnit === "acres" ? "2" : "10"} aria-label="Land size to" />
+          </div>
+        </div>
         {type === "house" && (
           <Field label="House size">
             <AffixInput name="sqft" suffix="sq ft" inputMode="numeric" placeholder="1200" pattern="\d+" />
