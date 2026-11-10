@@ -9,11 +9,11 @@ from tests.helpers import publish, submit
 
 
 class FakeReply:
-    def __init__(self, content: str, status: int = 200):
-        self.status_code, self._content, self.text = status, content, content
+    def __init__(self, content: str, status: int = 200, finish: str = "stop"):
+        self.status_code, self._content, self.text, self.finish = status, content, content, finish
 
     def json(self):
-        return {"choices": [{"message": {"content": self._content}}]}
+        return {"choices": [{"message": {"content": self._content}, "finish_reason": self.finish}]}
 
 
 @pytest.fixture
@@ -23,9 +23,10 @@ def sarvam(monkeypatch):
 
     def fake_post(url, json=None, headers=None, timeout=None):
         sent.append({"url": url, "json": json, "headers": headers})
-        return fake_post.reply
+        return fake_post.replies.pop(0) if fake_post.replies else fake_post.reply
 
     fake_post.reply = None
+    fake_post.replies = []  # if set, used in order (one per call)
     monkeypatch.setattr("app.cleanup.sarvam.httpx.post", fake_post)
     fake_post.sent = sent
     return fake_post
@@ -95,3 +96,35 @@ def test_sarvam_errors_and_access(client, admin, sarvam):
 
 def test_tool_is_off_without_a_key(client, admin):
     assert client.get("/api/admin/cleanup", headers=admin).json()["enabled"] is False
+
+
+def test_reply_cut_off_while_thinking_is_retried_with_more_room(client, admin, sarvam):
+    sid = live_listing(client, admin, "Plot near the river")
+    good = {
+        "title": "Land for sale",
+        "location": "Puliyoor",
+        "description": "Plot near the river.",
+        "documents_note": "",
+    }
+    sarvam.replies = [
+        FakeReply("<think>Let me translate this carefully... and also", finish="length"),
+        FakeReply("<think>done</think>" + json.dumps(good)),
+    ]
+    prev = client.post(f"/api/admin/cleanup/{sid}/preview", headers=admin)
+    assert prev.status_code == 200, prev.text
+    assert prev.json()["after"]["location"] == "Puliyoor"
+    first, second = sarvam.sent[-2:]
+    assert second["json"]["max_tokens"] == 2 * first["json"]["max_tokens"]
+
+    # Still cut off after the retry: a clear reason instead of a bare failure.
+    sarvam.replies = [FakeReply("<think>long", finish="length"), FakeReply("<think>longer", finish="length")]
+    res = client.post(f"/api/admin/cleanup/{sid}/preview", headers=admin)
+    assert res.status_code == 502 and "ran out of room" in res.json()["detail"]
+
+
+def test_answer_with_extra_text_and_braces_is_still_read(client, admin, sarvam):
+    sid = live_listing(client, admin, "Plot")
+    good = {"title": "Land for sale", "location": "Ala", "description": "A level plot {fenced}.", "documents_note": ""}
+    sarvam.reply = FakeReply("Here is the cleaned text:\n" + json.dumps(good) + "\nHope this helps {:)}")
+    prev = client.post(f"/api/admin/cleanup/{sid}/preview", headers=admin).json()
+    assert prev["after"]["description"] == "A level plot {fenced}."

@@ -33,6 +33,7 @@ class Settings(BaseSettings):
     sarvam_api_key: str = ""
     sarvam_model: str = "sarvam-105b"
     sarvam_url: str = "https://api.sarvam.ai/v1/chat/completions"
+    sarvam_max_tokens: int = 8000  # room for the model's thinking plus the answer
 
     first_property_number: int = 1001
     max_photos: int = 3
