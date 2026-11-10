@@ -32,6 +32,8 @@ def read_csv(text: str) -> tuple[list[dict], list[str]]:
         if not phones:
             notes.append("Phone missing")
         no = _col(row, "no")
+        if no:
+            notes.insert(0, f"Paper #{no}")
         if len(name.strip(" ?()")) < 2:
             name = f"Unknown{f' (#{no})' if no else ''} {name}".strip()
         if not name and not phones:

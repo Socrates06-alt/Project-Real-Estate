@@ -22,6 +22,7 @@ import { ErrorState } from "@/shared/components/States";
 import { Field, Input, Textarea } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
 import { Sheet } from "@/shared/ui/sheet";
+import { Switch } from "@/shared/ui/switch";
 import { Button } from "@/shared/ui/button";
 import { useToast } from "@/shared/ui/toast";
 import { useAdmin } from "@/features/admin/auth";
@@ -62,7 +63,8 @@ export default function Buyers() {
   );
 
   const [kind, setKind] = useState<"all" | PropertyType>("all");
-  const shown = kind === "all" ? data : data?.filter((b) => b.property_type === kind);
+  const shown =
+    kind === "all" ? data : data?.filter((b) => b.property_type === kind);
 
   useEffect(() => {
     const t = setTimeout(() => setQ(input.trim()), 300);
@@ -102,7 +104,11 @@ export default function Buyers() {
         )}
       </div>
 
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]" role="group" aria-label="Show buyers who want">
+      <div
+        className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]"
+        role="group"
+        aria-label="Show buyers who want"
+      >
         {(["all", "land", "house", "commercial"] as const).map((t) => (
           <button
             key={t}
@@ -110,11 +116,19 @@ export default function Buyers() {
             onClick={() => setKind(t)}
             aria-pressed={kind === t}
             className={`h-9 shrink-0 rounded-full px-3.5 text-sm font-semibold transition ${
-              kind === t ? "bg-brand text-brand-ink shadow-sm" : "bg-surface text-sub shadow-[0_0_0_1px_var(--hairline)]"
+              kind === t
+                ? "bg-brand text-brand-ink shadow-sm"
+                : "bg-surface text-sub shadow-[0_0_0_1px_var(--hairline)]"
             }`}
           >
             {t === "all" ? "All" : typeLabel(t)}
-            {data && <span className="ml-1 opacity-70">{t === "all" ? data.length : data.filter((b) => b.property_type === t).length}</span>}
+            {data && (
+              <span className="ml-1 opacity-70">
+                {t === "all"
+                  ? data.length
+                  : data.filter((b) => b.property_type === t).length}
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -127,7 +141,9 @@ export default function Buyers() {
         </div>
       )}
       {shown && !shown.length && data?.length ? (
-        <div className="card px-6 py-10 text-center text-sub">No {typeLabel(kind as PropertyType).toLowerCase()} buyers.</div>
+        <div className="card px-6 py-10 text-center text-sub">
+          No {typeLabel(kind as PropertyType).toLowerCase()} buyers.
+        </div>
       ) : null}
       {shown?.map((b) => (
         <BuyerCard key={b.id} buyer={b} onEdit={() => setEditing(b)} />
@@ -450,10 +466,19 @@ function ImportButton({ onDone }: { onDone: () => void }) {
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<TypeChoice>("land");
+  const [replace, setReplace] = useState(false);
   const [busy, setBusy] = useState(false);
+  const typeName = type === "other" ? "Other" : typeLabel(type);
 
   async function pick(file: File | undefined) {
     if (!file) return;
+    if (
+      replace &&
+      !window.confirm(
+        `Delete all ${typeName} buyers now in the app, and add the ones in this file?`,
+      )
+    )
+      return;
     setBusy(true);
     try {
       const res = await call<{ added: number; skipped: number }>(
@@ -463,6 +488,7 @@ function ImportButton({ onDone }: { onDone: () => void }) {
           body: {
             csv: await file.text(),
             property_type: type === "other" ? null : type,
+            replace,
           },
         },
       );
@@ -505,6 +531,11 @@ function ImportButton({ onDone }: { onDone: () => void }) {
                 ]}
               />
             </div>
+            <Switch
+              checked={replace}
+              onChange={setReplace}
+              label={`Replace all ${typeName} buyers with this file`}
+            />
             <p className="px-1 text-sm text-sub">
               Choose a spreadsheet saved as CSV (columns: Name, Phone, Other
               phone, Area, Needs).

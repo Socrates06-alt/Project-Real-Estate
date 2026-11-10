@@ -12,7 +12,9 @@ def test_import_buyers(client, admin):
     assert res["added"] == 3
     buyers = {b["name"]: b for b in client.get("/api/admin/buyers", headers=admin).json()}
     assert buyers["? (wife Niya)"]["phones"] == ["+966554268358", "+918921096822"]
-    assert "Phone missing" in buyers["Sruthi Nair"]["notes"]
+    assert (
+        buyers["Sruthi Nair"]["notes"].startswith("Paper #4 · ") and "Phone missing" in buyers["Sruthi Nair"]["notes"]
+    )
     assert buyers["Sruthi Nair"]["property_type"] == "land"
     odd = buyers["Unknown (#23) ?"]
     assert odd["property_type"] == "land" and odd["phones"] == []  # too short to be valid
@@ -38,3 +40,12 @@ def test_same_person_on_land_and_house_lists(client, admin):
     found = client.get("/api/admin/buyers", params={"q": "Kala"}, headers=admin).json()
     kinds = sorted(b["property_type"] for b in found)
     assert kinds == ["house", "land"]
+
+
+def test_replace_matches_the_paper_list(client, admin):
+    client.post("/api/admin/buyers", json={"name": "Old Land", "phones": [], "property_type": "land"}, headers=admin)
+    csv = "No,Name,Phone\n1,Sai wife,\n2,Sai wife,\n"  # the paper repeats a person: both rows stay
+    res = client.post("/api/admin/buyers/import", json={"csv": csv, "replace": True}, headers=admin).json()
+    assert res["added"] == 2
+    names = [b["name"] for b in client.get("/api/admin/buyers", headers=admin).json() if b["property_type"] == "land"]
+    assert sorted(names) == ["Sai wife", "Sai wife"]
