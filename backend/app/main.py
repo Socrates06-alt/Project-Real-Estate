@@ -18,6 +18,7 @@ from app.core.db import connect
 from app.core.migrations import init_db
 from app.core.security import check_production
 from app.listings import routes as listings
+from app.semantic import engine as semantic
 from app.site import routes as site
 from app.submissions import photos
 from app.submissions import routes as submissions
@@ -29,6 +30,7 @@ async def lifespan(_: FastAPI):
     check_production(get_settings())
     init_db()
     photos.ensure_small_copies()
+    semantic.start()  # loads the search-by-meaning model in the background
     conn = connect()  # drop visit counts older than about a year
     try:
         analytics_service.cleanup(conn)

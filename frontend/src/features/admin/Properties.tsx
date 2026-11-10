@@ -39,7 +39,7 @@ export default function Properties() {
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Property no., phone or name"
+          placeholder="No., phone, name or description"
           aria-label="Search properties"
           inputMode="search"
           className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-sub"

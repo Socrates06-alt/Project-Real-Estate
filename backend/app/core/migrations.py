@@ -120,6 +120,15 @@ create table if not exists buyers (
     updated_at    text not null default {NOW}
 );
 
+-- Search by meaning: one saved embedding per listing (public text), property and buyer (admin only).
+create table if not exists embeddings (
+    kind      text not null,  -- listing, property, buyer
+    ref_id    text not null,
+    text_hash text not null,  -- re-embed only when the text changes
+    vector    blob not null,
+    primary key (kind, ref_id)
+);
+
 -- A seller's own submission never changes (only its workflow status): it is the record of what they
 -- sent and agreed to. Properties a founder entered for a seller (device_hash 'admin') can be corrected.
 create trigger if not exists submissions_immutable
@@ -142,7 +151,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -209,6 +218,8 @@ UPGRADES[9] = [
     _add_column("buyers", "wants_finance_help integer not null default 0"),
     "drop trigger if exists submissions_immutable",  # recreated from SCHEMA with the new column
 ]
+
+UPGRADES[10] = []  # embeddings table is created from SCHEMA
 
 log = logging.getLogger("nilayam")
 

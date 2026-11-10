@@ -12,6 +12,9 @@ from app.admin.schemas import NoteIn, PublishIn, SellerDetailsIn
 from app.core.config import get_settings
 from app.core.db import DB, many, one
 from app.core.security import require_admin
+from app.semantic import matching
+from app.semantic import store as semantic
+from app.semantic.text import keyword_score, property_text, words
 from app.submissions import photos
 from app.submissions import service as submissions
 from app.submissions.schemas import SubmissionForm
@@ -84,7 +87,31 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
         conditions.append("s.seller_phone like ?")
         args.append(f"%{phone}%")
     rows = many(db, f"{_ROW} where {' or '.join(conditions)} order by s.created_at desc limit 50", *args)
-    return [_row(r) for r in rows]
+    found = [_row(r) for r in rows]
+    if re.search(r"[a-zA-Z]", q):  # words: also search descriptions, areas and meaning
+        seen = {r["id"] for r in found}
+        extra = [i for i in _described_like(db, q) if i not in seen][: 50 - len(found)]
+        if extra:
+            by_id = {r["id"]: r for r in many(db, f"{_ROW} where s.id in ({','.join('?' * len(extra))})", *extra)}
+            found += [_row(by_id[i]) for i in extra if i in by_id]
+    return found
+
+
+def _described_like(db, q: str) -> list[str]:
+    """Property ids whose details match the words (small typos allowed) or the meaning, best first."""
+    s = get_settings()
+    listings = {r["submission_id"]: r for r in many(db, "select * from listings")}
+    subs = many(db, "select * from submissions order by created_at desc limit 3000")
+    query_words = words(q)
+    meaning = semantic.scores(db, "property", q, [r["id"] for r in subs])
+    kw = {r["id"]: keyword_score(query_words, property_text(r, listings.get(r["id"]))) for r in subs}
+    needed = s.semantic_strong_score if any(v == 1 for v in kw.values()) else s.semantic_min_score
+    ranked = [
+        (0.7 * (meaning.get(i) or 0) + 0.3 * k + (1 if k == 1 else 0), i)
+        for i, k in kw.items()
+        if k == 1 or (meaning.get(i) or -1) >= needed
+    ]
+    return [i for _, i in sorted(ranked, reverse=True)]
 
 
 @router.post("/properties", status_code=201)
@@ -153,7 +180,15 @@ def update_seller_details(submission_id: str, body: SellerDetailsIn, db: DB) -> 
     values = body.model_dump()
     sets = ", ".join(f"{k} = ?" for k in values)  # column names from the model only
     db.execute(f"update submissions set {sets} where id = ?", (*values.values(), submission_id))
+    semantic.refresh_property(db, submission_id)
     return {"id": submission_id}
+
+
+@router.get("/properties/{submission_id}/matches")
+def matching_buyers(submission_id: str, db: DB) -> list[dict]:
+    """Buyers this property may suit, best first (type, wanted area, similar needs)."""
+    service.get_submission(db, submission_id)
+    return matching.buyers_for_property(db, submission_id)
 
 
 @router.post("/properties/{submission_id}/photos", status_code=201)

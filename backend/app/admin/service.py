@@ -14,6 +14,7 @@ from app.admin.schemas import PublishIn
 from app.core.config import get_settings
 from app.core.db import many, now, one
 from app.listings import geo
+from app.semantic import store as semantic
 from app.submissions import photos
 
 # Simple groups the admin sees, mapped from the stored submission status.
@@ -118,6 +119,8 @@ def publish(db: sqlite3.Connection, submission_id: str, body: PublishIn) -> dict
         (version, now(), now(), listing_id),
     )
     set_status(db, submission_id, "listed")
+    semantic.refresh_listing(db, listing_id)
+    semantic.refresh_property(db, submission_id)
     return {"id": submission_id, "listing_id": listing_id, "number": number, "group": "live"}
 
 

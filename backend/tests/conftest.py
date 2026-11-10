@@ -5,7 +5,11 @@ import tempfile
 
 tmp = tempfile.mkdtemp(prefix="nilayam-test-")
 os.environ.update(
-    DATABASE_PATH=f"{tmp}/test.db", MEDIA_DIR=f"{tmp}/media", ADMIN_PASSWORD="secret", CONSENT_VERSION="test-v1"
+    DATABASE_PATH=f"{tmp}/test.db",
+    MEDIA_DIR=f"{tmp}/media",
+    ADMIN_PASSWORD="secret",
+    CONSENT_VERSION="test-v1",
+    SEMANTIC_SEARCH="false",  # tests plug in a small offline stand-in model where needed
 )
 
 import pytest  # noqa: E402

@@ -9,6 +9,8 @@ from app.core.db import DB, many, one
 from app.core.ratelimit import RateLimiter, client_ip
 from app.listings import geo
 from app.listings.search import parse_query
+from app.semantic import store as semantic
+from app.semantic.text import keyword_score, words
 
 # Normal map use is far below this; stops someone probing the map with hundreds of searches.
 area_search_limiter = RateLimiter(limit=300, window_seconds=3600)
@@ -48,6 +50,28 @@ _LIVE_SELECT = """
 """
 
 
+def _rank_by_text(db, rows: list[dict], text: str) -> list[dict]:
+    """Keep listings that match the search words (small typos allowed) or, with the meaning model, are close
+    in meaning; best match first. Without the model this is plain word matching, as before."""
+    s = get_settings()
+    query_words = words(text)
+    meaning = semantic.scores(db, "listing", text, [r["id"] for r in rows])
+    kw = {}
+    for r in rows:
+        snap = r["snapshot"]
+        kw[r["id"]] = keyword_score(query_words, f"{snap['title']} {snap['location']} {snap['description']}")
+    any_word_match = any(v == 1 for v in kw.values())
+    # When some listings match the words, a meaning-only match must be strong to be shown alongside.
+    needed = s.semantic_strong_score if any_word_match else s.semantic_min_score
+    ranked = []
+    for i, r in enumerate(rows):
+        m = meaning.get(r["id"])
+        if kw[r["id"]] == 1 or (m is not None and m >= needed):
+            ranked.append((0.7 * (m or 0) + 0.3 * kw[r["id"]] + (1 if kw[r["id"]] == 1 else 0), -i, r))
+    ranked.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    return [r for *_, r in ranked]
+
+
 @router.get("/listings")
 def list_listings(
     db: DB,
@@ -81,18 +105,14 @@ def list_listings(
         if value is not None:
             where.append(cond)
             args.append(value)
-    for word in parsed.text.split():
-        where.append(
-            "lower(json_extract(v.snapshot, '$.title') || ' ' || json_extract(v.snapshot, '$.location')"
-            " || ' ' || json_extract(v.snapshot, '$.description')) like ?"
-        )
-        args.append(f"%{word}%")
-
     rows = many(
         db,
         f"{_LIVE_SELECT} where {' and '.join(where)} order by l.state = 'published' desc, v.published_at desc",
         *args,
     )
+    has_text = bool(words(parsed.text))
+    if has_text:
+        rows = _rank_by_text(db, rows, parsed.text)
     if lat is not None and lng is not None:
         # Area search (map): a property is in if its area's flag is inside the circle.
         # Nearest area first; within an area, newest first. Locations/distances are never returned.
@@ -103,8 +123,9 @@ def list_listings(
                 d = geo.distance_km(lat, lng, r["public_lat"], r["public_lng"])
                 if d <= radius_km:
                     near.append((round(d, 2), r))
-        near.sort(key=lambda x: (x[1]["published_at"], x[1]["snapshot"]["number"]), reverse=True)
-        near.sort(key=lambda x: x[0])  # stable: keeps newest-first inside each area
+        if not has_text:  # with search words, the best match stays first
+            near.sort(key=lambda x: (x[1]["published_at"], x[1]["snapshot"]["number"]), reverse=True)
+            near.sort(key=lambda x: x[0])  # stable: keeps newest-first inside each area
         rows = [r for _, r in near]
     items = [public_listing(r) for r in rows]
     return {

@@ -135,13 +135,27 @@ Everyone is signed out of admin.
 
 ---
 
+## Search by meaning
+
+Search understands meaning ("quiet plot near school" also finds "calm area, 200 m from St. Mary's"), and
+admin shows matching buyers for each property. It uses a small free AI model on the server (no cost).
+
+- After an update, the model downloads once (~0.2 GB) in the background; the site works meanwhile.
+  Check it's ready: `sudo journalctl -u landfinder -n 50 --no-pager | grep -i semantic`
+  ("Semantic search ready" or, if it couldn't, "off ... search works by words").
+- See how it ranks your live listings for a search:
+  `cd /opt/landfinder/backend && sudo -u landfinder .venv/bin/python semantic_check.py "plot near school"`
+- If unrelated listings show up, raise `SEMANTIC_MIN_SCORE` in `.env` (e.g. `0.5`); if too few, lower it
+  (e.g. `0.4`). Then `sudo systemctl restart landfinder`.
+- Turn it off any time with `SEMANTIC_SEARCH=false` in `.env` (search then works by words, as before).
+
 ## What's where on the server
 
 | Path | What |
 |---|---|
 | `/opt/landfinder` | The code (from GitHub) |
 | `/opt/landfinder/backend/.env` | Settings and passwords (private) |
-| `/var/lib/landfinder` | **Your data**: database + photos |
+| `/var/lib/landfinder` | **Your data**: database + photos (+ `models/`, the search model) |
 | `/var/backups/landfinder` | Daily backups |
 | `/etc/caddy/Caddyfile` | Web server (HTTPS) settings |
 

@@ -36,3 +36,13 @@ def publish_new(client, admin) -> str:
     sid = submit(client).json()["id"]
     assert publish(client, admin, sid).status_code == 200
     return sid
+
+
+def admin_form_data(**overrides):
+    """A property as a founder enters it in admin (seller agreed to the terms)."""
+    return {
+        "seller_name": "Mary Thomas", "seller_phone": "9446012345", "property_type": "house",
+        "land_area_cents": "8", "location": "Puliyoor", "address": "Thekkethil House", "description": "2BHK",
+        "expected_price": "4500000", "negotiable": "true", "documents_available": "false",
+        "consent": "true", "consent_version": "test-v1", **overrides,
+    }  # fmt: skip

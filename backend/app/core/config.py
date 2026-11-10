@@ -21,6 +21,14 @@ class Settings(BaseSettings):
     buyer_brokerage_pct: float = 1.0
     material_price_change_pct: float = 5.0
 
+    # Search by meaning: a small free model on our own server. Off -> search by words only, as before.
+    semantic_search: bool = True
+    semantic_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    semantic_cache_dir: str = ""  # default: a "models" folder next to the database
+    semantic_min_score: float = 0.45  # how close in meaning a result must be when no words match
+    semantic_strong_score: float = 0.6  # ...and when other results already match the words
+    match_min_score: float = 0.45  # buyer <-> property matching
+
     first_property_number: int = 1001
     max_photos: int = 3
     max_photo_bytes: int = 8 * 1024 * 1024

@@ -9,6 +9,7 @@ import uuid
 from fastapi import HTTPException, UploadFile
 
 from app.core.config import get_settings
+from app.semantic import store as semantic
 from app.submissions import photos
 from app.submissions.schemas import SubmissionForm
 
@@ -68,4 +69,5 @@ def create(db: sqlite3.Connection, form: SubmissionForm, device: str, images: li
     except OSError as exc:
         photos.delete_files(saved)
         raise HTTPException(503, "Could not save photos, please try again") from exc
+    semantic.refresh_property(db, sub_id)
     return {"id": sub_id, "number": number, "status": "received"}

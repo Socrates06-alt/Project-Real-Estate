@@ -1,7 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Landmark, MessageCircle, Pencil, Phone, Plus, Search, Trash2, X } from "lucide-react";
+import { ChevronDown, Landmark, MessageCircle, Pencil, Phone, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { PropertyType } from "@/shared/api/client";
-import { typeLabel } from "@/shared/lib/format";
+import { cents, inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
 import { Field, Input, Textarea } from "@/shared/ui/field";
@@ -116,7 +117,54 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
           </li>
         ))}
       </ul>
+      <MatchingProperties buyerId={b.id} />
     </article>
+  );
+}
+
+type PropertyMatch = { property_id: string; number: number; property_type: PropertyType; location: string; land_area_cents: number; price: number; reasons: string[] };
+
+/** Live properties that may suit this buyer; loaded when opened. */
+function MatchingProperties({ buyerId }: { buyerId: string }) {
+  const { call } = useAdmin();
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState<PropertyMatch[] | null>(null);
+
+  async function toggle() {
+    setOpen(!open);
+    if (!items) setItems(await call<PropertyMatch[]>(`/buyers/${buyerId}/matches`).catch(() => []));
+  }
+
+  return (
+    <div className="mt-3 border-t border-line pt-2.5">
+      <button type="button" onClick={toggle} aria-expanded={open} className="flex w-full items-center justify-between py-1 text-sm font-semibold text-brand">
+        <span className="flex items-center gap-1.5">
+          <Sparkles size={15} /> Matching properties
+        </span>
+        <ChevronDown size={17} className={open ? "rotate-180 transition" : "transition"} />
+      </button>
+      {open && items === null && <div className="mt-2 h-12 shimmer rounded-2xl" />}
+      {open && items?.length === 0 && <p className="mt-1.5 text-sm text-sub">No live properties match yet.</p>}
+      {open && !!items?.length && (
+        <ul className="mt-2 divide-y divide-line rounded-2xl bg-muted/50">
+          {items.map((p) => (
+            <li key={p.property_id}>
+              <Link to={`/admin/p/${p.property_id}`} className="block px-3.5 py-2.5 text-sm">
+                <span className="flex justify-between gap-3">
+                  <span className="min-w-0 truncate font-medium">
+                    #{p.number} {typeLabel(p.property_type)} · {p.location}
+                  </span>
+                  <span className="shrink-0 font-semibold">{inr(p.price)}</span>
+                </span>
+                <span className="block truncate text-xs text-sub">
+                  {cents(p.land_area_cents)} · {p.reasons.join(" · ")}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
