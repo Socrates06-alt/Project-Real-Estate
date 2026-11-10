@@ -99,8 +99,8 @@ export default function ListingDetail() {
           {l.negotiable && !sold && <span className="text-sm font-semibold text-brand">Negotiable</span>}
           {l.property_type === "land" && !sold && <span className="ml-auto text-sm font-medium text-sub">{perCent(l.price, l.land_area_cents)}</span>}
         </div>
-        <p className="mt-2 text-lg font-medium">{l.title}</p>
-        <p className="mt-1 flex items-center gap-1 text-sm text-sub">
+        {!isAutoTitle(l.title) && <p className="mt-2 text-lg font-medium">{l.title}</p>}
+        <p className={cn("flex items-center gap-1 text-sm text-sub", isAutoTitle(l.title) ? "mt-2" : "mt-1")}>
           <MapPin size={15} /> {l.location}
         </p>
       </section>
@@ -233,4 +233,10 @@ async function copyText(text: string): Promise<boolean> {
     el.remove();
     return ok;
   }
+}
+
+// Automatic titles ("Land for sale", "House for sale"...) repeat the type badge, so they aren't shown.
+// A title written by the admin ("Renovated 2BHK on a quiet road") is shown.
+function isAutoTitle(title: string) {
+  return /^(house|land|commercial|commercial property)\s+for\s+sale\.?$/i.test(title.trim());
 }
