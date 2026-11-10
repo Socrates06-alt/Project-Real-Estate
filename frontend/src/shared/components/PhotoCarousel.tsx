@@ -76,7 +76,7 @@ function Photo({ src, small, alt, eager, onClick }: { src: string; small?: boole
       onClick={onClick}
       onLoad={() => setLoaded(true)}
       onError={() => small && url !== mediaUrl(src) && setUrl(mediaUrl(src))}
-      className={cn("h-full w-full shrink-0 snap-center object-cover transition-opacity duration-500", loaded ? "opacity-100" : "opacity-0")}
+      className={cn("h-full w-full shrink-0 snap-center object-cover transition-opacity duration-150", loaded ? "opacity-100" : "opacity-0")}
     />
   );
 }

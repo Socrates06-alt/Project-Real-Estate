@@ -2,11 +2,28 @@ import { lazy, Suspense, useEffect } from "react";
 import { Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { BottomNav } from "@/app/BottomNav";
 import Explore from "@/features/explore/Explore";
-import ListingDetail from "@/features/listing/ListingDetail";
-import Sell from "@/features/sell/Sell";
-import Profile from "@/features/profile/Profile";
-import { Privacy, Terms } from "@/features/legal/Legal";
 import { trackView } from "@/shared/api/track";
+
+// Pages other than the home list load on their own, so the first screen appears sooner.
+// They are fetched quietly in the background once the home page is up, so opening them is still instant.
+const loadDetail = () => import("@/features/listing/ListingDetail");
+const loadSell = () => import("@/features/sell/Sell");
+const loadProfile = () => import("@/features/profile/Profile");
+const loadLegal = () => import("@/features/legal/Legal");
+const ListingDetail = lazy(loadDetail);
+const Sell = lazy(loadSell);
+const Profile = lazy(loadProfile);
+const Privacy = lazy(() => loadLegal().then((m) => ({ default: m.Privacy })));
+const Terms = lazy(() => loadLegal().then((m) => ({ default: m.Terms })));
+
+function usePrefetch() {
+  useEffect(() => {
+    const go = () => [loadDetail, loadSell, loadProfile].forEach((f) => f().catch(() => {}));
+    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
+    if (w.requestIdleCallback) w.requestIdleCallback(go);
+    else setTimeout(go, 1500);
+  }, []);
+}
 
 // The map (and Leaflet) only loads when someone opens it.
 const MapSearch = lazy(() => import("@/features/map/MapSearch"));
@@ -23,7 +40,9 @@ function PublicLayout({ nav = true }: { nav?: boolean }) {
   return (
     <>
       <main className="mx-auto min-h-dvh max-w-xl px-4 pb-32">
-        <Outlet />
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
       </main>
       {nav && <BottomNav />}
     </>
@@ -37,6 +56,7 @@ function PageTracker() {
 }
 
 export default function App() {
+  usePrefetch();
   return (
     <>
     <PageTracker />

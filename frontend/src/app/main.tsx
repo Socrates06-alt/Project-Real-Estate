@@ -15,14 +15,11 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 );
 
-// Fade out the indigo splash once the app has rendered (shown for at least ~0.7 s).
+// Fade out the indigo splash as soon as the app has rendered (no minimum wait).
 const splash = document.getElementById("splash");
 if (splash) {
-  const started = performance.now();
-  requestAnimationFrame(() =>
-    setTimeout(() => {
-      splash.style.opacity = "0";
-      setTimeout(() => splash.remove(), 400);
-    }, Math.max(0, 700 - (performance.now() - started))),
-  );
+  requestAnimationFrame(() => {
+    splash.style.opacity = "0";
+    setTimeout(() => splash.remove(), 160);
+  });
 }
