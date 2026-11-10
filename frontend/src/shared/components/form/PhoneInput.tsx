@@ -75,7 +75,7 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
 }
 
 /** Optional second number, hidden behind a small link until needed. */
-export function ExtraPhone({ defaultValue }: { defaultValue?: string }) {
+export function ExtraPhone({ defaultValue, name = "seller_phone2" }: { defaultValue?: string; name?: string }) {
   const [open, setOpen] = useState(Boolean(defaultValue));
   if (!open)
     return (
@@ -85,7 +85,7 @@ export function ExtraPhone({ defaultValue }: { defaultValue?: string }) {
     );
   return (
     <Field label="Another number (optional)">
-      <PhoneInput name="seller_phone2" defaultValue={defaultValue} />
+      <PhoneInput name={name} defaultValue={defaultValue} />
     </Field>
   );
 }

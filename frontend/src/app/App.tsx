@@ -13,6 +13,7 @@ const MapSearch = lazy(() => import("@/features/map/MapSearch"));
 
 // Admin is a separate chunk; the public app never links to it.
 const AdminApp = lazy(() => import("@/features/admin/AdminApp"));
+const RequestProperty = lazy(() => import("@/features/request/RequestProperty"));
 
 function PublicLayout({ nav = true }: { nav?: boolean }) {
   const { pathname } = useLocation();
@@ -43,6 +44,14 @@ export default function App() {
       <Route element={<PublicLayout />}>
         <Route index element={<Explore />} />
         <Route path="sell" element={<Sell />} />
+        <Route
+          path="request"
+          element={
+            <Suspense fallback={null}>
+              <RequestProperty />
+            </Suspense>
+          }
+        />
         <Route path="me" element={<Profile />} />
         <Route path="privacy" element={<Privacy />} />
         <Route path="terms" element={<Terms />} />

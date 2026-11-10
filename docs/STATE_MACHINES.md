@@ -6,6 +6,7 @@ Every place where something moves through steps. Change a rule in its **source o
 |---|---|---|---|
 | Property (admin) | new → live → sold / not listed → removed | `backend/app/admin/lifecycle.py` | `tests/test_lifecycle.py` |
 | Public listing | live, sold (hidden when not listed or removed) | follows the property (`lifecycle.STATES`) | `tests/test_lifecycle.py` |
+| Buyer request (website) | new (unseen) → seen when the Buyers page opens | `backend/app/buyers/requests.py` (`seen`) | `tests/test_buyer_requests.py` |
 | Visit request | new → contacted → scheduled → done; cancelled | `backend/app/core/validation.py` (`VisitStatus`, `OPEN_VISITS`) | `tests/test_journey.py` |
 | Meaning search model | off → loading → ready / failed | `backend/app/semantic/engine.py` (`state()`) | `tests/test_semantic.py` |
 | Seller's form (Sell page) | filling → shrinking photos → uploading % → done / error | `frontend/src/features/sell/Sell.tsx` | browser check |

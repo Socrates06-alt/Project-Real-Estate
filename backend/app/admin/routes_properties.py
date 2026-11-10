@@ -62,7 +62,9 @@ def inbox(db: DB) -> dict:
     counts = {g: 0 for g in service.GROUPS}
     for r in db.execute("select status, count(*) from submissions where removed_at is null group by status"):
         counts[service.group_of(r[0])] += r[1]
-    return {"new": [_row(r) for r in new], "visits": visits, "counts": counts}
+    # Buyers who asked on the website and no founder has looked at yet
+    buyer_requests = one(db, "select count(*) as n from buyers where source = 'website' and seen = 0")["n"]
+    return {"new": [_row(r) for r in new], "visits": visits, "counts": counts, "buyer_requests": buyer_requests}
 
 
 @router.get("/properties")

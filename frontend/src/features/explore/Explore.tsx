@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowUp, ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X } from "lucide-react";
+import { ArrowUp, ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X, SearchCheck } from "lucide-react";
 import { Logo } from "@/shared/components/Logo";
 import { FilterTiles, type PropertyFilter } from "@/features/explore/FilterTiles";
 import { Sheet } from "@/shared/ui/sheet";
@@ -13,6 +13,7 @@ import { useAsync } from "@/shared/lib/useAsync";
 import { useNewListings } from "./useNewListings";
 import { ListingCard, ListingCardSkeleton } from "@/features/explore/ListingCard";
 import { EmptyState, ErrorState } from "@/shared/components/States";
+import { REQUEST_LABEL } from "@/shared/lib/labels";
 import { Button } from "@/shared/ui/button";
 
 type TypeFilter = PropertyFilter;
@@ -127,6 +128,11 @@ export default function Explore() {
         <FilterTiles type={type} onType={setType} />
         {!area && <NearYouPopup onArea={setArea} />}
         {isHome && <SellBanner />}
+        {isHome && (
+          <Link to="/request" className="-mt-1 block px-1 text-sm font-semibold text-brand">
+            Looking to buy? {REQUEST_LABEL} →
+          </Link>
+        )}
         {isHome && data && items.length > 0 && <h2 className="px-1 pt-1 font-semibold">All properties</h2>}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
@@ -138,13 +144,31 @@ export default function Explore() {
             text="Try a nearby area or a wider budget. New properties are added every week."
           />
         )}
+        {data && !items.length && <RequestBanner />}
         {hasMore && (
           <Button variant="outline" size="lg" disabled={loadingMore} onClick={loadMore}>
             {loadingMore ? "Loading…" : "Show more"}
           </Button>
         )}
+        {data && items.length > 0 && !hasMore && <RequestBanner />}
       </div>
     </div>
+  );
+}
+
+/** "Didn't find it?" → the buyers' request form. */
+function RequestBanner() {
+  return (
+    <Link to="/request" className="card card-hover flex items-center gap-4 p-5">
+      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
+        <SearchCheck size={22} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold">Didn't find it?</p>
+        <p className="text-sm text-sub">{REQUEST_LABEL}. We'll call you.</p>
+      </div>
+      <ChevronRight size={20} className="shrink-0 text-sub" />
+    </Link>
   );
 }
 

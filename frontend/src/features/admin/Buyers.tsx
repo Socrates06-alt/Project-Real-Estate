@@ -34,6 +34,8 @@ type Buyer = {
   property_type: PropertyType | null;
   notes: string;
   wants_finance_help: boolean;
+  source: "admin" | "website";
+  seen: boolean;
   updated_at: string;
 };
 type TypeChoice = PropertyType | "other"; // "other" is saved as no specific type
@@ -57,6 +59,13 @@ export default function Buyers() {
     () => call<Buyer[]>(`/buyers?q=${encodeURIComponent(q)}`),
     [q],
   );
+
+  // Once the list has loaded, website requests count as seen (their "New" tag shows until the next visit).
+  const loaded = !!data;
+  useEffect(() => {
+    if (loaded) call("/buyers/seen", { method: "POST" }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loaded]);
 
   const [kind, setKind] = useState<"all" | PropertyType>("all");
   const shown =
@@ -165,7 +174,14 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
     <article className="card p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-lg font-semibold">{b.name}</p>
+          <p className="flex flex-wrap items-center gap-1.5 text-lg font-semibold">
+            {b.name}
+            {b.source === "website" && (
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.seen ? "bg-muted text-sub" : "bg-accent text-accent-ink"}`}>
+                {b.seen ? "Website" : "New · Website"}
+              </span>
+            )}
+          </p>
           <p className="text-sm text-sub">
             {b.property_type ? typeLabel(b.property_type) : "Other"}
             {b.area && ` · ${b.area}`}

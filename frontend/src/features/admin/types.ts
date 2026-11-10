@@ -41,6 +41,7 @@ export interface Inbox {
   new: PropertyRow[];
   visits: Visit[];
   counts: Record<Group, number>;
+  buyer_requests: number; // website requests no founder has seen yet
 }
 
 export interface PublicForm {

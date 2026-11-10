@@ -19,3 +19,16 @@ class BuyerIn(Strict):
 class BuyersImport(Strict):
     csv: Annotated[str, text(1, 500_000)]
     property_type: PropertyType | None = "land"  # for every buyer in the file (None = other / any)
+
+
+class BuyerRequestIn(Strict):
+    """A buyer asks for a property they didn't find (public form). Size and budget are optional."""
+
+    name: Name
+    phones: Annotated[list[Phone], Field(min_length=1, max_length=2)]
+    property_type: PropertyType
+    area: Annotated[str, text(0, 120)] = ""
+    min_cents: Annotated[float, Field(gt=0, le=100_000)] | None = None
+    max_cents: Annotated[float, Field(gt=0, le=100_000)] | None = None
+    budget_lakh: Annotated[float, Field(gt=0, le=100_000)] | None = None
+    note: Annotated[str, text(0, 500)] = ""

@@ -1,6 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import { Link } from "react-router-dom";
-import { ChevronRight, FileCheck2, Hammer, PartyPopper, Plus } from "lucide-react";
+import { ChevronRight, FileCheck2, Hammer, PartyPopper, Plus, UserPlus } from "lucide-react";
 import { inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
@@ -52,6 +52,13 @@ export default function Inbox() {
           </Link>
         ))}
       </div>
+
+      {!!data?.buyer_requests && (
+        <Link to="/admin/buyers" className="flex items-center gap-2.5 rounded-2xl bg-accent-soft px-4 py-3 text-sm font-semibold">
+          <UserPlus size={18} /> <span className="flex-1">{data.buyer_requests} new buyer request{data.buyer_requests > 1 ? "s" : ""}</span>
+          <ChevronRight size={16} />
+        </Link>
+      )}
 
       <VisitorStats />
 

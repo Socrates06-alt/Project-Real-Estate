@@ -1,0 +1,63 @@
+"""Buyer requests from the website: "I didn't find it, here's what I need." Saved into the founders' Buyers list."""
+
+import json
+import uuid
+
+from fastapi import APIRouter, Request
+
+from app.buyers.schemas import BuyerRequestIn
+from app.core.db import DB, many, now
+from app.core.ratelimit import RateLimiter, client_ip
+from app.semantic import store as semantic
+
+router = APIRouter(prefix="/api")
+request_limiter = RateLimiter(limit=10, window_seconds=3600, message="Too many requests. Please try again later.")
+
+
+def _num(v: float) -> str:
+    return f"{v:g}"
+
+
+def needs_note(body: BuyerRequestIn) -> str:
+    """'5-10 cents · budget up to 40 lakh · near a school': the format the Buyers list already uses."""
+    parts = []
+    lo, hi = body.min_cents, body.max_cents
+    if lo and hi:
+        lo, hi = min(lo, hi), max(lo, hi)
+        parts.append(f"{_num(lo)} cents" if lo == hi else f"{_num(lo)}-{_num(hi)} cents")
+    elif lo or hi:
+        parts.append(f"{'at least ' if lo else 'up to '}{_num(lo or hi)} cents")
+    if body.budget_lakh:
+        parts.append(f"budget up to {_num(body.budget_lakh)} lakh")
+    if body.note:
+        parts.append(body.note)
+    return " · ".join(parts)
+
+
+@router.post("/buyer-requests", status_code=201)
+def request_property(body: BuyerRequestIn, request: Request, db: DB) -> dict:
+    request_limiter.hit(client_ip(request))
+    phones = list(dict.fromkeys(body.phones))
+    values = (body.name, json.dumps(phones), body.area, body.property_type, needs_note(body))
+    # The same person asking again (any same phone): update their request instead of adding a second one.
+    mine = [
+        b
+        for b in many(db, "select id, phones from buyers where source = 'website'")
+        if set(json.loads(b["phones"])) & set(phones)
+    ]
+    if mine:
+        buyer_id = mine[0]["id"]
+        db.execute(
+            "update buyers set name = ?, phones = ?, area = ?, property_type = ?, notes = ?, seen = 0, updated_at = ?"
+            " where id = ?",
+            (*values, now(), buyer_id),
+        )
+    else:
+        buyer_id = str(uuid.uuid4())
+        db.execute(
+            "insert into buyers (id, name, phones, area, property_type, notes, source, seen)"
+            " values (?, ?, ?, ?, ?, ?, 'website', 0)",
+            (buyer_id, *values),
+        )
+    semantic.refresh_buyer(db, buyer_id)
+    return {"ok": True}

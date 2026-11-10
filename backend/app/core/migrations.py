@@ -118,6 +118,8 @@ create table if not exists buyers (
     property_type text check (property_type in ('house', 'land', 'commercial')),
     notes         text not null default '',
     wants_finance_help integer not null default 0,  -- buyer needs help arranging a loan
+    source        text not null default 'admin',  -- 'admin' (entered by founders) or 'website' (buyer's request)
+    seen          integer not null default 1,     -- 0: a website request no founder has looked at yet
     created_at    text not null default {NOW},
     updated_at    text not null default {NOW}
 );
@@ -153,7 +155,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 12
+SCHEMA_VERSION = 13
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -226,6 +228,11 @@ UPGRADES[11] = [_add_column("submissions", "removed_at text")]
 UPGRADES[12] = [
     _add_column("submissions", "seller_phone2 text not null default ''"),
     "drop trigger if exists submissions_immutable",  # recreated from SCHEMA with the new column
+]
+
+UPGRADES[13] = [
+    _add_column("buyers", "source text not null default 'admin'"),
+    _add_column("buyers", "seen integer not null default 1"),
 ]
 
 log = logging.getLogger("nilayam")

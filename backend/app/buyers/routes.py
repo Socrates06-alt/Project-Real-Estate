@@ -20,6 +20,7 @@ router = APIRouter(prefix="/api/admin/buyers", dependencies=[Depends(require_adm
 def _out(row: dict) -> dict:
     row["phones"] = json.loads(row["phones"])
     row["wants_finance_help"] = bool(row["wants_finance_help"])
+    row["seen"] = bool(row.get("seen", 1))
     return row
 
 
@@ -71,6 +72,13 @@ def add_buyer(body: BuyerIn, db: DB) -> dict:
     )
     semantic.refresh_buyer(db, buyer_id)
     return _out(one(db, "select * from buyers where id = ?", buyer_id))
+
+
+@router.post("/seen")
+def mark_requests_seen(db: DB) -> dict:
+    """The Buyers page was opened: website requests are no longer new."""
+    db.execute("update buyers set seen = 1 where seen = 0")
+    return {"ok": True}
 
 
 @router.post("/import")
