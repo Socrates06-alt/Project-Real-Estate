@@ -111,12 +111,14 @@ def add_buyer(body: BuyerIn, db: DB) -> dict:
 
 @router.post("/import")
 def import_buyers(body: BuyersImport, db: DB) -> dict:
-    """Add many buyers from a spreadsheet (CSV). Rows already in the list (same name and phones) are skipped."""
+    """Add many buyers from a spreadsheet (CSV). Rows already in the list (same name, phones and type) are skipped;
+    someone on both the land and house lists gets one entry for each."""
     rows, problems = read_csv(body.csv)
     added = skipped = 0
     for b in rows:
         phones = json.dumps(b["phones"])
-        if one(db, "select 1 from buyers where name = ? and phones = ?", b["name"], phones):
+        same = "select 1 from buyers where name = ? and phones = ? and property_type is ?"
+        if one(db, same, b["name"], phones, body.property_type):  # already there for this type
             skipped += 1
             continue
         buyer_id = str(uuid.uuid4())

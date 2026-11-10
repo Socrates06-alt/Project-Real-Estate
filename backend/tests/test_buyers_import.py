@@ -28,3 +28,13 @@ def test_import_with_chosen_type(client, admin):
     assert found[0]["property_type"] == "house"
     client.post("/api/admin/buyers/import", json={"csv": "Name\nCiya Other\n", "property_type": None}, headers=admin)
     assert client.get("/api/admin/buyers", params={"q": "Ciya"}, headers=admin).json()[0]["property_type"] is None
+
+
+def test_same_person_on_land_and_house_lists(client, admin):
+    csv = "Name,Phone\nKala,9656808162\n"
+    assert client.post("/api/admin/buyers/import", json={"csv": csv}, headers=admin).json()["added"] == 1
+    house = client.post("/api/admin/buyers/import", json={"csv": csv, "property_type": "house"}, headers=admin).json()
+    assert house["added"] == 1
+    found = client.get("/api/admin/buyers", params={"q": "Kala"}, headers=admin).json()
+    kinds = sorted(b["property_type"] for b in found)
+    assert kinds == ["house", "land"]
