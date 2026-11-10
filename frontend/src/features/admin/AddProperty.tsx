@@ -18,6 +18,7 @@ import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { ACCEPT, PhotoPicker, type PickedPhoto } from "@/shared/components/form/PhotoPicker";
 import { useAdmin } from "@/features/admin/auth";
+import { EXAMPLES } from "@/shared/lib/examples";
 import { RephraseButton } from "./property/RephraseButton";
 
 /**
@@ -131,16 +132,16 @@ export default function AddProperty() {
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="e.g. 10" pattern="\d+(\.\d{1,2})?" />
+          <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder={EXAMPLES[type].cents} pattern="\d+(\.\d{1,2})?" />
         </Field>
         <Field label="Location" hint={area.lat != null ? "On map search" : undefined}>
           <AreaInput name="location" required value={area} onChange={setArea} />
         </Field>
         <Field label="Full address (private)">
-          <Textarea name="address" maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, landmark, PIN" />
+          <Textarea name="address" maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, PIN" />
         </Field>
         <Field label="Description">
-          <Textarea ref={descRef} name="description" maxLength={4000} placeholder="Road access, water, bedrooms, nearby places…" />
+          <Textarea ref={descRef} name="description" maxLength={4000} placeholder={EXAMPLES[type].description} />
         </Field>
         <RephraseButton
           get={() => ({ location: area.name, description: descRef.current?.value ?? "" })}

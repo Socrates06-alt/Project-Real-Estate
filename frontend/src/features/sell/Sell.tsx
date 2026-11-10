@@ -19,6 +19,7 @@ import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
 import { DEV_HELP, DOC_HELP } from "@/shared/lib/assistance";
 import { BrokerageConsent } from "./BrokerageConsent";
 import { UploadProgress } from "./UploadProgress";
+import { EXAMPLES } from "@/shared/lib/examples";
 import { SubmitDone } from "./SubmitDone";
 
 // Typed fields remembered in the draft (the consent tick is never remembered).
@@ -172,7 +173,7 @@ export default function Sell() {
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" defaultValue={saved.land_area_cents} suffix="cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
+          <AffixInput name="land_area_cents" defaultValue={saved.land_area_cents} suffix="cents" required inputMode="decimal" placeholder={EXAMPLES[type].cents} pattern="\d+(\.\d{1,2})?" />
         </Field>
         <Field label="Location">
           <AreaInput name="location" required value={area} onChange={setArea} />
@@ -185,13 +186,7 @@ export default function Sell() {
             name="description"
             defaultValue={saved.description}
             maxLength={4000}
-            placeholder={
-              type === "house"
-                ? "3 BHK, 1500 sq ft, car access"
-                : type === "commercial"
-                  ? "Shop, 800 sq ft, main road"
-                  : "Flat plot, road access, well"
-            }
+            placeholder={EXAMPLES[type].description}
           />
         </Field>
       </FormCard>

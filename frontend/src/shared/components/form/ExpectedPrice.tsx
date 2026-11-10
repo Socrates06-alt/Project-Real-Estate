@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PropertyType } from "@/shared/api/client";
 import { inr } from "@/shared/lib/format";
+import { EXAMPLES } from "@/shared/lib/examples";
 import { AffixInput, Field } from "@/shared/ui/field";
 
 const digits = (v: string) => v.replace(/\D/g, "");
@@ -39,13 +40,13 @@ export function ExpectedPrice(props: { type: PropertyType; defaultTotal?: number
       {type === "land" ? (
         <>
           <Field label={`${label} per cent`}>
-            <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix="/ cent" required inputMode="numeric" placeholder="2,00,000" />
+            <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix="/ cent" required inputMode="numeric" placeholder={EXAMPLES.land.price} />
           </Field>
           {total > 0 && <p className="mt-1.5 px-1 text-sm text-sub">Total {inr(total)} for {cents} cents</p>}
         </>
       ) : (
         <Field label={label}>
-          <AffixInput name="expected_price" defaultValue={defaultTotal ? indian(String(defaultTotal)) : undefined} prefix="₹" required inputMode="numeric" placeholder="25,00,000" />
+          <AffixInput name="expected_price" defaultValue={defaultTotal ? indian(String(defaultTotal)) : undefined} prefix="₹" required inputMode="numeric" placeholder={EXAMPLES[type].price} />
         </Field>
       )}
     </div>

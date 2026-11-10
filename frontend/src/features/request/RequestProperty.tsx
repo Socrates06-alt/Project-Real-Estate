@@ -9,6 +9,7 @@ import { PageHeader } from "@/shared/components/PageHeader";
 import { FormCard } from "@/shared/components/form/FormCard";
 import { ExtraPhone, PhoneInput } from "@/shared/components/form/PhoneInput";
 import { AreaInput, type Area } from "@/shared/components/AreaInput";
+import { EXAMPLES } from "@/shared/lib/examples";
 import { REQUEST_LABEL } from "@/shared/lib/labels";
 
 const num = (v: FormDataEntryValue | null) => (v && Number(v) > 0 ? Number(v) : null);
@@ -93,10 +94,10 @@ export default function RequestProperty() {
           </Field>
         )}
         <Field label="Budget">
-          <AffixInput name="budget_lakh" prefix="₹" suffix="lakh" inputMode="decimal" placeholder="40" pattern="\d+(\.\d{1,2})?" />
+          <AffixInput name="budget_lakh" prefix="₹" suffix="lakh" inputMode="decimal" placeholder={EXAMPLES[type].budget} pattern="\d+(\.\d{1,2})?" />
         </Field>
         <Field label="Anything else">
-          <Input name="note" maxLength={500} placeholder={type === "house" ? "2 BHK, near a school" : "Near a school, road access"} />
+          <Input name="note" maxLength={500} placeholder={EXAMPLES[type].wants} />
         </Field>
       </FormCard>
 
