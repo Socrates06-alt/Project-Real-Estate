@@ -10,7 +10,10 @@ from fastapi.staticfiles import StaticFiles
 
 from app.admin import routes_auth as admin_auth
 from app.admin import routes_properties as admin_properties
+from app.analytics import routes as analytics
+from app.analytics import service as analytics_service
 from app.core.config import get_settings
+from app.core.db import connect
 from app.core.migrations import init_db
 from app.core.security import check_production
 from app.listings import routes as listings
@@ -25,6 +28,12 @@ async def lifespan(_: FastAPI):
     check_production(get_settings())
     init_db()
     photos.ensure_small_copies()
+    conn = connect()  # drop visit counts older than about a year
+    try:
+        analytics_service.cleanup(conn)
+        conn.commit()
+    finally:
+        conn.close()
     yield
 
 
@@ -61,6 +70,8 @@ def create_app() -> FastAPI:
         visits.admin_router,
         admin_auth.router,
         admin_properties.router,
+        analytics.router,
+        analytics.admin_router,
     ):
         app.include_router(router)
 

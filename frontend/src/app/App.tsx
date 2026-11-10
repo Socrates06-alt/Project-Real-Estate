@@ -6,6 +6,7 @@ import ListingDetail from "@/features/listing/ListingDetail";
 import Sell from "@/features/sell/Sell";
 import Profile from "@/features/profile/Profile";
 import { Privacy, Terms } from "@/features/legal/Legal";
+import { trackView } from "@/shared/api/track";
 
 // The map (and Leaflet) only loads when someone opens it.
 const MapSearch = lazy(() => import("@/features/map/MapSearch"));
@@ -28,8 +29,16 @@ function PublicLayout({ nav = true }: { nav?: boolean }) {
   );
 }
 
+function PageTracker() {
+  const { pathname } = useLocation();
+  useEffect(() => trackView(pathname), [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
+    <>
+    <PageTracker />
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<Explore />} />
@@ -61,5 +70,6 @@ export default function App() {
         <Route path="*" element={<Explore />} />
       </Route>
     </Routes>
+    </>
   );
 }

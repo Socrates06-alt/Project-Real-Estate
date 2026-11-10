@@ -8,6 +8,7 @@ import { Logo } from "@/shared/components/Logo";
 import { ThemeSwitch } from "@/shared/components/ThemeSwitch";
 import { useAdmin } from "@/features/admin/auth";
 import { PrivatePhoto, VisitCard } from "@/features/admin/ui";
+import { VisitorStats } from "@/features/admin/VisitorStats";
 import type { Group, Inbox as InboxData } from "@/features/admin/types";
 
 export default function Inbox() {
@@ -95,6 +96,7 @@ export default function Inbox() {
         </section>
       )}
 
+      <VisitorStats />
     </div>
   );
 }

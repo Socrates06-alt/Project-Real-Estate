@@ -95,6 +95,29 @@ create table if not exists visit_requests (
     updated_at      text not null default {NOW}
 );
 
+-- Visit counting: no cookies, no addresses stored. "visitor" is a one-way code of address + browser that
+-- changes every day, so a person can be counted once per day but never followed over time.
+create table if not exists page_views (
+    day        text not null,  -- YYYY-MM-DD, India time
+    visitor    text not null,
+    page       text not null,  -- home, listing, sell, map, profile, legal, other
+    listing_id text,
+    created_at text not null default {NOW}
+);
+create index if not exists page_views_day on page_views (day);
+
+-- Buyers the founders are helping (entered by founders; private).
+create table if not exists buyers (
+    id            text primary key,
+    name          text not null,
+    phones        text not null default '[]',  -- JSON list of phone numbers
+    area          text not null default '',
+    property_type text check (property_type in ('house', 'land', 'commercial')),
+    notes         text not null default '',
+    created_at    text not null default {NOW},
+    updated_at    text not null default {NOW}
+);
+
 -- A seller's own submission never changes (only its workflow status): it is the record of what they
 -- sent and agreed to. Properties a founder entered for a seller (device_hash 'admin') can be corrected.
 create trigger if not exists submissions_immutable
@@ -117,7 +140,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -162,6 +185,8 @@ UPGRADES[6] = [
 UPGRADES[7] = [
     "drop trigger if exists submissions_immutable",  # recreated from SCHEMA: admin-entered rows can be corrected
 ]
+
+UPGRADES[8] = []  # page_views and buyers tables are created from SCHEMA
 
 log = logging.getLogger("nilayam")
 
