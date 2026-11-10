@@ -20,7 +20,7 @@ import { RephraseButton } from "./property/RephraseButton";
 import { EditSellerSheet } from "./property/EditSellerSheet";
 import { PhotoSelector } from "./property/PhotoSelector";
 import { DontListSheet } from "./property/DontListSheet";
-import type { Property, PublicForm } from "@/features/admin/types";
+import type { Property, PropertyAction, PublicForm } from "@/features/admin/types";
 
 const BIG_CHANGE_PCT = 5; // matches the backend default; the backend has the final say
 
@@ -116,7 +116,8 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       f.photo_ids.includes(pid) ? f.photo_ids.filter((x) => x !== pid) : photos.map((x) => x.id).filter((x) => x === pid || f.photo_ids.includes(x)),
     );
 
-  const mainLabel = { new: "Publish", live: "Save changes", not_listed: "Publish again", sold: "", removed: "" }[p.group];
+  const can = (a: PropertyAction) => p.actions.includes(a); // the server's lifecycle decides (admin/lifecycle.py)
+  const mainLabel = can("publish") ? { new: "Publish", live: "Save changes", not_listed: "Publish again", sold: "", removed: "" }[p.group] : "";
   const mainDisabled = busy || (needsConfirm && !sellerConfirmed) || (p.group === "live" && !dirty);
 
   return (
@@ -213,7 +214,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       </fieldset>
 
       {/* Secondary actions */}
-      {p.group === "removed" && (
+      {can("restore") && (
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-muted px-4 py-3 text-sm">
           <span className="text-sub">Removed from your lists. The record is kept.</span>
           <button
@@ -225,7 +226,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           </button>
         </div>
       )}
-      {(p.group === "not_listed" || p.group === "sold") && (
+      {can("remove") && (
         <button
           disabled={busy}
           onClick={() =>
@@ -237,12 +238,12 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           <Trash2 size={16} /> Remove property
         </button>
       )}
-      {p.group === "new" && (
+      {can("not_listed") && (
         <button onClick={() => setDontListOpen(true)} className="w-full py-2 text-center text-[15px] text-sub">
           Don't list this property
         </button>
       )}
-      {p.group === "live" && (
+      {(can("sold") || can("take_down")) && (
         <div className="grid grid-cols-2 gap-2">
           <Button variant="outline" disabled={busy} onClick={() => window.confirm("Mark this property as sold?") && run(() => call(`/properties/${p.id}/sold`, { method: "POST" }), "Marked as sold")}>
             Mark as sold

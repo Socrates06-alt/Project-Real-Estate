@@ -10,6 +10,7 @@ from typing import Literal
 
 from fastapi import HTTPException
 
+from app.admin import lifecycle
 from app.admin.schemas import PublishIn
 from app.core.config import get_settings
 from app.core.db import many, now, one
@@ -17,15 +18,9 @@ from app.listings import geo
 from app.semantic import store as semantic
 from app.submissions import photos
 
-# Simple groups the admin sees, mapped from the stored submission status.
-GROUPS = {
-    "new": ("received", "under_review"),
-    "live": ("listed",),
-    "sold": ("sold",),
-    "not_listed": ("withdrawn", "rejected"),
-}
-Group = Literal["new", "live", "sold", "not_listed"]
-REMOVABLE = ("not_listed", "sold")  # take down or mark sold first; then a property can be removed from the lists
+# Groups and allowed moves live in app/admin/lifecycle.py (the property state machine).
+GROUPS = lifecycle.GROUPS
+ListGroup = Literal["new", "live", "sold", "not_listed"]  # the lists founders can open
 
 # Listing fields buyers see (and the admin edits). Seller identity is never one of them.
 PUBLIC_FIELDS = (
@@ -34,8 +29,8 @@ PUBLIC_FIELDS = (
 )  # fmt: skip
 
 
-def group_of(status: str) -> str:
-    return next(g for g, statuses in GROUPS.items() if status in statuses)
+group_of = lifecycle.status_group
+group_of_sub = lifecycle.group_of
 
 
 def set_status(db: sqlite3.Connection, submission_id: str, status: str, note: str | None = None) -> None:
@@ -43,10 +38,6 @@ def set_status(db: sqlite3.Connection, submission_id: str, status: str, note: st
         "update submissions set status = ?, status_note = coalesce(?, status_note), status_updated_at = ? where id = ?",
         (status, note, now(), submission_id),
     )
-
-
-def group_of_sub(sub: dict) -> str:
-    return "removed" if sub.get("removed_at") else group_of(sub["status"])
 
 
 def get_submission(db: sqlite3.Connection, submission_id: str) -> dict:
@@ -70,10 +61,7 @@ def reference_price(db: sqlite3.Connection, sub: dict, listing: dict | None) -> 
 def publish(db: sqlite3.Connection, submission_id: str, body: PublishIn) -> dict:
     """One step: create/update the listing and publish a new, unchangeable snapshot."""
     sub = get_submission(db, submission_id)
-    if sub["status"] == "sold":
-        raise HTTPException(409, "This property is already sold")
-    if sub["removed_at"]:
-        raise HTTPException(409, "This property was removed. Restore it first")
+    lifecycle.require(sub, "publish")
     valid_photos = {
         p["id"]: p["path"] for p in many(db, "select id, path from photos where submission_id = ?", submission_id)
     }
@@ -134,8 +122,7 @@ def publish(db: sqlite3.Connection, submission_id: str, body: PublishIn) -> dict
 def end_listing(db: sqlite3.Connection, submission_id: str, state: str, status: str) -> dict:
     """Sold or taken down: the listing stops being live."""
     sub = get_submission(db, submission_id)
-    if sub["status"] != "listed":
-        raise HTTPException(409, "Only live properties can be changed this way")
+    lifecycle.require(sub, "sold" if state == "sold" else "take_down")
     db.execute(
         "update listings set state = ?, sold_at = case when ? = 'sold' then ? else sold_at end, updated_at = ?"
         " where submission_id = ?",
@@ -151,8 +138,7 @@ def remove(db: sqlite3.Connection, submission_id: str) -> dict:
     sub = get_submission(db, submission_id)
     if sub["removed_at"]:
         return {"id": submission_id, "group": "removed"}
-    if group_of(sub["status"]) not in REMOVABLE:
-        raise HTTPException(409, "Take it down or mark it sold first, then remove it")
+    lifecycle.require(sub, "remove")
     db.execute("update submissions set removed_at = ? where id = ?", (now(), submission_id))
     db.execute(
         "update listings set state = 'withdrawn', updated_at = ? where submission_id = ? and state = 'sold'",
@@ -163,6 +149,8 @@ def remove(db: sqlite3.Connection, submission_id: str) -> dict:
 
 def restore(db: sqlite3.Connection, submission_id: str) -> dict:
     sub = get_submission(db, submission_id)
+    if not lifecycle.can(sub, "restore"):  # not removed: nothing to do
+        return {"id": submission_id, "group": group_of(sub["status"])}
     db.execute("update submissions set removed_at = null where id = ?", (submission_id,))
     if sub["status"] == "sold":  # back on the public site as sold
         db.execute(

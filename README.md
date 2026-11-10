@@ -17,6 +17,7 @@ docs/       guides and plans
 | [docs/RUN_WINDOWS.md](docs/RUN_WINDOWS.md) | Run it on a Windows laptop (or double-click `start.bat`) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Put it online on AWS Lightsail, update it, back it up |
 | [docs/V1_PLAN.md](docs/V1_PLAN.md) | Product plan |
+| [docs/STATE_MACHINES.md](docs/STATE_MACHINES.md) | Every step-by-step flow (property, visit, search model, Sell form) and where its rules live |
 
 ## Checks
 

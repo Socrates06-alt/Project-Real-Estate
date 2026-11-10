@@ -1,6 +1,8 @@
 import type { PropertyType } from "@/shared/api/client";
 
 export type Group = "new" | "live" | "sold" | "not_listed" | "removed";
+/** What can be done to a property now; the server decides (backend/app/admin/lifecycle.py). */
+export type PropertyAction = "publish" | "sold" | "take_down" | "not_listed" | "remove" | "restore";
 
 export interface PropertyRow {
   id: string;
@@ -59,6 +61,7 @@ export interface PublicForm {
 export interface Property {
   id: string;
   group: Group;
+  actions: PropertyAction[];
   number: number;
   listing_id: string | null;
   reference_price: number;

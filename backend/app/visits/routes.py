@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 
 from app.core.db import DB, now, one
 from app.core.security import require_admin
+from app.core.validation import OPEN_VISITS_SQL
 from app.visits.schemas import VisitRequestIn, VisitUpdate
 
 router = APIRouter(prefix="/api")
@@ -19,7 +20,7 @@ def request_visit(listing_id: str, body: VisitRequestIn, db: DB) -> dict:
     existing = one(
         db,
         "select id, status from visit_requests"
-        " where listing_id = ? and phone = ? and status in ('new', 'contacted', 'scheduled')",
+        f" where listing_id = ? and phone = ? and status in {OPEN_VISITS_SQL}",
         listing_id, body.phone,
     )  # fmt: skip
     if existing:

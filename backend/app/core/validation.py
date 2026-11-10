@@ -35,7 +35,11 @@ Short = Annotated[str, text(0, 500)]
 Cents = Annotated[float, Field(gt=0, le=100_000)]
 Price = Annotated[int, Field(gt=0, le=10**11)]
 PropertyType = Literal["house", "land", "commercial"]
+# Visit request: new -> contacted -> scheduled (visit fixed) -> done; cancelled from any open step.
+# Founders may step back (e.g. a fixed visit that needs a new date goes back to contacted).
 VisitStatus = Literal["new", "contacted", "scheduled", "done", "cancelled"]
+OPEN_VISITS = ("new", "contacted", "scheduled")  # still needs a founder's attention
+OPEN_VISITS_SQL = "(" + ", ".join(f"'{s}'" for s in OPEN_VISITS) + ")"
 
 
 class Strict(BaseModel):

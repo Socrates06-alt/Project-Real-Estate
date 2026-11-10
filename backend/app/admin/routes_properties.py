@@ -7,11 +7,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Response, UploadFile
 
-from app.admin import service
+from app.admin import lifecycle, service
 from app.admin.schemas import NoteIn, PublishIn, SellerDetailsIn
 from app.core.config import get_settings
 from app.core.db import DB, many, one
 from app.core.security import require_admin
+from app.core.validation import OPEN_VISITS_SQL
 from app.semantic import store as semantic
 from app.semantic.text import keyword_score, property_text, words
 from app.submissions import photos
@@ -20,7 +21,7 @@ from app.submissions.schemas import SubmissionForm
 
 router = APIRouter(prefix="/api/admin", dependencies=[Depends(require_admin)])
 
-_ROW = """
+_ROW = f"""
     select s.id, s.number, s.seller_name, s.seller_phone, s.property_type, s.location, s.status, s.created_at,
            s.removed_at,
            s.wants_doc_help, s.wants_dev_help,
@@ -28,7 +29,7 @@ _ROW = """
            coalesce(l.title, '') as title,
            (select id from photos p where p.submission_id = s.id order by position limit 1) as cover_photo_id,
            (select count(*) from visit_requests v
-             where v.listing_id = l.id and v.status in ('new', 'contacted', 'scheduled')) as open_visits
+             where v.listing_id = l.id and v.status in {OPEN_VISITS_SQL}) as open_visits
     from submissions s left join listings l on l.submission_id = s.id
 """
 
@@ -53,10 +54,10 @@ def inbox(db: DB) -> dict:
     )
     visits = many(
         db,
-        """select v.id, v.name, v.phone, v.preferred_time, v.budget, v.status, v.created_at,
+        f"""select v.id, v.name, v.phone, v.preferred_time, v.budget, v.status, v.created_at,
                   l.number as listing_number, l.title as listing_title, l.submission_id as property_id
            from visit_requests v join listings l on l.id = v.listing_id
-           where v.status in ('new', 'contacted', 'scheduled') order by v.created_at desc limit 100""",
+           where v.status in {OPEN_VISITS_SQL} order by v.created_at desc limit 100""",
     )
     counts = {g: 0 for g in service.GROUPS}
     for r in db.execute("select status, count(*) from submissions where removed_at is null group by status"):
@@ -65,7 +66,7 @@ def inbox(db: DB) -> dict:
 
 
 @router.get("/properties")
-def list_properties(db: DB, group: service.Group = "live", q: str = Query("", max_length=200)) -> list[dict]:
+def list_properties(db: DB, group: service.ListGroup = "live", q: str = Query("", max_length=200)) -> list[dict]:
     """A group's properties, or, with q, a search across all of them."""
     q = q.strip().lstrip("#")
     if not q:
@@ -195,6 +196,7 @@ def get_property(submission_id: str, db: DB) -> dict:
     return {
         "id": submission_id,
         "group": service.group_of_sub(sub),
+        "actions": lifecycle.actions_for(sub),  # what the screen may offer now
         "seller": sub,
         "admin_entered": admin_entered,  # only these seller details can be corrected
         "photos": [{"id": p["id"], "url": f"/api/admin/photos/{p['id']}"} for p in photo_rows],
@@ -307,7 +309,6 @@ def restore_property(submission_id: str, db: DB) -> dict:
 def not_listed(submission_id: str, body: NoteIn, db: DB) -> dict:
     """A new submission we won't list (optional reason)."""
     sub = service.get_submission(db, submission_id)
-    if sub["status"] not in service.GROUPS["new"]:
-        raise HTTPException(409, "Only new properties can be marked not listed")
+    lifecycle.require(sub, "not_listed")
     service.set_status(db, submission_id, "rejected", body.note or None)
     return {"id": submission_id, "group": "not_listed"}
