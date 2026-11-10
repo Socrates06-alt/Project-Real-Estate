@@ -12,7 +12,6 @@ from app.admin.schemas import NoteIn, PublishIn, SellerDetailsIn
 from app.core.config import get_settings
 from app.core.db import DB, many, one
 from app.core.security import require_admin
-from app.semantic import matching
 from app.semantic import store as semantic
 from app.semantic.text import keyword_score, property_text, words
 from app.submissions import photos
@@ -78,10 +77,6 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
             *statuses,
         )
         found = [_row(r) for r in rows]
-        if group == "live":  # how many buyers each listed property matches
-            counts = matching.match_counts(db, [r["id"] for r in found])
-            for r in found:
-                r["matching_buyers"] = counts.get(r["id"], 0)
         return found
 
     # A property link pasted from a buyer's WhatsApp message: .../p/<listing id>
@@ -111,7 +106,7 @@ def list_properties(db: DB, group: service.Group = "live", q: str = Query("", ma
 
 
 def _found_through_buyers(db, q: str, digits: str, seen: set[str]) -> list[dict]:
-    """A buyer's name or phone: properties they asked to visit, and listed properties that match them."""
+    """A buyer's name or phone: properties they asked to visit."""
     if len(q) < 3 and len(digits) < 4:
         return []
     name, phone = f"%{q.lower()}%", f"%{_phone_part(digits)}%"
@@ -125,14 +120,6 @@ def _found_through_buyers(db, q: str, digits: str, seen: set[str]) -> list[dict]
     )
     for v in visits:
         via.setdefault(v["sid"], f"Visit request: {v['name']}")
-    buyers = many(
-        db,
-        f"select id, name from buyers where lower(name) like ?{' or phones like ?' if use_phone else ''} limit 20",
-        *([name, phone] if use_phone else [name]),
-    )
-    for b in buyers:
-        for sid in matching.property_ids_matching(db, [b["id"]]):
-            via.setdefault(sid, f"Matches buyer: {b['name']}")
     ids = [i for i in via if i not in seen][:50]
     if not ids:
         return []
@@ -230,13 +217,6 @@ def update_seller_details(submission_id: str, body: SellerDetailsIn, db: DB) -> 
     db.execute(f"update submissions set {sets} where id = ?", (*values.values(), submission_id))
     semantic.refresh_property(db, submission_id)
     return {"id": submission_id}
-
-
-@router.get("/properties/{submission_id}/matches")
-def matching_buyers(submission_id: str, db: DB) -> list[dict]:
-    """Buyers this property may suit, best first (type, wanted area, similar needs)."""
-    service.get_submission(db, submission_id)
-    return matching.buyers_for_property(db, submission_id)
 
 
 @router.post("/properties/{submission_id}/photos", status_code=201)

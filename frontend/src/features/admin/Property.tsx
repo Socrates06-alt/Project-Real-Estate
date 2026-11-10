@@ -17,7 +17,6 @@ import { AreaInput } from "@/shared/components/AreaInput";
 import { GroupBadge, VisitCard } from "@/features/admin/ui";
 import { SellerCard } from "./property/SellerCard";
 import { EditSellerSheet } from "./property/EditSellerSheet";
-import { MatchingBuyers } from "./property/MatchingBuyers";
 import { PhotoSelector } from "./property/PhotoSelector";
 import { DontListSheet } from "./property/DontListSheet";
 import type { Property, PublicForm } from "@/features/admin/types";
@@ -250,7 +249,6 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         </div>
       )}
 
-      {p.group === "live" && <MatchingBuyers propertyId={p.id} />}
 
       {/* Visits */}
       {p.visits.length > 0 && (

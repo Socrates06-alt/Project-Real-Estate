@@ -11,7 +11,6 @@ from app.buyers.schemas import BuyerIn, BuyersImport
 from app.core.config import get_settings
 from app.core.db import DB, many, now, one
 from app.core.security import require_admin
-from app.semantic import matching
 from app.semantic import store as semantic
 from app.semantic.text import buyer_text, keyword_score, words
 
@@ -59,42 +58,7 @@ def list_buyers(db: DB, q: str = Query("", max_length=100)) -> list[dict]:
             close_words = keyword_score(query_words, f"{r['name']} {buyer_text(r)}") == 1
             if close_words or (meaning.get(r["id"]) or -1) >= s.semantic_min_score:
                 found.append(_out(r))
-    found += _found_through_properties(db, q, digits, {r["id"] for r in found})
     return found
-
-
-def _found_through_properties(db, q: str, digits: str, seen: set[str]) -> list[dict]:
-    """A seller's name or phone, or a property number: the buyers who match those listed properties."""
-    if len(q) < 3 and len(digits) < 4:
-        return []
-    conditions, args = ["lower(s.seller_name) like ?"], [f"%{q.lower()}%"]
-    if digits and len(digits) <= 6:
-        conditions.append("s.number = ?")
-        args.append(int(digits))
-    if len(digits) >= 4:
-        phone = digits[2:] if len(digits) == 12 and digits.startswith("91") else digits.lstrip("0")
-        conditions.append("(s.seller_phone like ? or s.seller_phone2 like ?)")
-        args += [f"%{phone}%", f"%{phone}%"]
-    props = many(
-        db, f"select s.id, s.number, s.seller_name from submissions s where {' or '.join(conditions)} limit 20", *args
-    )
-    via: dict[str, str] = {}
-    for p in props:
-        for m in matching.buyers_for_property(db, p["id"], limit=50):
-            via.setdefault(m["id"], f"Matches #{p['number']} ({p['seller_name']})")
-    ids = [i for i in via if i not in seen]
-    if not ids:
-        return []
-    rows = {r["id"]: r for r in many(db, f"select * from buyers where id in ({','.join('?' * len(ids))})", *ids)}
-    return [{**_out(rows[i]), "via": via[i]} for i in ids if i in rows]
-
-
-@router.get("/{buyer_id}/matches")
-def matching_properties(buyer_id: str, db: DB) -> list[dict]:
-    """Live properties that may suit this buyer, best first."""
-    if one(db, "select 1 from buyers where id = ?", buyer_id) is None:
-        raise HTTPException(404, "Buyer not found")
-    return matching.properties_for_buyer(db, buyer_id)
 
 
 @router.post("", status_code=201)

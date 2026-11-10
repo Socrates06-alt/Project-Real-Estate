@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { CalendarDays, ChevronRight, Plus, Search, Sparkles, X } from "lucide-react";
+import { CalendarDays, ChevronRight, Plus, Search, X } from "lucide-react";
 import { inr, shortTitle } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
@@ -94,11 +94,6 @@ export default function Properties() {
                 </p>
               )}
               {p.via && <p className="mt-0.5 truncate text-sm font-medium text-brand">{p.via}</p>}
-              {!!p.matching_buyers && (
-                <p className="mt-0.5 flex items-center gap-1 text-sm font-medium text-brand">
-                  <Sparkles size={14} /> {p.matching_buyers} matching buyer{p.matching_buyers > 1 ? "s" : ""}
-                </p>
-              )}
             </div>
             <ChevronRight size={20} className="shrink-0 text-sub" />
           </Link>

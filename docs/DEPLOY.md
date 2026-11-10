@@ -137,8 +137,8 @@ Everyone is signed out of admin.
 
 ## Search by meaning
 
-Search understands meaning ("quiet plot near school" also finds "calm area, 200 m from St. Mary's"), and
-admin shows matching buyers for each property. It uses a small free AI model on the server (no cost).
+Search understands meaning ("quiet plot near school" also finds "calm area, 200 m from St. Mary's").
+It uses a small free AI model on the server (no cost).
 
 - After an update, the model downloads once (~0.2 GB) in the background; the site works meanwhile.
   Check it's ready: `sudo journalctl -u landfinder -n 50 --no-pager | grep -i semantic`

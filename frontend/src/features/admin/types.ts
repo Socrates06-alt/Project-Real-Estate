@@ -15,8 +15,7 @@ export interface PropertyRow {
   group: Group;
   cover_url: string | null;
   open_visits: number;
-  matching_buyers?: number; // Live list only: buyers this listed property may suit
-  via?: string; // search only: why it was found ("Matches buyer: Suresh", "Visit request: Anil")
+  via?: string; // search only: why it was found ("Visit request: Anil")
   wants_doc_help: boolean;
   wants_dev_help: boolean;
   created_at: string;

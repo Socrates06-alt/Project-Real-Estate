@@ -27,7 +27,6 @@ class Settings(BaseSettings):
     semantic_cache_dir: str = ""  # default: a "models" folder next to the database
     semantic_min_score: float = 0.45  # how close in meaning a result must be when no words match
     semantic_strong_score: float = 0.6  # ...and when other results already match the words
-    match_min_score: float = 0.45  # buyer <-> property matching
 
     # TEMPORARY one-time English clean-up of listings (Sarvam AI). Empty key = tool switched off.
     sarvam_api_key: str = ""
