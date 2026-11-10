@@ -32,13 +32,17 @@ export default function Inbox() {
     <div className="space-y-5">
       <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] flex items-center justify-between gap-2 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
         <Logo light />
-        <div className="flex items-center gap-2">
-          <Link to="/admin/new" className="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[var(--brand-deep)] shadow-sm">
-            <Plus size={18} strokeWidth={2.5} /> Add
-          </Link>
-          <ThemeSwitch />
-        </div>
+        <ThemeSwitch />
       </header>
+
+      <div className="grid grid-cols-2 gap-2">
+        <Link to="/admin/new" className="flex h-11 items-center justify-center gap-1.5 rounded-full bg-brand text-sm font-semibold text-brand-ink shadow-sm">
+          <Plus size={17} strokeWidth={2.5} /> Add property
+        </Link>
+        <Link to="/admin/buyers?add=1" className="flex h-11 items-center justify-center gap-1.5 rounded-full bg-brand-soft text-sm font-semibold text-brand">
+          <Plus size={17} strokeWidth={2.5} /> Add buyer
+        </Link>
+      </div>
 
       <div className="grid grid-cols-4 gap-2">
         {tiles.map(([g, label, tone]) => (

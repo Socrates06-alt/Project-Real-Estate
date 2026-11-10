@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ChevronDown, Landmark, MessageCircle, Pencil, Phone, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import type { PropertyType } from "@/shared/api/client";
 import { cents, inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
@@ -32,7 +32,14 @@ export default function Buyers() {
   const { call } = useAdmin();
   const [input, setInput] = useState("");
   const [q, setQ] = useState("");
-  const [editing, setEditing] = useState<Buyer | "new" | null>(null);
+  const [params, setParams] = useSearchParams();
+  const [editing, setEditing] = useState<Buyer | "new" | null>(params.get("add") ? "new" : null);
+
+  // Opened from the Inbox's "Add buyer": show the form once, then tidy the address bar.
+  useEffect(() => {
+    if (params.get("add")) setParams({}, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const { data, error, reload } = useAsync(() => call<Buyer[]>(`/buyers?q=${encodeURIComponent(q)}`), [q]);
 
   useEffect(() => {

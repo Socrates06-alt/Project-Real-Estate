@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { Eye, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { useAsync } from "@/shared/lib/useAsync";
 import { useAdmin } from "@/features/admin/auth";
 
@@ -54,26 +53,6 @@ export function VisitorStats() {
         ))}
       </div>
 
-      {data.top_properties.length > 0 && (
-        <details className="mt-3 group">
-          <summary className="cursor-pointer list-none text-sm font-semibold text-brand">Most viewed properties ›</summary>
-          <ul className="mt-2 divide-y divide-line rounded-2xl bg-muted/50">
-            {data.top_properties.map((t) => (
-              <li key={t.listing_id}>
-                <Link to={`/admin/p/${t.property_id}`} className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-sm">
-                  <span className="min-w-0 truncate">
-                    <span className="text-sub">#{t.number}</span> {t.title || "Property"}
-                    {t.location && <span className="text-sub"> · {t.location}</span>}
-                  </span>
-                  <span className="flex shrink-0 items-center gap-1 font-medium">
-                    <Eye size={14} className="text-sub" /> {n(t.views)}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
     </section>
   );
 }
