@@ -148,3 +148,27 @@ def test_admin_can_correct_seller_details_only_on_properties_they_added(client, 
     assert client.get(f"/api/admin/properties/{own}", headers=admin).json()["admin_entered"] is False
     assert client.put(f"/api/admin/properties/{own}/seller", json=seller_details(), headers=admin).status_code == 409
     assert client.put(f"/api/admin/properties/{sid}/seller", json=seller_details()).status_code == 401
+
+
+def test_admin_can_delete_a_photo(client, admin):
+    files = [("photos", ("a.jpg", jpeg_with_gps(), "image/jpeg")), ("photos", ("b.jpg", jpeg_with_gps(), "image/jpeg"))]
+    sid = client.post("/api/admin/properties", data=admin_form(), files=files, headers=admin).json()["id"]
+    assert publish(client, admin, sid).status_code == 200
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    first, second = (p["id"] for p in prop["photos"])
+    listing_id = prop["listing_id"]
+    live_before = client.get(f"/api/listings/{listing_id}").json()["photos"]
+
+    assert client.delete(f"/api/admin/photos/{first}").status_code == 401  # admins only
+    assert client.delete(f"/api/admin/photos/{first}", headers=admin).status_code == 200
+    prop = client.get(f"/api/admin/properties/{sid}", headers=admin).json()
+    assert [p["id"] for p in prop["photos"]] == [second] and prop["form"]["photo_ids"] == [second]
+    assert client.get(f"/api/admin/photos/{first}", headers=admin).status_code == 404
+    # Buyers still see the last published version until it's published again.
+    assert client.get(f"/api/listings/{listing_id}").json()["photos"] == live_before
+    assert publish(client, admin, sid).status_code == 200
+    assert len(client.get(f"/api/listings/{listing_id}").json()["photos"]) == 1
+
+    # A new photo can be added again afterwards.
+    more = [("photos", ("c.jpg", jpeg_with_gps(), "image/jpeg"))]
+    assert client.post(f"/api/admin/properties/{sid}/photos", files=more, headers=admin).status_code == 201

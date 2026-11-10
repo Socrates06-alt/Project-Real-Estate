@@ -48,7 +48,19 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   // Photos the admin adds here (when the seller didn't): shown and selected straight away.
   const [added, setAdded] = useState<{ id: string; url: string }[]>([]);
   const [uploading, setUploading] = useState(false);
-  const photos = [...p.photos, ...added];
+  const [deleted, setDeleted] = useState<string[]>([]);
+  const photos = [...p.photos, ...added].filter((ph) => !deleted.includes(ph.id));
+
+  async function deletePhoto(pid: string) {
+    try {
+      await call(`/photos/${pid}`, { method: "DELETE" });
+      setDeleted((d) => [...d, pid]);
+      setF((x) => ({ ...x, photo_ids: x.photo_ids.filter((id) => id !== pid) }));
+      toast(p.group === "live" ? "Photo deleted. Save changes to update what buyers see." : "Photo deleted");
+    } catch (e) {
+      toast((e as Error).message);
+    }
+  }
 
   async function addPhotos(files: FileList | null) {
     if (!files?.length) return;
@@ -139,6 +151,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           uploading={uploading}
           onToggle={togglePhoto}
           onAdd={addPhotos}
+          onDelete={deletePhoto}
         />
 
         <Field label="Price" hint={inr(f.price || 0)}>

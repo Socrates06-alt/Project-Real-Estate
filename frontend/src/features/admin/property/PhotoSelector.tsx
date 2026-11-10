@@ -1,9 +1,9 @@
-import { Eye, EyeOff, ImagePlus } from "lucide-react";
+import { Eye, EyeOff, ImagePlus, Trash2 } from "lucide-react";
 import type { PropertyType } from "@/shared/api/client";
 import { cn } from "@/shared/lib/utils";
 import { PrivatePhoto } from "@/features/admin/ui";
 
-/** Choose which photos buyers see (tap to show/hide), and add photos when the seller sent none. */
+/** Choose which photos buyers see (tap to show/hide), delete photos, and add new ones. */
 export function PhotoSelector(props: {
   photos: { id: string; url: string }[];
   selected: string[];
@@ -12,8 +12,9 @@ export function PhotoSelector(props: {
   uploading: boolean;
   onToggle: (id: string) => void;
   onAdd: (files: FileList | null) => void;
+  onDelete: (id: string) => void;
 }) {
-  const { photos, selected, type, readOnly, uploading, onToggle, onAdd } = props;
+  const { photos, selected, type, readOnly, uploading, onToggle, onAdd, onDelete } = props;
   return (
     <div>
       <p className="mb-1.5 text-sm font-semibold">Photos</p>
@@ -21,12 +22,24 @@ export function PhotoSelector(props: {
         {photos.map((ph) => {
           const on = selected.includes(ph.id);
           return (
-            <button key={ph.id} type="button" onClick={() => onToggle(ph.id)} className="relative">
-              <PrivatePhoto url={ph.url} type={type} className={cn("aspect-square rounded-2xl transition", !on && "opacity-30 grayscale")} />
-              <span className="absolute top-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/55 text-white">
-                {on ? <Eye size={14} /> : <EyeOff size={14} />}
-              </span>
-            </button>
+            <div key={ph.id} className="relative">
+              <button type="button" onClick={() => onToggle(ph.id)} aria-label={on ? "Hide from buyers" : "Show to buyers"} className="block w-full">
+                <PrivatePhoto url={ph.url} type={type} className={cn("aspect-square rounded-2xl transition", !on && "opacity-30 grayscale")} />
+                <span className="absolute top-1.5 right-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/55 text-white">
+                  {on ? <Eye size={14} /> : <EyeOff size={14} />}
+                </span>
+              </button>
+              {!readOnly && (
+                <button
+                  type="button"
+                  aria-label="Delete photo"
+                  onClick={() => window.confirm("Delete this photo for good?") && onDelete(ph.id)}
+                  className="absolute bottom-1.5 left-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/55 text-white"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
           );
         })}
         {!readOnly && photos.length < 3 && (
@@ -37,6 +50,7 @@ export function PhotoSelector(props: {
           </label>
         )}
       </div>
+      {photos.length > 0 && !readOnly && <p className="mt-1.5 text-xs text-sub">Tap a photo to show or hide it · bin to delete</p>}
       {!photos.length && <p className="mt-1.5 text-xs text-sub">No photos yet. Add some so buyers can see the property.</p>}
     </div>
   );

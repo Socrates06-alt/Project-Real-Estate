@@ -1,5 +1,6 @@
 """Admin: inbox, properties, the property editor and its actions. Every endpoint needs an admin token."""
 
+import json
 import re
 import uuid
 from typing import Annotated
@@ -160,7 +161,9 @@ def add_photos(submission_id: str, db: DB, photo_files: Annotated[list[UploadFil
     """Admin adds photos when the seller didn't (cleaned the same way; up to the photo limit)."""
     service.get_submission(db, submission_id)
     s = get_settings()
-    have = db.execute("select count(*) from photos where submission_id = ?", (submission_id,)).fetchone()[0]
+    have, last = db.execute(
+        "select count(*), coalesce(max(position), -1) from photos where submission_id = ?", (submission_id,)
+    ).fetchone()
     if have + len(photo_files) > s.max_photos:
         raise HTTPException(422, f"Up to {s.max_photos} photos per property")
     added = []
@@ -176,7 +179,7 @@ def add_photos(submission_id: str, db: DB, photo_files: Annotated[list[UploadFil
         path = photos.save_original(submission_id, photo_id, clean)
         db.execute(
             "insert into photos (id, submission_id, path, position) values (?, ?, ?, ?)",
-            (photo_id, submission_id, path, have + len(added)),
+            (photo_id, submission_id, path, last + 1 + len(added)),
         )
         added.append({"id": photo_id, "url": f"/api/admin/photos/{photo_id}"})
     return {"photos": added}
@@ -192,6 +195,21 @@ def get_private_photo(photo_id: str, db: DB) -> Response:
     if data is None:
         raise HTTPException(404, "Photo not found")
     return Response(data, media_type="image/webp", headers={"Cache-Control": "private, max-age=300"})
+
+
+@router.delete("/photos/{photo_id}")
+def delete_photo(photo_id: str, db: DB) -> dict:
+    """Remove a photo for good. Buyers keep seeing the last published photos until the property is published again."""
+    row = one(db, "select submission_id, path from photos where id = ?", photo_id)
+    if row is None:
+        raise HTTPException(404, "Photo not found")
+    db.execute("delete from photos where id = ?", (photo_id,))
+    listing = one(db, "select id, photo_ids from listings where submission_id = ?", row["submission_id"])
+    if listing and photo_id in listing["photo_ids"]:
+        remaining = [p for p in listing["photo_ids"] if p != photo_id]
+        db.execute("update listings set photo_ids = ? where id = ?", (json.dumps(remaining), listing["id"]))
+    photos.delete_files([row["path"]])  # the private original; published copies stay with their snapshot
+    return {"id": photo_id, "deleted": True}
 
 
 # --- Publish and other actions ------------------------------------------------
