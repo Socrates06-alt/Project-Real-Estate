@@ -20,13 +20,19 @@ const names = (() => {
   }
 })();
 
-const flag = (iso: string) => String.fromCodePoint(...[...iso].map((c) => 0x1f1a5 + c.charCodeAt(0)));
+// Flag pictures (emoji flags show as letters on Windows). Each file loads only when its flag is shown.
+const FLAGS = import.meta.glob("../../../node_modules/flag-icons/flags/4x3/*.svg", {
+  query: "?no-inline",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const flagUrl = (iso: string) => FLAGS[`../../../node_modules/flag-icons/flags/4x3/${iso.toLowerCase()}.svg`] ?? "";
 
 export type Country = { iso: string; dial: string; name: string; flag: string };
 
 const all: Country[] = CODES.split(" ").map((c) => {
   const iso = c.slice(0, 2);
-  return { iso, dial: c.slice(2), name: names?.of(iso) ?? iso, flag: flag(iso) };
+  return { iso, dial: c.slice(2), name: names?.of(iso) ?? iso, flag: flagUrl(iso) };
 });
 const [first, ...rest] = all;
 /** India first, then Gulf and other common NRI countries already near the top; the rest A–Z by name. */

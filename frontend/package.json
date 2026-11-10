@@ -12,6 +12,7 @@
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "flag-icons": "^7.2.3",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.66.0",
     "react": "^19.3.1",

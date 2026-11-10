@@ -55,7 +55,7 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
         aria-label={`Country code +${country.dial}, change`}
         className="order-first flex h-full shrink-0 items-center gap-1 border-r border-line pr-2 pl-3 font-medium"
       >
-        <span aria-hidden>{country.flag}</span>+{country.dial}
+        +{country.dial}
         <ChevronDown size={14} className="text-sub" />
       </button>
       {picking &&
@@ -114,7 +114,7 @@ function CountryPicker({ onPick, onClose }: { onPick: (iso: string) => void; onC
         {list.map((c) => (
           <li key={c.iso}>
             <button type="button" onClick={() => onPick(c.iso)} className="flex w-full items-center gap-3 rounded-xl px-2 py-3 text-left hover:bg-muted">
-              <span className="text-xl" aria-hidden>{c.flag}</span>
+              <img src={c.flag} alt="" loading="lazy" className="h-[18px] w-6 shrink-0 rounded-[3px] object-cover shadow-[0_0_0_1px_var(--hairline)]" />
               <span className="flex-1">{c.name}</span>
               <span className="text-sub">+{c.dial}</span>
             </button>
