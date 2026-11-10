@@ -1,6 +1,6 @@
 import { TYPE_ICON } from "@/shared/lib/propertyType";
 import { useState } from "react";
-import { MessageCircle, Phone } from "lucide-react";
+import { MessageCircle, Phone, X } from "lucide-react";
 import type { PropertyType } from "@/shared/api/client";
 import { Badge } from "@/shared/ui/badge";
 import { useToast } from "@/shared/ui/toast";
@@ -75,54 +75,59 @@ export function VisitCard({ visit, onChange, showListing }: { visit: Visit; onCh
   }
 
   const cancelled = visit.status === "cancelled";
+  const digits = visit.phone.replace(/\D/g, "");
+  const iconBtn = "grid h-10 w-10 shrink-0 place-items-center rounded-full";
   return (
-    <div className="card p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-semibold">{visit.name}</p>
-          <p className="text-sm text-sub">
+    <div className="card p-3.5">
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold">{visit.name}</p>
+          <p className="truncate text-sm text-sub">
             {visit.preferred_time || "Any time"}
-            {visit.budget && ` · ${visit.budget}`}
+            {visit.budget && ` · ${visit.budget}`} · {timeAgo(visit.created_at)} ago
           </p>
           {showListing && visit.listing_number && (
-            <p className="mt-0.5 truncate text-sm text-sub">
+            <p className="truncate text-sm text-sub">
               #{visit.listing_number} {visit.listing_title}
             </p>
           )}
         </div>
-        <span className="shrink-0 text-xs text-sub">{timeAgo(visit.created_at)} ago</span>
-      </div>
-      <div className="mt-3">
-        <ContactButtons phone={visit.phone} />
+        <a href={`tel:${visit.phone}`} aria-label={`Call ${visit.name}`} className={cn(iconBtn, "bg-surface shadow-[0_0_0_1px_var(--hairline)]")}>
+          <Phone size={17} className="text-brand" />
+        </a>
+        <a href={`https://wa.me/${digits}`} target="_blank" rel="noreferrer" aria-label={`WhatsApp ${visit.name}`} className={cn(iconBtn, "bg-wa text-white")}>
+          <MessageCircle size={17} />
+        </a>
       </div>
       {cancelled ? (
-        <p className="mt-3 text-center text-sm text-sub">Cancelled</p>
+        <p className="mt-2 text-sm text-sub">Cancelled</p>
       ) : (
-        <>
-          <div className="mt-3 grid grid-cols-3 gap-1.5">
-            {STEPS.map(([status, label]) => {
-              const reached = ORDER[visit.status] >= ORDER[status];
-              return (
-                <button
-                  key={status}
-                  disabled={busy}
-                  onClick={() => set(status)}
-                  className={cn(
-                    "h-11 rounded-2xl text-sm font-medium transition-colors",
-                    reached ? "bg-brand text-brand-ink" : "bg-muted text-sub",
-                  )}
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
+        <div className="mt-2.5 flex items-center gap-1.5">
+          {STEPS.map(([status, label]) => {
+            const reached = ORDER[visit.status] >= ORDER[status];
+            return (
+              <button
+                key={status}
+                disabled={busy}
+                onClick={() => set(status)}
+                className={cn("h-9 flex-1 rounded-xl text-[13px] font-medium transition-colors", reached ? "bg-brand text-brand-ink" : "bg-muted text-sub")}
+              >
+                {label}
+              </button>
+            );
+          })}
           {visit.status !== "done" && (
-            <button disabled={busy} onClick={() => set("cancelled")} className="mt-2 w-full text-center text-sm text-sub">
-              Cancel visit
+            <button
+              disabled={busy}
+              aria-label="Cancel visit"
+              title="Cancel visit"
+              onClick={() => window.confirm("Cancel this visit request?") && set("cancelled")}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-muted text-sub"
+            >
+              <X size={16} />
             </button>
           )}
-        </>
+        </div>
       )}
     </div>
   );

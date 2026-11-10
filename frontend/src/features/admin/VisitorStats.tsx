@@ -23,43 +23,41 @@ export function VisitorStats() {
 
   return (
     <section className="card p-4">
-      <h2 className="flex items-center gap-2 font-semibold">
-        <Users size={18} className="text-brand" /> Website visitors
-      </h2>
-      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+      <div className="flex items-center justify-between">
+        <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+          <Users size={16} className="text-brand" /> Visitors
+        </h2>
+        <p className="text-xs text-sub">{n(data.views_30_days)} page views · 30 days</p>
+      </div>
+      <div className="mt-2 grid grid-cols-3 text-center">
         {[
           ["Today", data.today],
           ["7 days", data.last_7_days],
           ["30 days", data.last_30_days],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-2xl bg-muted/70 py-2.5">
+          <div key={label}>
             <p className="text-xl font-semibold">{n(value as number)}</p>
-            <p className="text-xs text-sub">{label}</p>
+            <p className="text-[11px] text-sub">{label}</p>
           </div>
         ))}
       </div>
 
       {/* Visitors per day, last 30 days (today on the right) */}
-      <div className="mt-4 flex h-16 items-end gap-[3px]" aria-label="Visitors per day, last 30 days">
+      <div className="mt-3 flex h-10 items-end gap-[3px]" aria-label="Visitors per day, last 30 days">
         {data.series.map((d) => (
           <div
             key={d.day}
             title={`${d.day}: ${d.visitors} visitors, ${d.views} page views`}
             className="flex-1 rounded-t-[3px] bg-brand/80"
-            style={{ height: `${Math.max(4, (d.visitors / max) * 100)}%`, opacity: d.visitors ? 1 : 0.25 }}
+            style={{ height: `${Math.max(6, (d.visitors / max) * 100)}%`, opacity: d.visitors ? 1 : 0.2 }}
           />
         ))}
       </div>
-      <p className="mt-1.5 flex justify-between text-[11px] text-sub">
-        <span>30 days ago</span>
-        <span>{n(data.views_30_days)} page views</span>
-        <span>Today</span>
-      </p>
 
       {data.top_properties.length > 0 && (
-        <div className="mt-4">
-          <p className="mb-1.5 text-sm font-semibold">Most viewed properties · 30 days</p>
-          <ul className="divide-y divide-line rounded-2xl bg-muted/50">
+        <details className="mt-3 group">
+          <summary className="cursor-pointer list-none text-sm font-semibold text-brand">Most viewed properties ›</summary>
+          <ul className="mt-2 divide-y divide-line rounded-2xl bg-muted/50">
             {data.top_properties.map((t) => (
               <li key={t.listing_id}>
                 <Link to={`/admin/p/${t.property_id}`} className="flex items-center justify-between gap-3 px-3.5 py-2.5 text-sm">
@@ -74,7 +72,7 @@ export function VisitorStats() {
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       )}
     </section>
   );

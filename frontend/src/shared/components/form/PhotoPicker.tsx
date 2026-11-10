@@ -45,7 +45,6 @@ export function PhotoPicker(props: {
         )}
       </div>
       <input ref={picker} type="file" accept={ACCEPT.join(",")} multiple hidden onChange={(e) => (onAdd(e.target.files), (e.target.value = ""))} />
-      <p className="mt-2 text-xs text-sub">Up to {max} clear photos.</p>
     </FormCard>
   );
 }

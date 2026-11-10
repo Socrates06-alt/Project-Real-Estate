@@ -37,9 +37,12 @@ export function ExpectedPrice(props: { type: PropertyType; defaultTotal?: number
   return (
     <div ref={box}>
       {type === "land" ? (
-        <Field label={`${label} per cent`} hint={total ? `Total ${inr(total)} for ${cents} cents` : cents ? undefined : "Enter land size for the total"}>
-          <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix="/ cent" required inputMode="numeric" placeholder="e.g. 2,00,000" />
-        </Field>
+        <>
+          <Field label={`${label} per cent`}>
+            <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix="/ cent" required inputMode="numeric" placeholder="e.g. 2,00,000" />
+          </Field>
+          {total > 0 && <p className="mt-1.5 px-1 text-sm text-sub">Total {inr(total)} for {cents} cents</p>}
+        </>
       ) : (
         <Field label={label}>
           <AffixInput name="expected_price" defaultValue={defaultTotal ? indian(String(defaultTotal)) : undefined} prefix="₹" required inputMode="numeric" placeholder="e.g. 25,00,000" />

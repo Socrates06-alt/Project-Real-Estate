@@ -195,7 +195,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
               set("land_area_cents", Number(e.target.value) || 0);
             }} />
         </Field>
-        <Field label="Location" hint={f.lat != null ? "On map search" : "Pick a suggestion to include in map search"}>
+        <Field label="Location" hint={f.lat != null ? "On map search" : "Not on map search"}>
           <AreaInput
             value={{ name: f.location, lat: f.lat, lng: f.lng }}
             onChange={(a) => setF((x) => ({ ...x, location: a.name, lat: a.lat, lng: a.lng }))}

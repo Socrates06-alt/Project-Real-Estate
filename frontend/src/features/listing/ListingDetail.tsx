@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TYPE_TONE } from "@/shared/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { AlignLeft, BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/shared/api/client";
 import { cents, priceDisplay, shortDate, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
@@ -119,8 +119,8 @@ export default function ListingDetail() {
 
       <section className="mt-3 card p-5">
         <h2 className="text-base font-semibold">About this property</h2>
+        {l.description && <p className="mt-2 text-[15px] leading-relaxed whitespace-pre-line">{l.description}</p>}
         <dl className="mt-3 divide-y divide-line rounded-2xl bg-muted/60 text-sm">
-          {l.description && <InfoRow icon={<AlignLeft size={17} className="text-brand" />} label="Description" value={l.description} />}
           {l.documents_note && (
             <InfoRow icon={<FileCheck2 size={17} className="text-verified" />} label="Documents" value={l.documents_note} />
           )}
@@ -145,7 +145,7 @@ export default function ListingDetail() {
         <Info size={18} className="mt-0.5 shrink-0 text-sky-ink" />
         <p>
           <span className="font-semibold">Buyer brokerage: {l.brokerage.buyer_pct}%</span>
-          <span className="block text-sub">Paid only when the sale closes. LandFinder arranges and joins every visit.</span>
+          <span className="block text-sub">Paid only when the sale closes.</span>
         </p>
       </section>
 

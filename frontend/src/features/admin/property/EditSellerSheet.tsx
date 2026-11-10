@@ -91,7 +91,7 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
         <Field label="Description">
           <Textarea name="description" defaultValue={s.description} maxLength={4000} rows={3} className="min-h-0" />
         </Field>
-        <ExpectedPrice type={type} defaultTotal={s.expected_price} label="Seller's expected price" />
+        <ExpectedPrice type={type} defaultTotal={s.expected_price} />
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         {docs && <Input name="documents_note" defaultValue={s.documents_note} maxLength={500} placeholder="e.g. Title deed, tax receipt" />}

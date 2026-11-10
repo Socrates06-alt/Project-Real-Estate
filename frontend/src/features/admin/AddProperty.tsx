@@ -102,15 +102,14 @@ export default function AddProperty() {
         </button>
         <div>
           <h1 className="text-xl font-semibold">Add property</h1>
-          <p className="text-xs text-sub">For a seller you've spoken to</p>
         </div>
       </header>
 
       <FormCard title="Seller">
-        <Field label="Seller's name">
+        <Field label="Name">
           <Input name="seller_name" required minLength={2} maxLength={80} placeholder="Full name" />
         </Field>
-        <Field label="Seller's phone">
+        <Field label="Phone">
           <Input name="seller_phone" required inputMode="tel" placeholder="10-digit mobile number" />
         </Field>
       </FormCard>
@@ -130,7 +129,7 @@ export default function AddProperty() {
         <Field label="Land size">
           <AffixInput name="land_area_cents" suffix="cents" required inputMode="decimal" placeholder="e.g. 10" pattern="\d+(\.\d{1,2})?" />
         </Field>
-        <Field label="Location" hint={area.lat != null ? "On map search" : "Pick a suggestion to include in map search"}>
+        <Field label="Location" hint={area.lat != null ? "On map search" : undefined}>
           <AreaInput name="location" required value={area} onChange={setArea} />
         </Field>
         <Field label="Full address (private)">
@@ -142,7 +141,7 @@ export default function AddProperty() {
       </FormCard>
 
       <FormCard title="Price & documents">
-        <ExpectedPrice type={type} label="Seller's expected price" />
+        <ExpectedPrice type={type} />
         <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />

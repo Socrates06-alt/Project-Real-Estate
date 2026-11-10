@@ -50,7 +50,6 @@ export function PhotoSelector(props: {
           </label>
         )}
       </div>
-      {photos.length > 0 && !readOnly && <p className="mt-1.5 text-xs text-sub">Tap a photo to show or hide it · bin to delete</p>}
       {!photos.length && <p className="mt-1.5 text-xs text-sub">No photos yet. Add some so buyers can see the property.</p>}
     </div>
   );

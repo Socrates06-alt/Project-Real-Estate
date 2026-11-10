@@ -11,6 +11,8 @@ import { PrivatePhoto, VisitCard } from "@/features/admin/ui";
 import { VisitorStats } from "@/features/admin/VisitorStats";
 import type { Group, Inbox as InboxData } from "@/features/admin/types";
 
+const NEW_SHOWN = 5; // the rest are under Properties > New
+
 export default function Inbox() {
   const { call } = useAdmin();
   const { data, error, reload } = useAsync(() => call<InboxData>("/inbox"), []);
@@ -18,62 +20,62 @@ export default function Inbox() {
   if (error) return <ErrorState message={error.message} retry={reload} />;
   const empty = data && !data.new.length && !data.visits.length;
 
+  const tiles: [Group, string, string][] = [
+    ["new", "New", "bg-sky text-sky-ink"],
+    ["live", "Live", "bg-brand-soft text-brand"],
+    ["sold", "Sold", "bg-sold-soft text-sold"],
+    ["not_listed", "Not listed", "bg-muted text-sub"],
+  ];
+  const shown = data?.new.slice(0, NEW_SHOWN) ?? [];
+
   return (
-    <div className="space-y-6">
-      <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] flex items-center justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
+    <div className="space-y-5">
+      <header className="brand-header -mx-4 -mt-[max(1rem,env(safe-area-inset-top))] flex items-center justify-between gap-2 px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
         <Logo light />
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white">Admin</span>
+          <Link to="/admin/new" className="flex h-10 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-semibold text-[var(--brand-deep)] shadow-sm">
+            <Plus size={18} strokeWidth={2.5} /> Add
+          </Link>
           <ThemeSwitch />
         </div>
       </header>
 
-      <Link to="/admin/new" className="btn-accent flex h-[52px] items-center justify-center gap-2 rounded-full text-[15px] font-semibold">
-        <Plus size={20} strokeWidth={2.5} /> Add property
-      </Link>
-
-      {/* TEMPORARY one-time tool: remove this link when the clean-up is done */}
-      <Link to="/admin/cleanup" className="flex items-center gap-3 card p-4">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
-          <Languages size={20} />
-        </span>
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Clean up listings to English</span>
-          <span className="block text-xs text-sub">One-time: spelling, Malayalam → English, better sentences</span>
-        </span>
-        <ChevronRight size={18} className="shrink-0 text-sub" />
-      </Link>
-
-      <div className="grid grid-cols-3 gap-2">
-        {(["live", "sold", "not_listed"] as Group[]).map((g) => (
-          <Link
-            key={g}
-            to={`/admin/properties?group=${g}`}
-            className={cn(
-              "rounded-[20px] p-3 text-center transition active:scale-[0.97]",
-              g === "live" ? "bg-brand-soft text-brand" : g === "sold" ? "bg-sold-soft text-sold" : "bg-muted text-sub",
-            )}
-          >
-            <p className="text-2xl font-semibold">{data?.counts[g] ?? "–"}</p>
-            <p className="text-xs opacity-80">{g === "live" ? "Live" : g === "sold" ? "Sold" : "Not listed"}</p>
+      <div className="grid grid-cols-4 gap-2">
+        {tiles.map(([g, label, tone]) => (
+          <Link key={g} to={`/admin/properties?group=${g}`} className={cn("rounded-[18px] py-2.5 text-center transition active:scale-[0.97]", tone)}>
+            <p className="text-xl font-semibold">{data?.counts[g] ?? "–"}</p>
+            <p className="text-[11px] opacity-80">{label}</p>
           </Link>
         ))}
       </div>
+
+      <VisitorStats />
+
+      {/* TEMPORARY one-time tool: remove this link when the clean-up is done */}
+      <Link to="/admin/cleanup" className="flex items-center gap-2.5 rounded-2xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand">
+        <Languages size={18} /> <span className="flex-1">Clean up listings to English</span> <ChevronRight size={16} />
+      </Link>
 
       {!data && <div className="h-40 shimmer rounded-[28px]" />}
       {empty && (
         <div className="card px-6 py-10 text-center">
           <PartyPopper className="mx-auto mb-2 text-brand" size={28} />
           <p className="font-semibold">All caught up</p>
-          <p className="text-sm text-sub">New properties and visit requests will appear here.</p>
         </div>
       )}
 
       {!!data?.new.length && (
         <section>
-          <h2 className="mb-2 px-1 font-semibold">New properties · {data.new.length}</h2>
+          <div className="mb-2 flex items-baseline justify-between px-1">
+            <h2 className="font-semibold">New properties · {data.new.length}</h2>
+            {data.new.length > NEW_SHOWN && (
+              <Link to="/admin/properties?group=new" className="text-sm font-semibold text-brand">
+                See all
+              </Link>
+            )}
+          </div>
           <div className="space-y-2">
-            {data.new.map((p) => (
+            {shown.map((p) => (
               <Link key={p.id} to={`/admin/p/${p.id}`} className="flex items-center gap-3 card p-3">
                 <PrivatePhoto url={p.cover_url} type={p.property_type} className="h-16 w-16 shrink-0 rounded-2xl" />
                 <div className="min-w-0 flex-1">
@@ -117,7 +119,6 @@ export default function Inbox() {
         </section>
       )}
 
-      <VisitorStats />
     </div>
   );
 }
