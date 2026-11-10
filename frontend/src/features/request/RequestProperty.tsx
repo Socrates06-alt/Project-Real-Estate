@@ -10,6 +10,8 @@ import { FormCard } from "@/shared/components/form/FormCard";
 import { ExtraPhone, PhoneInput } from "@/shared/components/form/PhoneInput";
 import { AreaInput, type Area } from "@/shared/components/AreaInput";
 import { EXAMPLES } from "@/shared/lib/examples";
+import { AssistanceOption } from "@/shared/components/form/AssistanceOption";
+import { FINANCE_HELP } from "@/shared/lib/assistance";
 
 const num = (v: FormDataEntryValue | null) => (v && Number(v) > 0 ? Number(v) : null);
 
@@ -17,6 +19,7 @@ const num = (v: FormDataEntryValue | null) => (v && Number(v) > 0 ? Number(v) : 
 export default function RequestProperty() {
   const [type, setType] = useState<PropertyType>("land");
   const [area, setArea] = useState<Area>({ name: "", lat: null, lng: null });
+  const [finance, setFinance] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
@@ -38,6 +41,7 @@ export default function RequestProperty() {
           budget_lakh: num(f.get("budget_lakh")),
           sqft: type === "house" ? num(f.get("sqft")) : null,
           note: f.get("note") ?? "",
+          wants_finance_help: finance,
         },
       });
       setSent(true);
@@ -77,8 +81,8 @@ export default function RequestProperty() {
             { value: "commercial", label: "Commercial" },
           ]}
         />
-        <Field label="Area">
-          <AreaInput name="area" value={area} onChange={setArea} />
+        <Field label="Place">
+          <AreaInput name="area" value={area} onChange={setArea} placeholder="Any place" />
         </Field>
         <Field label="Land size">
           <div className="flex items-center gap-2">
@@ -98,6 +102,10 @@ export default function RequestProperty() {
         <Field label="Anything else">
           <Input name="note" maxLength={500} placeholder={EXAMPLES[type].wants} />
         </Field>
+      </FormCard>
+
+      <FormCard title="Help">
+        <AssistanceOption info={FINANCE_HELP} checked={finance} onChange={setFinance} />
       </FormCard>
 
       <FormCard title="Your details">

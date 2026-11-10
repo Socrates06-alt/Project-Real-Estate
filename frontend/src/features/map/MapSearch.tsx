@@ -240,7 +240,7 @@ function PlaceSearch({ onPick }: { onPick: (p: Place) => void }) {
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
-          placeholder="Search a place, e.g. Puliyoor"
+          placeholder="Search a place"
           aria-label="Search a place"
           className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-sub"
         />

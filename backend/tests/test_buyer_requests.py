@@ -15,6 +15,7 @@ def test_request_lands_in_buyers_list_as_new(client, admin):
     buyers = client.get("/api/admin/buyers", params={"q": "Anil Kumar"}, headers=admin).json()
     b = buyers[0]
     assert b["source"] == "website" and b["seen"] is False and b["phones"] == ["+971501234567"]
+    assert b["wants_finance_help"] is False
     assert b["notes"] == "5-10 cents · about 1200 sq ft · budget up to 40 lakh · near a school"
     assert client.get("/api/admin/inbox", headers=admin).json()["buyer_requests"] >= 1
     client.post("/api/admin/buyers/seen", headers=admin)
@@ -23,7 +24,7 @@ def test_request_lands_in_buyers_list_as_new(client, admin):
 
 def test_size_and_budget_are_optional_and_repeats_update(client, admin):
     request_limiter.reset()
-    assert ask(client, name="Beena", phones=["9847099999"]).status_code == 201
+    assert ask(client, name="Beena", phones=["9847099999"], wants_finance_help=True).status_code == 201
     assert ask(client, name="Beena P", phones=["9847099999"], property_type="house", budget_lakh=60).status_code == 201
     found = client.get("/api/admin/buyers", params={"q": "9847099999"}, headers=admin).json()
     assert len(found) == 1 and found[0]["name"] == "Beena P" and found[0]["notes"] == "budget up to 60 lakh"

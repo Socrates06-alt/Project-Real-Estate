@@ -33,3 +33,4 @@ class BuyerRequestIn(Strict):
     budget_lakh: Annotated[float, Field(gt=0, le=100_000)] | None = None
     sqft: Annotated[float, Field(gt=0, le=1_000_000)] | None = None  # house: built-up area
     note: Annotated[str, text(0, 500)] = ""
+    wants_finance_help: bool = False
