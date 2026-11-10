@@ -39,3 +39,6 @@ export function priceDisplay(price: number, type: string, landCents: number): { 
 /** Listed within the last 7 days. */
 export const isNew = (iso: string) => Date.now() - new Date(iso).getTime() < 7 * 86400 * 1000;
 
+
+/** "Land for sale" → "Land" (the automatic titles); a title the admin wrote stays as it is. */
+export const shortTitle = (title: string) => title.replace(/\s+for\s+sale\.?$/i, "");

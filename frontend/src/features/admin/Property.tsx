@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Check, ChevronLeft, ExternalLink, Trash2 } from "lucide-react";
 import { ApiError, type PropertyType } from "@/shared/api/client";
-import { inr } from "@/shared/lib/format";
+import { inr, shortTitle } from "@/shared/lib/format";
 import { shrinkImage } from "@/shared/lib/image";
 import { useAsync } from "@/shared/lib/useAsync";
 import { cn } from "@/shared/lib/utils";
@@ -126,7 +126,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           <ChevronLeft size={22} />
         </button>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{f.title}</p>
+          <p className="truncate font-semibold">{shortTitle(f.title)}</p>
           <p className="text-xs text-sub">#{p.number}</p>
         </div>
         <GroupBadge group={p.group} />

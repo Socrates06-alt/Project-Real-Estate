@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Plus, Search, Sparkles, X } from "lucide-react";
-import { inr } from "@/shared/lib/format";
+import { inr, shortTitle } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
 import { useAdmin } from "@/features/admin/auth";
@@ -79,7 +79,7 @@ export default function Properties() {
             <PrivatePhoto url={p.cover_url} type={p.property_type} className="h-16 w-16 shrink-0 rounded-2xl" />
             <div className="min-w-0 flex-1">
               <p className="flex items-center gap-2">
-                <span className="truncate font-semibold">{p.title || p.location}</span>
+                <span className="truncate font-semibold">{shortTitle(p.title) || p.location}</span>
                 {q && <GroupBadge group={p.group} />}
               </p>
               <p className="text-sm">
