@@ -10,12 +10,12 @@ def ask(client, **over):
 
 def test_request_lands_in_buyers_list_as_new(client, admin):
     request_limiter.reset()
-    res = ask(client, area="Puliyoor", min_cents=10, max_cents=5, budget_lakh=40, note="near a school")
+    res = ask(client, area="Puliyoor", min_cents=10, max_cents=5, sqft=1200, budget_lakh=40, note="near a school")
     assert res.status_code == 201
     buyers = client.get("/api/admin/buyers", params={"q": "Anil Kumar"}, headers=admin).json()
     b = buyers[0]
     assert b["source"] == "website" and b["seen"] is False and b["phones"] == ["+971501234567"]
-    assert b["notes"] == "5-10 cents · budget up to 40 lakh · near a school"
+    assert b["notes"] == "5-10 cents · about 1200 sq ft · budget up to 40 lakh · near a school"
     assert client.get("/api/admin/inbox", headers=admin).json()["buyer_requests"] >= 1
     client.post("/api/admin/buyers/seen", headers=admin)
     assert client.get("/api/admin/inbox", headers=admin).json()["buyer_requests"] == 0

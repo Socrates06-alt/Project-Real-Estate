@@ -19,7 +19,7 @@ def _num(v: float) -> str:
 
 
 def needs_note(body: BuyerRequestIn) -> str:
-    """'5-10 cents · budget up to 40 lakh · near a school': the format the Buyers list already uses."""
+    """'5-10 cents · about 1200 sq ft · budget up to 40 lakh · 2 BHK': the format the Buyers list already uses."""
     parts = []
     lo, hi = body.min_cents, body.max_cents
     if lo and hi:
@@ -27,6 +27,8 @@ def needs_note(body: BuyerRequestIn) -> str:
         parts.append(f"{_num(lo)} cents" if lo == hi else f"{_num(lo)}-{_num(hi)} cents")
     elif lo or hi:
         parts.append(f"{'at least ' if lo else 'up to '}{_num(lo or hi)} cents")
+    if body.sqft:
+        parts.append(f"about {_num(body.sqft)} sq ft")
     if body.budget_lakh:
         parts.append(f"budget up to {_num(body.budget_lakh)} lakh")
     if body.note:

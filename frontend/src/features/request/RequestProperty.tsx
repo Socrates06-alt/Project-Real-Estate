@@ -36,6 +36,7 @@ export default function RequestProperty() {
           min_cents: num(f.get("min_cents")),
           max_cents: num(f.get("max_cents")),
           budget_lakh: num(f.get("budget_lakh")),
+          sqft: type === "house" ? num(f.get("sqft")) : null,
           note: f.get("note") ?? "",
         },
       });
@@ -76,21 +77,26 @@ export default function RequestProperty() {
             { value: "commercial", label: "Commercial" },
           ]}
         />
-        <Field label="Area (optional)">
+        <Field label="Area">
           <AreaInput name="area" value={area} onChange={setArea} />
         </Field>
-        <Field label="Land size (optional)">
+        <Field label="Land size">
           <div className="flex items-center gap-2">
             <AffixInput name="min_cents" suffix="cents" inputMode="decimal" placeholder="From" pattern="\d+(\.\d{1,2})?" aria-label="Land size from" />
             <span className="text-sub">–</span>
             <AffixInput name="max_cents" suffix="cents" inputMode="decimal" placeholder="To" pattern="\d+(\.\d{1,2})?" aria-label="Land size to" />
           </div>
         </Field>
-        <Field label="Budget (optional)">
+        {type === "house" && (
+          <Field label="House size">
+            <AffixInput name="sqft" suffix="sq ft" inputMode="numeric" placeholder="e.g. 1200" pattern="\d+" />
+          </Field>
+        )}
+        <Field label="Budget">
           <AffixInput name="budget_lakh" prefix="₹" suffix="lakh" inputMode="decimal" placeholder="Up to, e.g. 40" pattern="\d+(\.\d{1,2})?" />
         </Field>
-        <Field label="Anything else (optional)">
-          <Input name="note" maxLength={500} placeholder="e.g. near a school, road access" />
+        <Field label="Anything else">
+          <Input name="note" maxLength={500} placeholder={type === "house" ? "e.g. 2 BHK, near a school" : "e.g. near a school, road access"} />
         </Field>
       </FormCard>
 
