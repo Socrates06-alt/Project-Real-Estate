@@ -45,7 +45,7 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
         onChange={(e) => update(iso, e.target.value)}
         required={required}
         autoComplete={autoComplete}
-        placeholder={placeholder ?? (iso === "IN" ? "10-digit mobile number" : "Phone number")}
+        placeholder={placeholder ?? "Mobile number"}
         aria-label={rest["aria-label"]}
         className={cn("h-full min-w-0 flex-1 bg-transparent px-3 text-ink outline-none placeholder:text-sub/70")}
       />

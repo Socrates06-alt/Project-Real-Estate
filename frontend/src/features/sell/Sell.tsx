@@ -172,13 +172,13 @@ export default function Sell() {
           ]}
         />
         <Field label="Land size">
-          <AffixInput name="land_area_cents" defaultValue={saved.land_area_cents} suffix="cents" required inputMode="decimal" placeholder="e.g. 10" pattern="\d+(\.\d{1,2})?" />
+          <AffixInput name="land_area_cents" defaultValue={saved.land_area_cents} suffix="cents" required inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" />
         </Field>
         <Field label="Location">
           <AreaInput name="location" required value={area} onChange={setArea} />
         </Field>
         <Field label="Full address">
-          <Textarea name="address" defaultValue={saved.address} maxLength={300} rows={2} className="min-h-0" placeholder="House or building name, street, landmark, PIN" />
+          <Textarea name="address" defaultValue={saved.address} maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, PIN" />
         </Field>
         <Field label="Description">
           <Textarea
@@ -187,10 +187,10 @@ export default function Sell() {
             maxLength={4000}
             placeholder={
               type === "house"
-                ? "Bedrooms, built-up area, road access, water…"
+                ? "3 BHK, 1500 sq ft, car access"
                 : type === "commercial"
-                  ? "Floor area, frontage, parking, road access…"
-                  : "Road access, shape of plot, trees, water…"
+                  ? "Shop, 800 sq ft, main road"
+                  : "Flat plot, road access, well"
             }
           />
         </Field>
@@ -206,7 +206,7 @@ export default function Sell() {
 
       <FormCard title="Your details">
         <Field label="Name">
-          <Input name="seller_name" defaultValue={saved.seller_name} required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
+          <Input name="seller_name" defaultValue={saved.seller_name} required minLength={2} maxLength={80} autoComplete="name" placeholder="Full name" />
         </Field>
         <Field label="Phone">
           <PhoneInput name="seller_phone" defaultValue={saved.seller_phone} required autoComplete="tel" />

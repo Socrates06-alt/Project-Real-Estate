@@ -82,27 +82,27 @@ export default function RequestProperty() {
         </Field>
         <Field label="Land size">
           <div className="flex items-center gap-2">
-            <AffixInput name="min_cents" suffix="cents" inputMode="decimal" placeholder="From" pattern="\d+(\.\d{1,2})?" aria-label="Land size from" />
+            <AffixInput name="min_cents" suffix="cents" inputMode="decimal" placeholder="5" pattern="\d+(\.\d{1,2})?" aria-label="Land size from" />
             <span className="text-sub">–</span>
-            <AffixInput name="max_cents" suffix="cents" inputMode="decimal" placeholder="To" pattern="\d+(\.\d{1,2})?" aria-label="Land size to" />
+            <AffixInput name="max_cents" suffix="cents" inputMode="decimal" placeholder="10" pattern="\d+(\.\d{1,2})?" aria-label="Land size to" />
           </div>
         </Field>
         {type === "house" && (
           <Field label="House size">
-            <AffixInput name="sqft" suffix="sq ft" inputMode="numeric" placeholder="e.g. 1200" pattern="\d+" />
+            <AffixInput name="sqft" suffix="sq ft" inputMode="numeric" placeholder="1200" pattern="\d+" />
           </Field>
         )}
         <Field label="Budget">
-          <AffixInput name="budget_lakh" prefix="₹" suffix="lakh" inputMode="decimal" placeholder="Up to, e.g. 40" pattern="\d+(\.\d{1,2})?" />
+          <AffixInput name="budget_lakh" prefix="₹" suffix="lakh" inputMode="decimal" placeholder="40" pattern="\d+(\.\d{1,2})?" />
         </Field>
         <Field label="Anything else">
-          <Input name="note" maxLength={500} placeholder={type === "house" ? "e.g. 2 BHK, near a school" : "e.g. near a school, road access"} />
+          <Input name="note" maxLength={500} placeholder={type === "house" ? "2 BHK, near a school" : "Near a school, road access"} />
         </Field>
       </FormCard>
 
       <FormCard title="Your details">
         <Field label="Name">
-          <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
+          <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Full name" />
         </Field>
         <Field label="Phone">
           <PhoneInput name="phone" required autoComplete="tel" />

@@ -14,7 +14,7 @@ export function AreaInput({
   onChange,
   name,
   required,
-  placeholder = "Start typing your town or village",
+  placeholder = "Town or village",
 }: {
   value: Area;
   onChange: (a: Area) => void;
