@@ -50,7 +50,7 @@ export function PhotoSelector(props: {
           </label>
         )}
       </div>
-      {!photos.length && <p className="mt-1.5 text-xs text-sub">No photos yet. Add some so buyers can see the property.</p>}
+      {!photos.length && <p className="mt-1.5 text-xs text-sub">No photos yet.</p>}
     </div>
   );
 }

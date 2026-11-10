@@ -18,7 +18,7 @@ export function RephraseButton({ get, onDone }: { get: () => RephraseFields; onD
     try {
       const res = await call<Required<RephraseFields>>("/rephrase", { method: "POST", body: fields });
       onDone(res);
-      toast("Rephrased. Check it, then save.");
+      toast("Done. Check it, then save.");
     } catch (err) {
       toast((err as Error).message);
     } finally {

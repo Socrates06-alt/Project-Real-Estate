@@ -230,7 +230,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
         <button
           disabled={busy}
           onClick={() =>
-            window.confirm(`Remove #${p.number} from your lists? It's kept on record and can be restored from search.`) &&
+            window.confirm(`Remove #${p.number}? You can restore it from search.`) &&
             run(() => call(`/properties/${p.id}/remove`, { method: "POST" }), "Removed")
           }
           className="flex w-full items-center justify-center gap-1.5 py-2 text-[15px] font-medium text-sold"
@@ -248,7 +248,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           <Button variant="outline" disabled={busy} onClick={() => window.confirm("Mark this property as sold?") && run(() => call(`/properties/${p.id}/sold`, { method: "POST" }), "Marked as sold")}>
             Mark as sold
           </Button>
-          <Button variant="outline" disabled={busy} onClick={() => window.confirm("Take this property off the app?") && run(() => call(`/properties/${p.id}/take-down`, { method: "POST" }), "Taken down")}>
+          <Button variant="outline" disabled={busy} onClick={() => window.confirm("Take this property down?") && run(() => call(`/properties/${p.id}/take-down`, { method: "POST" }), "Taken down")}>
             Take down
           </Button>
         </div>

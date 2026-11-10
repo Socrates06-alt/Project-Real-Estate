@@ -54,7 +54,7 @@ export default function Cleanup() {
 
   async function applyAll() {
     const chosen = items.filter((i) => i.status === "ready" && i.pick && changed(i));
-    if (!chosen.length || !window.confirm(`Update ${chosen.length} listing(s)? Buyers will see the new text.`)) return;
+    if (!chosen.length || !window.confirm(`Update ${chosen.length} listing(s)?`)) return;
     setApplying(true);
     let done = 0;
     for (const i of chosen) {
@@ -77,12 +77,11 @@ export default function Cleanup() {
   return (
     <div className="space-y-4 pb-28">
       <header className="flex items-center gap-2">
-        <button onClick={() => nav("/admin")} aria-label="Back" className="glass grid h-11 w-11 shrink-0 place-items-center rounded-full">
+        <button onClick={() => nav("/admin/properties")} aria-label="Back" className="glass grid h-11 w-11 shrink-0 place-items-center rounded-full">
           <ChevronLeft size={22} />
         </button>
         <div>
-          <h1 className="text-xl font-semibold">Clean up to English</h1>
-          <p className="text-xs text-sub">One-time: spelling, Malayalam → English, better sentences</p>
+          <h1 className="text-xl font-semibold">Clean</h1>
         </div>
       </header>
 
@@ -99,11 +98,10 @@ export default function Cleanup() {
       {data?.enabled && !total && (
         <div className="card p-5">
           <p className="text-[15px]">
-            Cleans the <b>title, location, description and documents note</b> of all <b>{data.listings.length}</b> live listings. Nothing changes until you
-            review and tap Apply. Price, size, photos and area stay the same.
+            Rewrites all <b>{data.listings.length}</b> live listings in simple English. You check each one before it changes.
           </p>
           <Button size="lg" className="mt-4" onClick={start} disabled={!data.listings.length}>
-            <Languages size={18} /> Start clean-up
+            <Languages size={18} /> Start
           </Button>
         </div>
       )}

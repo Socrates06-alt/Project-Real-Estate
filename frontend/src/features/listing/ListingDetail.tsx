@@ -46,7 +46,7 @@ export default function ListingDetail() {
 
   async function copyLink() {
     if (await copyText(shareUrl)) toast("Link copied");
-    else toast("Couldn't copy — please copy the link from the address bar");
+    else toast("Couldn't copy. Copy it from the address bar.");
     setShareOpen(false);
   }
 

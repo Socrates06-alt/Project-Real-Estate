@@ -232,7 +232,7 @@ function NearYouPopup({ onArea }: { onArea: (a: SavedArea) => void }) {
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
           <LocateFixed size={22} />
         </span>
-        <p className="text-[15px] text-sub">We can show properties around you. You can change the area any time from the top right.</p>
+        <p className="text-[15px] text-sub">See properties near you. Change the area anytime.</p>
       </div>
       <div className="mt-5 grid gap-2">
         <Button size="lg" disabled={busy} onClick={useLocation}>

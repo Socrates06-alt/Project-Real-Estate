@@ -8,7 +8,7 @@ export function DontListSheet({ open, onClose, onConfirm }: { open: boolean; onC
   const [note, setNote] = useState("");
   return (
     <Sheet open={open} onClose={onClose} title="Don't list this property?">
-      <p className="mb-3 text-sm text-sub">The seller's details stay saved. You can still publish it later.</p>
+      <p className="mb-3 text-sm text-sub">Details stay saved. You can publish it later.</p>
       <Field label="Reason (optional)">
         <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Outside our area" />
       </Field>
