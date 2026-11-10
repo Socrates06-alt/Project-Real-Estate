@@ -197,7 +197,7 @@ export default function Sell() {
 
       <FormCard title="Price & documents">
         <ExpectedPrice type={type} defaultTotal={Number(saved.expected_price?.replace(/\D/g, "")) || undefined} defaultPerCent={saved.price_per_cent} />
-        <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
+        <Switch checked={negotiable} onChange={setNegotiable} label="Negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} />
         <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} />

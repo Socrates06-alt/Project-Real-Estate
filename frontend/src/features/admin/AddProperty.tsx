@@ -142,10 +142,10 @@ export default function AddProperty() {
 
       <FormCard title="Price & documents">
         <ExpectedPrice type={type} />
-        <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
+        <Switch checked={negotiable} onChange={setNegotiable} label="Negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
-        <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />
-        <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} label="Seller wants property development assistance" />
+        <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} />
+        <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} />
       </FormCard>
 
       <div className="flex items-start gap-3 card-sm p-3.5">

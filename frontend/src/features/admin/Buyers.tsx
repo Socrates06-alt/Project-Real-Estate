@@ -267,7 +267,7 @@ function BuyerSheet({ buyer, onClose, onSaved }: { buyer: Buyer | null; onClose:
           <Textarea name="notes" defaultValue={buyer?.notes} maxLength={2000} rows={3} className="min-h-0" placeholder="Budget, size, road access, when they want to buy…" />
         </Field>
 
-        <AssistanceOption inline info={FINANCE_HELP} checked={finance} onChange={setFinance} label="Needs financial assistance" />
+        <AssistanceOption inline info={FINANCE_HELP} checked={finance} onChange={setFinance} />
 
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? "Saving…" : buyer ? "Save changes" : "Add buyer"}

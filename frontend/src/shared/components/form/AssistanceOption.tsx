@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Info } from "lucide-react";
 import type { AssistanceInfo } from "@/shared/lib/assistance";
 import { Sheet } from "@/shared/ui/sheet";
 import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/components/form/Checkbox";
+import { Toggle } from "@/shared/ui/switch";
 
 /** The details: highlighted lines, like the brokerage terms. */
 function Details({ info }: { info: AssistanceInfo }) {
@@ -23,30 +22,25 @@ function Details({ info }: { info: AssistanceInfo }) {
 }
 
 /**
- * Optional paid service: a tick box, with an info button that lists what's included.
- * On a full page the info opens in a sheet; inside a sheet ("inline") it expands below instead.
+ * Optional paid service: a toggle row whose blue label opens what's included (in a sheet on pages, or expanded
+ * below when already inside a sheet). The toggle switches it on or off.
  */
 export function AssistanceOption(props: { info: AssistanceInfo; checked: boolean; onChange: (v: boolean) => void; label?: string; inline?: boolean }) {
   const { info, checked, onChange, inline } = props;
-  const label = props.label ?? `I need ${info.title.toLowerCase()}`;
+  const label = props.label ?? info.title;
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-2xl bg-muted/60">
-      <div className="flex items-center gap-3 p-3.5">
-        <Checkbox checked={checked} onChange={onChange} label={label} className="border-line bg-surface" />
-        <button type="button" onClick={() => onChange(!checked)} className="min-w-0 flex-1 text-left">
-          <span className="block text-[15px] font-medium">{label}</span>
-          <span className="block text-xs text-sub">{info.note}</span>
-        </button>
+      <div className="flex items-center justify-between gap-4 px-4 py-3.5">
         <button
           type="button"
-          aria-label={`What's included: ${info.title}`}
-          aria-expanded={inline ? open : undefined}
           onClick={() => setOpen(!open)}
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-soft text-brand"
+          aria-expanded={inline ? open : undefined}
+          className="min-w-0 text-left text-[15px] font-semibold text-brand underline decoration-brand/40 decoration-dotted underline-offset-4"
         >
-          <Info size={18} />
+          {label}
         </button>
+        <Toggle checked={checked} onChange={onChange} label={label} />
       </div>
 
       {inline ? (

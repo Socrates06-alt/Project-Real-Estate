@@ -92,11 +92,11 @@ export function EditSellerSheet({ property, open, onClose, onSaved }: { property
           <Textarea name="description" defaultValue={s.description} maxLength={4000} rows={3} className="min-h-0" />
         </Field>
         <ExpectedPrice type={type} defaultTotal={s.expected_price} />
-        <Switch checked={negotiable} onChange={setNegotiable} label="Price is negotiable" />
+        <Switch checked={negotiable} onChange={setNegotiable} label="Negotiable" />
         <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
         {docs && <Input name="documents_note" defaultValue={s.documents_note} maxLength={500} placeholder="e.g. Title deed, tax receipt" />}
-        <AssistanceOption inline info={DOC_HELP} checked={docHelp} onChange={setDocHelp} label="Seller wants documentation assistance" />
-        <AssistanceOption inline info={DEV_HELP} checked={devHelp} onChange={setDevHelp} label="Seller wants property development assistance" />
+        <AssistanceOption inline info={DOC_HELP} checked={docHelp} onChange={setDocHelp} />
+        <AssistanceOption inline info={DEV_HELP} checked={devHelp} onChange={setDevHelp} />
         <Button type="submit" size="lg" disabled={busy}>
           {busy ? "Saving…" : "Save seller details"}
         </Button>
