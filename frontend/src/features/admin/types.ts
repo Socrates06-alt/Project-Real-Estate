@@ -31,6 +31,7 @@ export interface Visit {
   budget: string;
   status: "new" | "contacted" | "scheduled" | "done" | "cancelled";
   admin_notes?: string;
+  came_from?: string;
   created_at: string;
   listing_number?: number;
   listing_title?: string;

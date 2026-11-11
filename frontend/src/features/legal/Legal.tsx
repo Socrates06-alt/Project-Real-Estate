@@ -202,7 +202,7 @@ export function Privacy() {
           <li><b>Buyers requesting a property:</b> name, phone number(s), the kind of property and, if provided, area, land size, budget and notes, so we can contact you when a suitable property is available.</li>
           <li><b>Device information:</b> a random identifier stored in your browser so that "My listings" works without an account. We store only an encrypted (hashed) form of this identifier.</li>
           <li><b>Location:</b> only if you choose "Near me", and only to show nearby properties. Your location is not stored.</li>
-          <li><b>Visit statistics:</b> we count page visits on our own server to understand how the Service is used. We do not use cookies for this and do not store your address or browser details; each visit is recorded only with a code that changes every day.</li>
+          <li><b>Visit statistics:</b> we count page visits on our own server to understand how the Service is used. We do not use cookies for this and do not store your address or browser details; each visit is recorded only with a code that changes every day, and a short label for where it came from (for example "Instagram" or an advertisement).</li>
         </ol>
       </section>
 

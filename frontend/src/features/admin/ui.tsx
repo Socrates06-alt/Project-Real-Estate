@@ -5,6 +5,7 @@ import type { PropertyType } from "@/shared/api/client";
 import { Badge } from "@/shared/ui/badge";
 import { useToast } from "@/shared/ui/toast";
 import { timeAgo } from "@/shared/lib/format";
+import { sourceLabel } from "@/shared/lib/source";
 import { cn } from "@/shared/lib/utils";
 import { useAdmin, usePrivateImage } from "@/features/admin/auth";
 import type { Group, Visit } from "@/features/admin/types";
@@ -85,6 +86,7 @@ export function VisitCard({ visit, onChange, showListing }: { visit: Visit; onCh
           <p className="truncate text-sm text-sub">
             {visit.preferred_time || "Any time"}
             {visit.budget && ` · ${visit.budget}`} · {timeAgo(visit.created_at)} ago
+            {visit.came_from && ` · from ${sourceLabel(visit.came_from)}`}
           </p>
           {showListing && visit.listing_number && (
             <p className="truncate text-sm text-sub">

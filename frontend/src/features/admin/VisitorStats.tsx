@@ -1,6 +1,7 @@
 import { Users } from "lucide-react";
 import { useAsync } from "@/shared/lib/useAsync";
 import { useAdmin } from "@/features/admin/auth";
+import { sourceLabel } from "@/shared/lib/source";
 
 type Stats = {
   today: number;
@@ -9,6 +10,7 @@ type Stats = {
   views_30_days: number;
   series: { day: string; visitors: number; views: number }[];
   months: { month: string; visitors: number; views: number }[];
+  sources: { source: string; visitors: number; requirements: number; visits: number }[];
   top_properties: { listing_id: string; property_id: string; number: number; title: string | null; location: string | null; views: number }[];
 };
 
@@ -55,6 +57,32 @@ export function VisitorStats() {
           />
         ))}
       </div>
+
+      {data.sources.length > 0 && (
+        <details className="mt-3 border-t border-line pt-2">
+          <summary className="cursor-pointer text-sm font-medium text-brand">Where they came from · 30 days</summary>
+          <table className="mt-1 w-full text-sm">
+            <thead>
+              <tr className="text-left text-xs text-sub">
+                <th className="py-1 font-medium">Source</th>
+                <th className="py-1 text-right font-medium">Visitors</th>
+                <th className="py-1 text-right font-medium">Requirements</th>
+                <th className="py-1 text-right font-medium">Visit req.</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {data.sources.map((s) => (
+                <tr key={s.source}>
+                  <td className="py-1.5">{sourceLabel(s.source)}</td>
+                  <td className="py-1.5 text-right font-semibold">{n(s.visitors)}</td>
+                  <td className="py-1.5 text-right">{n(s.requirements)}</td>
+                  <td className="py-1.5 text-right">{n(s.visits)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </details>
+      )}
 
       {data.months.length > 0 && (
         <details className="mt-3 border-t border-line pt-2">

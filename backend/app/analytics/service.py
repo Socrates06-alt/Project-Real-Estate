@@ -39,18 +39,51 @@ def visitor_code(day: str, address: str, user_agent: str) -> str:
     return hashlib.sha256(f"{secret}|{day}|{address}|{user_agent}".encode()).hexdigest()[:16]
 
 
-def record(db: sqlite3.Connection, address: str, user_agent: str, page: str, listing_id: str | None) -> None:
+def record(
+    db: sqlite3.Connection, address: str, user_agent: str, page: str, listing_id: str | None, source: str = ""
+) -> None:
     if is_bot(user_agent):
         return
     day = today()
     db.execute(
-        "insert into page_views (day, visitor, page, listing_id) values (?, ?, ?, ?)",
-        (day, visitor_code(day, address, user_agent), page, listing_id),
+        "insert into page_views (day, visitor, page, listing_id, source) values (?, ?, ?, ?, ?)",
+        (day, visitor_code(day, address, user_agent), page, listing_id, source),
     )
 
 
 def cleanup(db: sqlite3.Connection) -> None:
     db.execute("delete from page_views where day < ?", (day_minus(today(), KEEP_DAYS),))
+
+
+def by_source(db: sqlite3.Connection, since: str) -> list[dict]:
+    """Last 30 days by where people came from: visitors, requirements and visit requests, most visitors first."""
+    rows: dict[str, dict] = {}
+
+    def row(src: str) -> dict:
+        return rows.setdefault(
+            src or "other", {"source": src or "other", "visitors": 0, "requirements": 0, "visits": 0}
+        )
+
+    for r in many(
+        db,
+        """select source, sum(visitors) as visitors from (
+               select day, source, count(distinct visitor) as visitors
+               from page_views where day >= ? group by day, source
+           ) group by source""",
+        since,
+    ):
+        row(r["source"])["visitors"] = r["visitors"]
+    for r in many(
+        db,
+        "select came_from, count(*) as n from buyers where source = 'website' and created_at >= ? group by came_from",
+        since,
+    ):
+        row(r["came_from"])["requirements"] = r["n"]
+    for r in many(
+        db, "select came_from, count(*) as n from visit_requests where created_at >= ? group by came_from", since
+    ):
+        row(r["came_from"])["visits"] = r["n"]
+    return sorted(rows.values(), key=lambda r: (r["source"] == "other", -r["visitors"]))
 
 
 def by_month(db: sqlite3.Connection) -> list[dict]:
@@ -108,5 +141,6 @@ def stats(db: sqlite3.Connection) -> dict:
         "views_30_days": sum(p["views"] for p in series),
         "series": series,
         "months": by_month(db),
+        "sources": by_source(db, since),
         "top_properties": top,
     }

@@ -1,4 +1,5 @@
 import { PhoneInput } from "@/shared/components/form/PhoneInput";
+import { sourceLabel } from "@/shared/lib/source";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   Upload,
@@ -35,6 +36,7 @@ type Buyer = {
   notes: string;
   wants_finance_help: boolean;
   source: "admin" | "website";
+  came_from: string;
   seen: boolean;
   updated_at: string;
 };
@@ -182,6 +184,9 @@ function BuyerCard({ buyer: b, onEdit }: { buyer: Buyer; onEdit: () => void }) {
               >
                 {b.seen ? "Requirement" : "New · Requirement"}
               </span>
+            )}
+            {b.came_from && (
+              <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand">from {sourceLabel(b.came_from)}</span>
             )}
           </p>
           <p className="text-sm text-sub">

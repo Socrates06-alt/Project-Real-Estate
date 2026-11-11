@@ -3,6 +3,8 @@
  * Not counted: founders' devices, automated browsers, admin pages, and pages left within 2 seconds.
  * No cookies, nothing personal. Failures are ignored: counting must never get in the way of the app.
  */
+import { visitSource } from "@/shared/lib/source";
+
 const FOUNDER_KEY = "landfinder.founderDevice";
 const MIN_VIEW_MS = 2000; // a page counts once it has been on screen this long
 
@@ -44,7 +46,7 @@ function send(view: { page: string; listing_id?: string }) {
   fetch(BASE + "/api/track", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(view),
+    body: JSON.stringify({ ...view, source: visitSource() }),
     keepalive: true,
   }).catch(() => {});
 }

@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import Field
 
-from app.core.validation import Name, Phone, PropertyType, Strict, text
+from app.core.validation import Name, Phone, PropertyType, Source, Strict, text
 
 
 class BuyerIn(Strict):
@@ -34,3 +34,4 @@ class BuyerRequestIn(Strict):
     sqft: Annotated[float, Field(gt=0, le=1_000_000)] | None = None  # house: built-up area
     note: Annotated[str, text(0, 500)] = ""
     wants_finance_help: bool = False
+    came_from: Source = ""

@@ -49,7 +49,15 @@ def needs_note(body: BuyerRequestIn) -> str:
 def request_property(body: BuyerRequestIn, request: Request, db: DB) -> dict:
     request_limiter.hit(client_ip(request))
     phones = list(dict.fromkeys(body.phones))
-    values = (body.name, json.dumps(phones), body.area, body.property_type, needs_note(body), body.wants_finance_help)
+    values = (
+        body.name,
+        json.dumps(phones),
+        body.area,
+        body.property_type,
+        needs_note(body),
+        body.wants_finance_help,
+        body.came_from,
+    )
     # The same person asking again (any same phone): update their request instead of adding a second one.
     mine = [
         b
@@ -60,15 +68,15 @@ def request_property(body: BuyerRequestIn, request: Request, db: DB) -> dict:
         buyer_id = mine[0]["id"]
         db.execute(
             "update buyers set name = ?, phones = ?, area = ?, property_type = ?, notes = ?, wants_finance_help = ?,"
-            " seen = 0, updated_at = ?"
+            " came_from = ?, seen = 0, updated_at = ?"
             " where id = ?",
             (*values, now(), buyer_id),
         )
     else:
         buyer_id = str(uuid.uuid4())
         db.execute(
-            "insert into buyers (id, name, phones, area, property_type, notes, wants_finance_help, source, seen)"
-            " values (?, ?, ?, ?, ?, ?, ?, 'website', 0)",
+            "insert into buyers (id, name, phones, area, property_type, notes, wants_finance_help, came_from,"
+            " source, seen) values (?, ?, ?, ?, ?, ?, ?, ?, 'website', 0)",
             (buyer_id, *values),
         )
     semantic.refresh_buyer(db, buyer_id)

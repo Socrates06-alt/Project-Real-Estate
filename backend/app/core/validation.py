@@ -27,6 +27,16 @@ def text(min_length: int = 0, max_length: int = 500):
 
 
 Phone = Annotated[str, AfterValidator(normalize_phone)]
+
+
+def clean_source(value: str) -> str:
+    """Where a visitor came from: a short label like 'ig-ad' or 'whatsapp' (anything else is dropped)."""
+    value = value.strip().lower()
+    return value if re.fullmatch(r"[a-z0-9-]{1,30}", value) else ""
+
+
+# e.g. fb, ig, fb-ad, ig-ad, whatsapp; empty = not known
+Source = Annotated[str, AfterValidator(clean_source)]
 # Optional extra number: empty is fine
 OptionalPhone = Annotated[str, AfterValidator(lambda v: normalize_phone(v) if v.strip() else "")]
 Name = Annotated[str, text(2, 80)]

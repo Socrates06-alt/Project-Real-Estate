@@ -94,6 +94,7 @@ create table if not exists visit_requests (
     status          text not null default 'new'
         check (status in ('new', 'contacted', 'scheduled', 'done', 'cancelled')),
     admin_notes     text not null default '',
+    came_from       text not null default '',  -- fb, ig, fb-ad, ig-ad, ... ('' = not known)
     created_at      text not null default {NOW},
     updated_at      text not null default {NOW}
 );
@@ -105,6 +106,7 @@ create table if not exists page_views (
     visitor    text not null,
     page       text not null,  -- home, listing, sell, map, profile, legal, other
     listing_id text,
+    source     text not null default '',  -- where the visitor came from: fb, ig, fb-ad, ig-ad, a link label, or ''
     created_at text not null default {NOW}
 );
 create index if not exists page_views_day on page_views (day);
@@ -120,6 +122,7 @@ create table if not exists buyers (
     wants_finance_help integer not null default 0,  -- buyer needs help arranging a loan
     source        text not null default 'admin',  -- 'admin' (entered by founders) or 'website' (buyer's request)
     seen          integer not null default 1,     -- 0: a website request no founder has looked at yet
+    came_from     text not null default '',       -- website requests: fb, ig, fb-ad, ig-ad, ...
     created_at    text not null default {NOW},
     updated_at    text not null default {NOW}
 );
@@ -155,7 +158,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 13
+SCHEMA_VERSION = 14
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -233,6 +236,12 @@ UPGRADES[12] = [
 UPGRADES[13] = [
     _add_column("buyers", "source text not null default 'admin'"),
     _add_column("buyers", "seen integer not null default 1"),
+]
+
+UPGRADES[14] = [
+    _add_column("page_views", "source text not null default ''"),
+    _add_column("visit_requests", "came_from text not null default ''"),
+    _add_column("buyers", "came_from text not null default ''"),
 ]
 
 log = logging.getLogger("nilayam")

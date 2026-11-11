@@ -37,7 +37,7 @@ def test_visits_are_counted_privately_and_shown_to_admins(client, admin):
     conn = sqlite3.connect(get_settings().database_path)
     cols = [r[1] for r in conn.execute("pragma table_info(page_views)")]
     conn.close()
-    assert cols == ["day", "visitor", "page", "listing_id", "created_at"]
+    assert cols == ["day", "visitor", "page", "listing_id", "source", "created_at"]  # source: a label like "ig-ad"
     assert client.get("/api/admin/stats").status_code == 401
 
 
@@ -57,3 +57,24 @@ def test_monthly_totals(client, admin):
     assert (months["2026-09"]["visitors"], months["2026-09"]["views"]) == (2, 3)
     assert (months["2026-10"]["visitors"], months["2026-10"]["views"]) == (1, 1)
     db.close()
+
+
+def test_where_visitors_came_from(client, admin):
+    from app.buyers.requests import request_limiter
+    from app.core.db import connect
+
+    db = connect()
+    with db:
+        db.execute("delete from page_views")
+    db.close()
+    request_limiter.reset()
+    for i, src in enumerate(["ig-ad", "ig-ad", "fb", "", "BAD VALUE!"]):  # five different phones
+        client.post("/api/track", json={"page": "home", "source": src}, headers={"User-Agent": f"Mozilla/5.0 phone{i}"})
+    body = {"name": "Ad Buyer", "phones": ["9847066666"], "property_type": "land", "came_from": "ig-ad"}
+    assert client.post("/api/buyer-requests", json=body).status_code == 201
+    sources = {s["source"]: s for s in client.get("/api/admin/stats", headers=admin).json()["sources"]}
+    assert sources["ig-ad"]["visitors"] == 2 and sources["ig-ad"]["requirements"] == 1
+    assert sources["fb"]["visitors"] == 1
+    assert sources["other"]["visitors"] == 2  # empty and invalid labels count as "other"
+    buyer = client.get("/api/admin/buyers", params={"q": "9847066666"}, headers=admin).json()[0]
+    assert buyer["came_from"] == "ig-ad"

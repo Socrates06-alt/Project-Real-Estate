@@ -27,8 +27,9 @@ def request_visit(listing_id: str, body: VisitRequestIn, db: DB) -> dict:
         return existing
     visit_id = str(uuid.uuid4())
     db.execute(
-        "insert into visit_requests (id, listing_id, name, phone, preferred_time, budget) values (?, ?, ?, ?, ?, ?)",
-        (visit_id, listing_id, body.name, body.phone, body.preferred_time, body.budget),
+        "insert into visit_requests (id, listing_id, name, phone, preferred_time, budget, came_from)"
+        " values (?, ?, ?, ?, ?, ?, ?)",
+        (visit_id, listing_id, body.name, body.phone, body.preferred_time, body.budget, body.came_from),
     )
     return {"id": visit_id, "status": "new"}
 

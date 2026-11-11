@@ -11,6 +11,7 @@ Every place where something moves through steps. Change a rule in its **source o
 | Meaning search model | off → loading → ready / failed | `backend/app/semantic/engine.py` (`state()`) | `tests/test_semantic.py` |
 | Sending any form (Sell, Requirement, visit request, Add property, admin login) | idle → sending → done / error (a second tap while sending is ignored) | `frontend/src/shared/lib/useSubmit.ts` | browser check |
 | Sell photos and upload | shrinking photos on the phone; upload % while sending | `frontend/src/features/sell/Sell.tsx` | browser check |
+| Where a visitor came from | none → Facebook / Instagram (detected) → an ad or link label (always wins; kept 30 days) | `frontend/src/shared/lib/source.ts` | `tests/test_analytics.py` + browser check |
 | Land size unit | cents ⇄ acres (always sent as cents) | `frontend/src/shared/components/form/SizeInput.tsx` | browser check |
 | Unfinished Sell form | none → saved draft → restored → discarded on submit | `frontend/src/features/sell/useSellDraft.ts` | browser check |
 

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { api, type PropertyType } from "@/shared/api/client";
 import { useSubmit } from "@/shared/lib/useSubmit";
+import { cameFrom } from "@/shared/lib/source";
 import { AffixInput, Field, Input } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
 import { Button, buttonVariants } from "@/shared/ui/button";
@@ -41,6 +42,7 @@ export default function RequestProperty() {
           sqft: type === "house" ? num(f.get("sqft")) : null,
           note: f.get("note") ?? "",
           wants_finance_help: finance,
+          came_from: cameFrom(),
         },
       }),
     );

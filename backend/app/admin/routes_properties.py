@@ -54,7 +54,7 @@ def inbox(db: DB) -> dict:
     )
     visits = many(
         db,
-        f"""select v.id, v.name, v.phone, v.preferred_time, v.budget, v.status, v.created_at,
+        f"""select v.id, v.name, v.phone, v.preferred_time, v.budget, v.status, v.created_at, v.came_from,
                   l.number as listing_number, l.title as listing_title, l.submission_id as property_id
            from visit_requests v join listings l on l.id = v.listing_id
            where v.status in {OPEN_VISITS_SQL} order by v.created_at desc limit 100""",
