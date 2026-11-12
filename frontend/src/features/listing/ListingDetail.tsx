@@ -84,7 +84,7 @@ export default function ListingDetail() {
               <button
                 onClick={share}
                 aria-label={t("listing.share")}
-                className="grid h-11 w-11 place-items-center rounded-full bg-brand text-brand-ink shadow-[0_0_0_3px_rgba(255,255,255,0.85),0_4px_14px_rgba(0,0,0,0.25)] transition active:scale-90"
+                className="grid h-11 w-11 place-items-center rounded-full bg-white text-brand shadow-[0_0_0_2px_var(--brand),0_4px_14px_rgba(0,0,0,0.2)] transition active:scale-90"
               >
                 <Share2 size={20} strokeWidth={2.5} />
               </button>
