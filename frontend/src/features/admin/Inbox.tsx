@@ -8,6 +8,7 @@ import { Logo } from "@/shared/components/Logo";
 import { ThemeSwitch } from "@/shared/components/ThemeSwitch";
 import { useAdmin } from "@/features/admin/auth";
 import { PrivatePhoto, VisitCard } from "@/features/admin/ui";
+import { Callbacks } from "./Callbacks";
 import { VisitorStats } from "@/features/admin/VisitorStats";
 import type { Group, Inbox as InboxData } from "@/features/admin/types";
 
@@ -59,6 +60,8 @@ export default function Inbox() {
           <ChevronRight size={16} />
         </Link>
       )}
+
+      <Callbacks onChange={reload} />
 
       <VisitorStats />
 

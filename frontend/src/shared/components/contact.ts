@@ -9,4 +9,8 @@ export function waLink(contact: Contact, listing?: Pick<Listing, "id" | "propert
   return `https://wa.me/${contact.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 }
 
+/** WhatsApp chat with a ready message of our own (e.g. "I want to sell my property"). */
+export const waText = (contact: Contact, text: string) =>
+  `https://wa.me/${contact.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
+
 export const telLink = (contact: Contact) => `tel:${contact.phone}`;

@@ -7,6 +7,7 @@ Every place where something moves through steps. Change a rule in its **source o
 | Property (admin) | new → live → sold / not listed → removed | `backend/app/admin/lifecycle.py` | `tests/test_lifecycle.py` |
 | Public listing | live, sold (hidden when not listed or removed) | follows the property (`lifecycle.STATES`) | `tests/test_lifecycle.py` |
 | Buyer request (website) | new (unseen) → seen when the Buyers page opens | `backend/app/buyers/requests.py` (`seen`) | `tests/test_buyer_requests.py` |
+| Call me back | waiting → done (a founder called; the same number asking again while waiting refreshes it) | `backend/app/callbacks/routes.py` (`done_at`) | `tests/test_callbacks.py` |
 | Visit request | new → contacted → scheduled → done; cancelled | `backend/app/core/validation.py` (`VisitStatus`, `OPEN_VISITS`) | `tests/test_journey.py` |
 | Meaning search model | off → loading → ready / failed | `backend/app/semantic/engine.py` (`state()`) | `tests/test_semantic.py` |
 | Sending any form (Sell, Requirement, visit request, Add property, admin login) | idle → sending → done / error (a second tap while sending is ignored) | `frontend/src/shared/lib/useSubmit.ts` | browser check |

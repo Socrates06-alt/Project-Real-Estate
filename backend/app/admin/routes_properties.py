@@ -64,7 +64,14 @@ def inbox(db: DB) -> dict:
         counts[service.group_of(r[0])] += r[1]
     # Buyers who asked on the website and no founder has looked at yet
     buyer_requests = one(db, "select count(*) as n from buyers where source = 'website' and seen = 0")["n"]
-    return {"new": [_row(r) for r in new], "visits": visits, "counts": counts, "buyer_requests": buyer_requests}
+    callbacks = one(db, "select count(*) as n from callbacks where done_at is null")["n"]  # people waiting for a call
+    return {
+        "new": [_row(r) for r in new],
+        "visits": visits,
+        "counts": counts,
+        "buyer_requests": buyer_requests,
+        "callbacks": callbacks,
+    }
 
 
 @router.get("/properties")

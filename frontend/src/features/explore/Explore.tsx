@@ -14,6 +14,7 @@ import { useNewListings } from "./useNewListings";
 import { ListingCard, ListingCardSkeleton } from "@/features/explore/ListingCard";
 import { EmptyState, ErrorState } from "@/shared/components/States";
 import { REQUEST_LABEL } from "@/shared/lib/labels";
+import { QuickContact } from "@/shared/components/QuickContact";
 import { Button } from "@/shared/ui/button";
 
 type TypeFilter = PropertyFilter;
@@ -145,6 +146,7 @@ export default function Explore() {
             Looking to buy? {REQUEST_LABEL} →
           </Link>
         )}
+        {isHome && <QuickContact className="px-1" />}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
         {data && contact && items.map((l) => <ListingCard key={l.id} listing={l} contact={contact} rera={config.data?.rera_number} />)}

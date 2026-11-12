@@ -127,6 +127,17 @@ create table if not exists buyers (
     updated_at    text not null default {NOW}
 );
 
+-- "Call me back": a name and number from the website; a founder calls and marks it done.
+create table if not exists callbacks (
+    id         text primary key,
+    name       text not null,
+    phone      text not null,
+    want       text not null default '' check (want in ('sell', 'buy', '')),
+    came_from  text not null default '',
+    created_at text not null default {NOW},
+    done_at    text
+);
+
 -- Search by meaning: one saved embedding per listing (public text), property and buyer (admin only).
 create table if not exists embeddings (
     kind      text not null,  -- listing, property, buyer
@@ -158,7 +169,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 14
+SCHEMA_VERSION = 15
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -243,6 +254,8 @@ UPGRADES[14] = [
     _add_column("visit_requests", "came_from text not null default ''"),
     _add_column("buyers", "came_from text not null default ''"),
 ]
+
+UPGRADES[15] = []  # callbacks table is created from SCHEMA
 
 log = logging.getLogger("nilayam")
 

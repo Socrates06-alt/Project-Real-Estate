@@ -199,6 +199,7 @@ export function Privacy() {
         <ol>
           <li><b>Sellers:</b> name, phone number, property address and area, land size, price, description, document details and photographs.</li>
           <li><b>Buyers requesting a visit:</b> name, phone number, preferred time and, if provided, budget.</li>
+          <li><b>Call-back requests:</b> name, phone number and whether you want to buy or sell, so we can call you.</li>
           <li><b>Buyers requesting a property:</b> name, phone number(s), the kind of property and, if provided, area, land size, budget and notes, so we can contact you when a suitable property is available.</li>
           <li><b>Device information:</b> a random identifier stored in your browser so that "My listings" works without an account. We store only an encrypted (hashed) form of this identifier.</li>
           <li><b>Location:</b> only if you choose "Near me", and only to show nearby properties. Your location is not stored.</li>

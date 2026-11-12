@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { api, type PropertyType } from "@/shared/api/client";
 import { useSubmit } from "@/shared/lib/useSubmit";
+import { QuickContact } from "@/shared/components/QuickContact";
 import { cameFrom } from "@/shared/lib/source";
 import { AffixInput, Field, Input } from "@/shared/ui/field";
 import { Segmented } from "@/shared/ui/segmented";
@@ -66,6 +67,7 @@ export default function RequestProperty() {
   return (
     <form onSubmit={submit} className="space-y-4">
       <PageHeader title="Your requirement" subtitle="We'll call you when we find a match." />
+      <QuickContact want="buy" label="Don't want to fill the form?" className="card-sm p-3" />
 
       <FormCard title="Looking for">
         <Segmented

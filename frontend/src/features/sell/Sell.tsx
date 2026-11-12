@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { getConfig, uploadForm, type PropertyType } from "@/shared/api/client";
 import { useSubmit } from "@/shared/lib/useSubmit";
+import { QuickContact } from "@/shared/components/QuickContact";
 import { shrinkImage } from "@/shared/lib/image";
 import { useAsync } from "@/shared/lib/useAsync";
 import { Field, Input, Textarea } from "@/shared/ui/field";
@@ -144,6 +145,7 @@ export default function Sell() {
   return (
     <form key={draft.formKey} ref={formRef} onSubmit={submit} onInput={draft.onTyping} className="space-y-4">
       <PageHeader title="List your property" subtitle="Free listing · pay only when it sells" />
+      <QuickContact want="sell" label="Don't want to fill the form?" className="card-sm p-3" />
       {draft.restored && (
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand">
           <span>Continuing your unfinished listing</span>

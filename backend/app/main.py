@@ -14,6 +14,7 @@ from app.analytics import routes as analytics
 from app.analytics import service as analytics_service
 from app.buyers import requests as buyer_requests
 from app.buyers import routes as buyers
+from app.callbacks import routes as callbacks
 from app.cleanup import routes as cleanup  # TEMPORARY one-time English clean-up
 from app.core.config import get_settings
 from app.core.db import connect
@@ -81,6 +82,8 @@ def create_app() -> FastAPI:
         buyer_requests.router,
         cleanup.router,
         cleanup.rephrase_router,
+        callbacks.router,
+        callbacks.admin_router,
     ):
         app.include_router(router)
 

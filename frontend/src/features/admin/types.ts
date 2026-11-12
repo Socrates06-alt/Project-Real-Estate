@@ -43,6 +43,7 @@ export interface Inbox {
   visits: Visit[];
   counts: Record<Group, number>;
   buyer_requests: number; // website requests no founder has seen yet
+  callbacks: number; // people waiting for a call back
 }
 
 export interface PublicForm {
