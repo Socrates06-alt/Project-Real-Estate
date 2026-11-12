@@ -141,7 +141,7 @@ export default function ListingDetail() {
         </p>
       </section>
 
-      <SimilarProperties listingId={l.id} />
+      <SimilarProperties listingId={l.id} place={l.location} />
 
       <div className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
         <div className="glass flex w-full max-w-sm items-center gap-1 rounded-full p-1 shadow-float">

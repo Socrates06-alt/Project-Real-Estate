@@ -10,10 +10,12 @@ import { REQUEST_LABEL } from "@/shared/lib/labels";
 type Similar = Listing & { km: number | null };
 type Place = { place: string; count: number; lat: number | null; lng: number | null };
 
-/** Below a property: similar ones (any place, nearest first), every place with properties, and a way out. */
-export function SimilarProperties({ listingId }: { listingId: string }) {
+/** Below a property: similar ones (any place, nearest first), more in the same place, all properties, and a way out. */
+export function SimilarProperties({ listingId, place }: { listingId: string; place: string }) {
   const { data } = useAsync(() => api<{ similar: Similar[]; places: Place[] }>(`/api/listings/${listingId}/similar`), [listingId]);
   if (!data) return null;
+  const here = data.places.find((p) => p.place === place);
+  const total = data.places.reduce((n, p) => n + p.count, 0);
   return (
     <div className="mt-6 space-y-5">
       {data.similar.length > 0 && (
@@ -27,26 +29,18 @@ export function SimilarProperties({ listingId }: { listingId: string }) {
         </section>
       )}
 
-      {data.places.length > 0 && (
-        <section>
-          <h2 className="mb-2 px-1 text-base font-semibold">Browse by place</h2>
-          <div className="flex flex-wrap gap-2">
-            {data.places.map((p) => (
-              <Link
-                key={p.place}
-                to={p.lat != null ? `/?lat=${p.lat}&lng=${p.lng}&r=3&place=${encodeURIComponent(p.place)}` : "/"}
-                className="flex h-9 items-center gap-1.5 rounded-full bg-surface px-3.5 text-sm font-medium shadow-[0_0_0_1px_var(--hairline)]"
-              >
-                <MapPin size={14} className="text-brand" /> {p.place}
-                <span className="text-sub">{p.count}</span>
-              </Link>
-            ))}
-          </div>
-        </section>
+      {here && here.count > 1 && (
+        <Link
+          to={here.lat != null ? `/?lat=${here.lat}&lng=${here.lng}&r=3&place=${encodeURIComponent(here.place)}` : "/"}
+          className="flex items-center gap-2 px-1 text-[15px] font-semibold text-brand"
+        >
+          <MapPin size={16} /> More in {here.place} ({here.count - 1})
+          <ChevronRight size={16} />
+        </Link>
       )}
 
       <Link to="/" className="flex h-12 items-center justify-center rounded-full bg-brand-soft font-semibold text-brand">
-        See all properties
+        See all {total} properties
       </Link>
       <Link to="/request" className="flex items-center gap-3 rounded-2xl px-1 py-1 text-sm">
         <SearchCheck size={18} className="shrink-0 text-brand" />
