@@ -6,6 +6,7 @@ import pytest
 
 import renumber
 from app.core.config import get_settings
+from app.core.migrations import SCHEMA
 from tests.helpers import publish, submit
 
 
@@ -33,3 +34,15 @@ def test_renumber_keeps_order_and_updates_public_pages(client, admin):
         db.execute("update submissions set seller_name = 'x' where id = ?", (real[0]["id"],))
     db.rollback()
     db.close()
+
+
+def test_new_properties_continue_after_real_numbers_not_parked_ones(client, admin):
+    db_path = get_settings().database_path
+    first = submit(client).json()
+    with sqlite3.connect(db_path) as db:
+        db.execute("update submissions set removed_at = '2026-01-01T00:00:00Z' where id = ?", (first["id"],))
+        db.execute("drop trigger if exists submissions_immutable")
+        db.execute("update submissions set number = 9500 where id = ?", (first["id"],))  # parked like renumber.py does
+        db.executescript(SCHEMA)  # put the protective trigger back
+    nxt = submit(client).json()
+    assert nxt["number"] < 9001

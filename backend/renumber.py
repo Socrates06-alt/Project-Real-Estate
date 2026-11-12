@@ -17,6 +17,7 @@ from datetime import datetime
 
 from app.core.config import get_settings
 from app.core.migrations import SCHEMA
+from app.submissions.service import PARKED_FROM
 
 TRIGGERS = ("submissions_immutable", "published_versions_no_update")
 
@@ -27,7 +28,7 @@ def plan(db: sqlite3.Connection) -> dict[str, int]:
     kept = [r[0] for r in rows if r[1] is None]
     removed = [r[0] for r in rows if r[1] is not None]
     new = {sid: first + i for i, sid in enumerate(kept)}
-    new.update({sid: 9001 + i for i, sid in enumerate(removed)})
+    new.update({sid: PARKED_FROM + i for i, sid in enumerate(removed)})
     return new
 
 

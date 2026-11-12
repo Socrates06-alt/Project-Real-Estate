@@ -14,6 +14,7 @@ from app.submissions import photos
 from app.submissions.schemas import SubmissionForm
 
 # Stored instead of a device hash when a founder enters the property (never matches a real device).
+PARKED_FROM = 9001  # removed test entries are renumbered from here (see renumber.py)
 ADMIN_ENTERED = "admin"
 
 
@@ -44,9 +45,11 @@ def create(db: sqlite3.Connection, form: SubmissionForm, device: str, images: li
     """Save the submission and its photos; it gets the next property number."""
     s = get_settings()
     sub_id = str(uuid.uuid4())
-    number = db.execute("select coalesce(max(number) + 1, ?) from submissions", (s.first_property_number,)).fetchone()[
-        0
-    ]
+    # Next number after the last real one (removed test entries are parked at 9001+ and don't count)
+    number = db.execute(
+        "select coalesce(max(number) + 1, ?) from submissions where number < ?",
+        (s.first_property_number, PARKED_FROM),
+    ).fetchone()[0]
     db.execute(
         """insert into submissions (id, number, device_hash, seller_name, seller_phone, seller_phone2, property_type,
                land_area_cents, location, area_lat, area_lng, address, description, expected_price, negotiable,
