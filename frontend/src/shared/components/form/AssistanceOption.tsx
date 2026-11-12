@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Info } from "lucide-react";
 import type { AssistanceInfo } from "@/shared/lib/assistance";
 import { Sheet } from "@/shared/ui/sheet";
 import { Button } from "@/shared/ui/button";
@@ -22,7 +23,7 @@ function Details({ info }: { info: AssistanceInfo }) {
 }
 
 /**
- * Optional paid service: a toggle row whose blue label opens what's included (in a sheet on pages, or expanded
+ * Optional paid service: a toggle row; the ⓘ on the left opens what's included (in a sheet on pages, or expanded
  * below when already inside a sheet). The toggle switches it on or off.
  */
 export function AssistanceOption(props: { info: AssistanceInfo; checked: boolean; onChange: (v: boolean) => void; label?: string; inline?: boolean }) {
@@ -31,15 +32,19 @@ export function AssistanceOption(props: { info: AssistanceInfo; checked: boolean
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-2xl bg-muted/60">
-      <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-        <button
-          type="button"
-          onClick={() => setOpen(!open)}
-          aria-expanded={inline ? open : undefined}
-          className="min-w-0 text-left text-[15px] font-semibold text-brand underline decoration-brand/40 decoration-dotted underline-offset-4"
-        >
-          {label}
-        </button>
+      <div className="flex items-center justify-between gap-4 py-3.5 pr-4 pl-2">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setOpen(!open)}
+            aria-expanded={inline ? open : undefined}
+            aria-label={`${label}: info`}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-brand active:bg-brand-soft"
+          >
+            <Info size={19} />
+          </button>
+          <span className="min-w-0 text-[15px] font-medium">{label}</span>
+        </div>
         <Toggle checked={checked} onChange={onChange} label={label} />
       </div>
 

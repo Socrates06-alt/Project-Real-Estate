@@ -2,7 +2,7 @@ import { t } from "@/shared/i18n";
 import { useState } from "react";
 import { TYPE_TONE } from "@/shared/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2, Users } from "lucide-react";
+import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/shared/api/client";
 import { cents, priceDisplay, shortDate, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
@@ -81,12 +81,9 @@ export default function ListingDetail() {
             </button>
             <div className="pointer-events-auto flex gap-2.5">
               <SaveButton id={l.id} />
-              <button
-                onClick={share}
-                aria-label={t("listing.share")}
-                className="grid h-11 w-11 place-items-center rounded-full bg-white text-brand shadow-[0_0_0_2px_var(--brand),0_4px_14px_rgba(0,0,0,0.2)] transition active:scale-90"
-              >
-                <Share2 size={20} strokeWidth={2.5} />
+              <button onClick={share} aria-label={t("listing.share")} className={`${overBtn} gap-2 px-4 text-[15px] font-semibold`}>
+                <Share2 size={18} strokeWidth={2.5} className="text-brand" />
+                {t("listing.share")}
               </button>
             </div>
           </div>
@@ -139,8 +136,6 @@ export default function ListingDetail() {
           )}
         </dl>
       </section>
-
-      {!sold && <ShareWithFamily listing={l} shareUrl={shareUrl} />}
 
 
       <section className="mt-3 flex gap-3 rounded-[28px] bg-sky p-5 text-sm">
@@ -249,31 +244,3 @@ function isAutoTitle(title: string) {
   return /^(house|land|commercial|commercial property)\s+for\s+sale\.?$/i.test(title.trim());
 }
 
-/** Indian buyers decide with family: one big, obvious WhatsApp share with a ready message. */
-function ShareWithFamily({ listing: l, shareUrl }: { listing: Listing; shareUrl: string }) {
-  const price = priceDisplay(l.price, l.property_type, l.land_area_cents);
-  const text = t("share.message", {
-    what: `${typeLabel(l.property_type)} · ${cents(l.land_area_cents)}`,
-    place: l.location,
-    price: `${price.main}${price.unit}`,
-    url: shareUrl,
-  });
-  return (
-    <div className="mt-3 flex items-center gap-2 rounded-[20px] bg-wa/10 px-3 py-2">
-      <a
-        href={`https://wa.me/?text=${encodeURIComponent(text)}`}
-        target="_blank"
-        rel="noreferrer"
-        className="flex min-w-0 flex-1 items-center gap-3 py-1.5 transition active:scale-[0.99]"
-      >
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-wa text-white">
-          <Users size={21} />
-        </span>
-        <span className="min-w-0 leading-tight">
-          <span className="block text-base font-semibold">{t("share.family")}</span>
-          <span className="block text-sm text-sub">{t("share.familySub")}</span>
-        </span>
-      </a>
-    </div>
-  );
-}
