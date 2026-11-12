@@ -56,9 +56,9 @@ def cleanup(db: sqlite3.Connection) -> None:
 
 
 # Where people came from, in five simple groups (ads count with their app).
-MAIN_SOURCES = ("facebook", "instagram", "whatsapp", "direct")  # direct includes Google / search
+MAIN_SOURCES = ("facebook", "instagram", "whatsapp", "search", "direct")
 _GROUP = {"fb": "facebook", "fb-ad": "facebook", "ig": "instagram", "ig-ad": "instagram", "whatsapp": "whatsapp",
-          "search": "direct", "google": "direct", "": "direct"}  # fmt: skip
+          "search": "search", "google": "search", "": "direct"}  # fmt: skip
 
 
 def source_group(src: str) -> str:
@@ -66,7 +66,7 @@ def source_group(src: str) -> str:
 
 
 def by_source(db: sqlite3.Connection, since: str) -> list[dict]:
-    """Last 30 days by where people came from (Facebook, Instagram, WhatsApp, Direct / search; Other only if any):
+    """Last 30 days by where people came from (Facebook, Instagram, WhatsApp, Search, Direct; Other only if any):
     visitors, requirements and visit requests."""
     rows: dict[str, dict] = {
         g: {"source": g, "visitors": 0, "requirements": 0, "visits": 0} for g in (*MAIN_SOURCES, "other")

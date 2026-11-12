@@ -90,7 +90,7 @@ export function sourceLabel(src: string): string {
     instagram: "Instagram",
     whatsapp: "WhatsApp",
     search: "Search",
-    direct: "Direct / search",
+    direct: "Direct",
     other: "Other / direct",
   };
   return known[src] ?? src.charAt(0).toUpperCase() + src.slice(1).replace(/-/g, " ");
