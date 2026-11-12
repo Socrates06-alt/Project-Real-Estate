@@ -81,20 +81,21 @@ export function LanguageStrip() {
     setHidden(true);
   };
   return (
-    <div className="animate-fade mx-auto flex w-fit items-center gap-1 rounded-full bg-surface p-1 shadow-[0_0_0_1px_var(--hairline)]">
+    <div className="animate-fade mx-auto flex h-10 w-fit items-center rounded-full bg-brand-soft text-brand">
       <button
         type="button"
         onClick={() => {
           setLang(other);
           setHidden(true);
         }}
-        className="flex h-9 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-brand-ink"
+        className="flex h-full items-center gap-2 pr-3 pl-4 text-[15px] font-semibold"
       >
-        <Languages size={16} />
+        <Languages size={17} />
         {other === "ml" ? "മലയാളം" : "English"}
       </button>
-      <button type="button" onClick={close} aria-label="Close" className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-sub">
-        <X size={17} />
+      <span className="h-5 w-px bg-brand/20" aria-hidden />
+      <button type="button" onClick={close} aria-label="Close" className="grid h-full w-10 place-items-center rounded-r-full text-brand/70">
+        <X size={16} />
       </button>
     </div>
   );
