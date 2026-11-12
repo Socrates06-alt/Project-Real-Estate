@@ -14,7 +14,7 @@ const KEEP_MS = 30 * 24 * 3600 * 1000;
 
 const clean = (v: string) => (/^[a-z0-9-]{1,30}$/.test(v) ? v : "");
 
-function platform(): "fb" | "ig" | "" {
+function platform(): "fb" | "ig" | "whatsapp" | "search" | "" {
   const ua = navigator.userAgent;
   const ref = document.referrer;
   if (/Instagram/i.test(ua) || /instagram\.com/i.test(ref)) return "ig";
@@ -23,10 +23,13 @@ function platform(): "fb" | "ig" | "" {
   const params = new URLSearchParams(window.location.search);
   if (params.has("fbclid")) return "fb";
   if (params.has("igshid") || params.has("igsh")) return "ig";
+  if (/whatsapp/i.test(ref)) return "whatsapp"; // some phones say the link came from the WhatsApp app
+  if (/\b(google|bing|duckduckgo|yahoo)\./i.test(ref) || /googlequicksearchbox/i.test(ref)) return "search";
   return "";
 }
 
-function fromLink(label: string, app: "fb" | "ig" | ""): string {
+function fromLink(label: string, detected: string): string {
+  const app = detected === "fb" || detected === "ig" ? detected : "";
   if (label === "ad") return app ? `${app}-ad` : "ad";
   const m = label.match(/^ad-(fb|ig)$/); // from Ads Manager: ad-{{site_source_name}}
   if (m) return `${m[1]}-ad`;
@@ -83,6 +86,11 @@ export function sourceLabel(src: string): string {
     fb: "Facebook",
     ig: "Instagram",
     ad: "Ad",
+    facebook: "Facebook",
+    instagram: "Instagram",
+    whatsapp: "WhatsApp",
+    search: "Search",
+    direct: "Direct / search",
     other: "Other / direct",
   };
   return known[src] ?? src.charAt(0).toUpperCase() + src.slice(1).replace(/-/g, " ");

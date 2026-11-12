@@ -72,9 +72,12 @@ def test_where_visitors_came_from(client, admin):
         client.post("/api/track", json={"page": "home", "source": src}, headers={"User-Agent": f"Mozilla/5.0 phone{i}"})
     body = {"name": "Ad Buyer", "phones": ["9847066666"], "property_type": "land", "came_from": "ig-ad"}
     assert client.post("/api/buyer-requests", json=body).status_code == 201
-    sources = {s["source"]: s for s in client.get("/api/admin/stats", headers=admin).json()["sources"]}
-    assert sources["ig-ad"]["visitors"] == 2 and sources["ig-ad"]["requirements"] == 1
-    assert sources["fb"]["visitors"] == 1
-    assert sources["other"]["visitors"] == 2  # empty and invalid labels count as "other"
+    rows = client.get("/api/admin/stats", headers=admin).json()["sources"]
+    assert [r["source"] for r in rows][:4] == ["facebook", "instagram", "whatsapp", "direct"]
+    sources = {r["source"]: r for r in rows}
+    assert sources["instagram"]["visitors"] == 2 and sources["instagram"]["requirements"] == 1  # ads count with the app
+    assert sources["facebook"]["visitors"] == 1
+    assert sources["direct"]["visitors"] == 2  # empty and invalid labels
+    assert sources["whatsapp"]["visitors"] == 0  # always shown
     buyer = client.get("/api/admin/buyers", params={"q": "9847066666"}, headers=admin).json()[0]
     assert buyer["came_from"] == "ig-ad"

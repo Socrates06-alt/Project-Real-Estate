@@ -55,14 +55,25 @@ def cleanup(db: sqlite3.Connection) -> None:
     db.execute("delete from page_views where day < ?", (day_minus(today(), KEEP_DAYS),))
 
 
+# Where people came from, in five simple groups (ads count with their app).
+MAIN_SOURCES = ("facebook", "instagram", "whatsapp", "direct")  # direct includes Google / search
+_GROUP = {"fb": "facebook", "fb-ad": "facebook", "ig": "instagram", "ig-ad": "instagram", "whatsapp": "whatsapp",
+          "search": "direct", "google": "direct", "": "direct"}  # fmt: skip
+
+
+def source_group(src: str) -> str:
+    return _GROUP.get(src or "", "other")
+
+
 def by_source(db: sqlite3.Connection, since: str) -> list[dict]:
-    """Last 30 days by where people came from: visitors, requirements and visit requests, most visitors first."""
-    rows: dict[str, dict] = {}
+    """Last 30 days by where people came from (Facebook, Instagram, WhatsApp, Direct / search; Other only if any):
+    visitors, requirements and visit requests."""
+    rows: dict[str, dict] = {
+        g: {"source": g, "visitors": 0, "requirements": 0, "visits": 0} for g in (*MAIN_SOURCES, "other")
+    }
 
     def row(src: str) -> dict:
-        return rows.setdefault(
-            src or "other", {"source": src or "other", "visitors": 0, "requirements": 0, "visits": 0}
-        )
+        return rows[source_group(src)]
 
     for r in many(
         db,
@@ -72,18 +83,20 @@ def by_source(db: sqlite3.Connection, since: str) -> list[dict]:
            ) group by source""",
         since,
     ):
-        row(r["source"])["visitors"] = r["visitors"]
+        row(r["source"])["visitors"] += r["visitors"]
     for r in many(
         db,
         "select came_from, count(*) as n from buyers where source = 'website' and created_at >= ? group by came_from",
         since,
     ):
-        row(r["came_from"])["requirements"] = r["n"]
+        row(r["came_from"])["requirements"] += r["n"]
     for r in many(
         db, "select came_from, count(*) as n from visit_requests where created_at >= ? group by came_from", since
     ):
-        row(r["came_from"])["visits"] = r["n"]
-    return sorted(rows.values(), key=lambda r: (r["source"] == "other", -r["visitors"]))
+        row(r["came_from"])["visits"] += r["n"]
+    other = rows["other"]
+    keep_other = other["visitors"] or other["requirements"] or other["visits"]
+    return [rows[g] for g in MAIN_SOURCES] + ([other] if keep_other else [])
 
 
 def by_month(db: sqlite3.Connection) -> list[dict]:
