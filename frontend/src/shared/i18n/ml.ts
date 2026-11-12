@@ -252,7 +252,7 @@ export const ml: Partial<Record<Key, string>> = {
 
   "profile.title": "പ്രൊഫൈൽ",
   "profile.mine": "എന്റെ ലിസ്റ്റിങ്",
-  "profile.how": "എങ്ങനെയാണ്",
+  "profile.how": "വിൽക്കുന്ന രീതി",
   "profile.submitted": "അയച്ചു",
   "profile.underReview": "നോക്കുന്നു",
   "profile.review": "പരിശോധന",
