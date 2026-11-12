@@ -79,13 +79,7 @@ export default function ListingDetail() {
             <button onClick={back} aria-label={t("listing.back")} className={`${overBtn} w-11`}>
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
-            <div className="flex gap-2">
-              <SaveButton id={l.id} />
-              <button onClick={share} aria-label={t("listing.share")} className={`${overBtn} gap-2 px-4 text-[15px] font-semibold`}>
-                <Share2 size={18} strokeWidth={2.5} className="text-brand" />
-                {t("listing.share")}
-              </button>
-            </div>
+            <SaveButton id={l.id} />
           </div>
         }
       />
@@ -115,8 +109,6 @@ export default function ListingDetail() {
         </p>
       </section>
 
-      {!sold && <ShareWithFamily listing={l} shareUrl={shareUrl} />}
-
       {/* Only what's actually known is shown; nothing empty or "not yet". */}
       <section className="mt-5 grid grid-cols-2 gap-3">
         <Fact tone="bg-land-soft text-land" icon={<Ruler size={18} />} label={t("listing.area")} value={cents(l.land_area_cents)} />
@@ -138,6 +130,8 @@ export default function ListingDetail() {
           )}
         </dl>
       </section>
+
+      {!sold && <ShareWithFamily listing={l} shareUrl={shareUrl} onMore={share} />}
 
 
       <section className="mt-3 flex gap-3 rounded-[28px] bg-sky p-5 text-sm">
@@ -247,7 +241,7 @@ function isAutoTitle(title: string) {
 }
 
 /** Indian buyers decide with family: one big, obvious WhatsApp share with a ready message. */
-function ShareWithFamily({ listing: l, shareUrl }: { listing: Listing; shareUrl: string }) {
+function ShareWithFamily({ listing: l, shareUrl, onMore }: { listing: Listing; shareUrl: string; onMore: () => void }) {
   const price = priceDisplay(l.price, l.property_type, l.land_area_cents);
   const text = t("share.message", {
     what: `${typeLabel(l.property_type)} · ${cents(l.land_area_cents)}`,
@@ -256,20 +250,30 @@ function ShareWithFamily({ listing: l, shareUrl }: { listing: Listing; shareUrl:
     url: shareUrl,
   });
   return (
-    <a
-      href={`https://wa.me/?text=${encodeURIComponent(text)}`}
-      target="_blank"
-      rel="noreferrer"
-      className="mt-4 flex items-center gap-3 rounded-[20px] bg-wa/10 p-3.5 transition active:scale-[0.99]"
-    >
-      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-wa text-white">
-        <Users size={21} />
-      </span>
-      <span className="min-w-0 flex-1 leading-tight">
-        <span className="block text-base font-semibold">{t("share.family")}</span>
-        <span className="block text-sm text-sub">{t("share.familySub")}</span>
-      </span>
-      <MessageCircle size={22} className="shrink-0 text-wa" />
-    </a>
+    <div className="mt-3 flex items-center gap-2 rounded-[20px] bg-wa/10 p-2 pl-3">
+      <a
+        href={`https://wa.me/?text=${encodeURIComponent(text)}`}
+        target="_blank"
+        rel="noreferrer"
+        className="flex min-w-0 flex-1 items-center gap-3 py-1.5 transition active:scale-[0.99]"
+      >
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-wa text-white">
+          <Users size={21} />
+        </span>
+        <span className="min-w-0 leading-tight">
+          <span className="block text-base font-semibold">{t("share.family")}</span>
+          <span className="block text-sm text-sub">{t("share.familySub")}</span>
+        </span>
+      </a>
+      {/* Other apps or copy link */}
+      <button
+        type="button"
+        onClick={onMore}
+        aria-label={t("listing.share")}
+        className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-surface text-brand shadow-sm"
+      >
+        <Share2 size={19} />
+      </button>
+    </div>
   );
 }
