@@ -42,7 +42,7 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
             </span>
           </Link>
         )}
-        <Link to="/" className="card flex min-h-[64px] items-center gap-3 px-4 py-3 active:scale-[0.99]">
+        <Link to="/" className={cn("card flex min-h-[64px] items-center gap-3 px-4 py-3 active:scale-[0.99]", !(here && here.count > 1) && "justify-center")}>
           <LayoutGrid size={22} className="shrink-0 text-brand" />
           <span className="min-w-0 leading-tight">
             <span className="block text-xs text-sub">{t("similar.seeAll")}</span>
