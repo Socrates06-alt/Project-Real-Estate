@@ -1,13 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
-import { Check, MessageCircle, Phone, PhoneIncoming } from "lucide-react";
+import { Check, ChevronRight, MessageCircle, Phone, PhoneIncoming } from "lucide-react";
 import { api, getConfig } from "@/shared/api/client";
 import { useAsync } from "@/shared/lib/useAsync";
 import { useSubmit } from "@/shared/lib/useSubmit";
 import { cameFrom } from "@/shared/lib/source";
 import { Sheet } from "@/shared/ui/sheet";
 import { Field, Input } from "@/shared/ui/field";
-import { Button } from "@/shared/ui/button";
+import { Button, buttonVariants } from "@/shared/ui/button";
 import { Segmented } from "@/shared/ui/segmented";
 import { PhoneInput } from "@/shared/components/form/PhoneInput";
 import { telLink, waText } from "@/shared/components/contact";
@@ -20,28 +20,85 @@ const WA_TEXT: Record<Want | "any", string> = {
   any: "Hi LandFinder, I'd like to talk to you.",
 };
 
-/** For people who'd rather not fill a form: Call, WhatsApp, or leave a name and number. */
-export function QuickContact({ want, label = "Prefer to talk?", className }: { want?: Want; label?: string; className?: string }) {
+/**
+ * For people who'd rather not fill a form: Call, WhatsApp, or leave a name and number.
+ * compact: one line ("Prefer to talk? Talk to us") that opens the three options in a sheet.
+ */
+export function QuickContact({
+  want,
+  label = "Prefer to talk?",
+  compact = false,
+  className,
+}: {
+  want?: Want;
+  label?: string;
+  compact?: boolean;
+  className?: string;
+}) {
   const { data: config } = useAsync(getConfig, []);
-  const [open, setOpen] = useState(false);
+  const [options, setOptions] = useState(false);
+  const [callBack, setCallBack] = useState(false);
   if (!config) return null;
-  const pill = "flex h-10 items-center justify-center gap-1.5 rounded-full px-2 text-[13px] font-semibold whitespace-nowrap";
+  const call = telLink(config.contact);
+  const wa = waText(config.contact, WA_TEXT[want ?? "any"]);
+  const sheets = createPortal(
+    <>
+      <Sheet open={options} onClose={() => setOptions(false)} title="Talk to us">
+        <div className="space-y-2.5">
+          <a href={call} className={buttonVariants({ variant: "accent", size: "lg" })}>
+            <Phone size={19} /> Call us
+          </a>
+          <a href={wa} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "wa", size: "lg" })}>
+            <MessageCircle size={19} /> WhatsApp us
+          </a>
+          <button
+            type="button"
+            onClick={() => {
+              setOptions(false);
+              setCallBack(true);
+            }}
+            className={buttonVariants({ variant: "soft", size: "lg" })}
+          >
+            <PhoneIncoming size={19} /> Call me back
+          </button>
+        </div>
+      </Sheet>
+      {/* Outside the page's own form and header (a form can't sit inside another form) */}
+      <CallMeBack open={callBack} onClose={() => setCallBack(false)} want={want} />
+    </>,
+    document.body,
+  );
+
+  if (compact)
+    return (
+      <>
+        <button type="button" onClick={() => setOptions(true)} className={cn("flex w-full items-center gap-2 text-left text-sm", className)}>
+          <Phone size={15} className="shrink-0 text-brand" />
+          <span className="text-sub">{label}</span>
+          <span className="font-semibold text-brand">Talk to us</span>
+          <ChevronRight size={15} className="ml-auto shrink-0 text-sub" />
+        </button>
+        {/* a sibling, not inside the button: clicks in the sheet must not reopen it */}
+        {sheets}
+      </>
+    );
+
+  const pill = "flex h-10 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold whitespace-nowrap";
   return (
     <div className={className}>
       <p className="mb-2 text-sm text-sub">{label}</p>
       <div className="grid grid-cols-3 gap-2">
-        <a href={telLink(config.contact)} className={cn(pill, "bg-accent text-accent-ink")}>
+        <a href={call} className={cn(pill, "bg-accent text-accent-ink")}>
           <Phone size={15} className="shrink-0" /> Call
         </a>
-        <a href={waText(config.contact, WA_TEXT[want ?? "any"])} target="_blank" rel="noreferrer" className={cn(pill, "bg-wa text-white")}>
+        <a href={wa} target="_blank" rel="noreferrer" className={cn(pill, "bg-wa text-white")}>
           <MessageCircle size={15} className="shrink-0" /> WhatsApp
         </a>
-        <button type="button" onClick={() => setOpen(true)} className={cn(pill, "bg-brand-soft text-brand")}>
-          <PhoneIncoming size={15} className="shrink-0" /> Call me back
+        <button type="button" onClick={() => setCallBack(true)} className={cn(pill, "bg-brand-soft text-brand")}>
+          <PhoneIncoming size={15} className="shrink-0" /> Call back
         </button>
       </div>
-      {/* Outside the page's own form and header (a form can't sit inside another form) */}
-      {createPortal(<CallMeBack open={open} onClose={() => setOpen(false)} want={want} />, document.body)}
+      {sheets}
     </div>
   );
 }

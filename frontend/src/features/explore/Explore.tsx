@@ -140,13 +140,7 @@ export default function Explore() {
       <div className="space-y-4 pt-4">
         <FilterTiles type={type} onType={setType} />
         {!area && <NearYouPopup onArea={setArea} />}
-        {isHome && <SellBanner />}
-        {isHome && (
-          <Link to="/request" className="-mt-1 block px-1 text-sm font-semibold text-brand">
-            Looking to buy? {REQUEST_LABEL} →
-          </Link>
-        )}
-        {isHome && <QuickContact className="px-1" />}
+        {isHome && <SellBuyCard />}
         {loading && !data && [0, 1].map((i) => <ListingCardSkeleton key={i} />)}
         {error && <ErrorState message={error.message} retry={reload} />}
         {data && contact && items.map((l) => <ListingCard key={l.id} listing={l} contact={contact} rera={config.data?.rera_number} />)}
@@ -185,18 +179,33 @@ function RequestBanner() {
   );
 }
 
-function SellBanner() {
+/** One compact card: sell or buy, and a single "Prefer to talk?" line (opens Call / WhatsApp / Call me back). */
+function SellBuyCard() {
+  const half = "flex min-w-0 flex-1 items-center gap-2.5 p-3.5 transition active:bg-black/[0.03]";
   return (
-    <Link to="/sell" className="card card-hover flex items-center gap-4 bg-brand-soft p-5">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-accent text-accent-ink shadow-sm">
-        <House size={22} />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="font-semibold">Selling a property?</p>
-        <p className="text-sm text-sub">List it free. Pay only when it sells.</p>
+    <div className="card overflow-hidden bg-brand-soft">
+      <div className="flex divide-x divide-brand/10">
+        <Link to="/sell" className={half}>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent text-accent-ink">
+            <House size={18} />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[15px] font-semibold">Sell</span>
+            <span className="block truncate text-xs text-sub">List it free</span>
+          </span>
+        </Link>
+        <Link to="/request" className={half}>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand text-brand-ink">
+            <SearchCheck size={18} />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[15px] font-semibold">Buy</span>
+            <span className="block truncate text-xs text-sub">Post requirement</span>
+          </span>
+        </Link>
       </div>
-      <ChevronRight size={20} className="shrink-0 text-sub" />
-    </Link>
+      <QuickContact compact className="border-t border-brand/10 px-3.5 py-2.5" />
+    </div>
   );
 }
 
