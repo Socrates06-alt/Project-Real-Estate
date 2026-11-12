@@ -101,6 +101,7 @@ export const en = {
   "similar.moreIn": "More in",
   "similar.seeAll": "See all",
   "similar.properties": "Properties",
+  "similar.seeAllProperties": "See all properties",
   "similar.didntFind": "Didn't find what you need?",
   "similar.tellUs": "Tell us what you're looking for. We'll call you.",
 

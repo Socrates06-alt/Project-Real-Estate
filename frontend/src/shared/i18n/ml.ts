@@ -96,6 +96,7 @@ export const ml: Partial<Record<Key, string>> = {
   "similar.moreIn": "ഇവിടെ കൂടുതൽ",
   "similar.seeAll": "എല്ലാം കാണൂ",
   "similar.properties": "പ്രോപ്പർട്ടികൾ",
+  "similar.seeAllProperties": "എല്ലാ പ്രോപ്പർട്ടികളും കാണൂ",
   "similar.didntFind": "വേണ്ടത് കിട്ടിയില്ലേ?",
   "similar.tellUs": "എന്താണ് നോക്കുന്നതെന്ന് പറയൂ. ഞങ്ങൾ വിളിക്കാം.",
 

@@ -42,13 +42,20 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
             </span>
           </Link>
         )}
-        <Link to="/" className={cn("card flex min-h-[64px] items-center gap-3 px-4 py-3 active:scale-[0.99]", !(here && here.count > 1) && "justify-center")}>
-          <LayoutGrid size={22} className="shrink-0 text-brand" />
-          <span className="min-w-0 leading-tight">
-            <span className="block text-xs text-sub">{t("similar.seeAll")}</span>
-            <span className="block text-base font-semibold">{t("similar.properties")}</span>
-          </span>
-        </Link>
+        {here && here.count > 1 ? (
+          <Link to="/" className="card flex min-h-[64px] items-center gap-3 px-4 py-3 active:scale-[0.99]">
+            <LayoutGrid size={22} className="shrink-0 text-brand" />
+            <span className="min-w-0 leading-tight">
+              <span className="block text-xs text-sub">{t("similar.seeAll")}</span>
+              <span className="block text-base font-semibold">{t("similar.properties")}</span>
+            </span>
+          </Link>
+        ) : (
+          <Link to="/" className="card mx-auto flex h-12 w-fit items-center gap-2 px-5 text-base font-semibold active:scale-[0.99]">
+            <LayoutGrid size={19} className="shrink-0 text-brand" />
+            {t("similar.seeAllProperties")}
+          </Link>
+        )}
       </div>
 
       {/* Didn't find it: a clear, friendly box with one obvious button */}
