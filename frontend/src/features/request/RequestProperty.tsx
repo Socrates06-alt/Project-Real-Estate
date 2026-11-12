@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
@@ -56,65 +57,65 @@ export default function RequestProperty() {
         <div className="mb-5 grid h-16 w-16 place-items-center rounded-full bg-brand-soft text-brand">
           <Check size={30} strokeWidth={2.5} />
         </div>
-        <h1 className="text-2xl font-semibold">Thanks!</h1>
-        <p className="mt-2 max-w-xs text-sub">We'll call you when we find a match.</p>
+        <h1 className="text-2xl font-semibold">{t("common.thanks")}</h1>
+        <p className="mt-2 max-w-xs text-sub">{t("request.subtitle")}</p>
         <Link to="/" className={`${buttonVariants({ variant: "soft", size: "lg" })} mt-8 max-w-sm`}>
-          See properties
+          {t("request.seeProperties")}
         </Link>
       </div>
     );
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <PageHeader title="Your requirement" subtitle="We'll call you when we find a match." />
-      <QuickContact want="buy" label="Don't want to fill the form?" className="card-sm p-3" />
+      <PageHeader title={t("request.title")} subtitle={t("request.subtitle")} />
+      <QuickContact want="buy" label={t("common.notFillForm")} className="card-sm p-3" />
 
-      <FormCard title="Looking for">
+      <FormCard title={t("request.lookingFor")}>
         <Segmented
           value={type}
           onChange={setType}
           options={[
-            { value: "land", label: "Land" },
-            { value: "house", label: "House" },
-            { value: "commercial", label: "Commercial" },
+            { value: "land", label: t("type.land") },
+            { value: "house", label: t("type.house") },
+            { value: "commercial", label: t("type.commercial") },
           ]}
         />
-        <Field label="Place">
-          <AreaInput name="area" value={area} onChange={setArea} placeholder="Any place" />
+        <Field label={t("request.place")}>
+          <AreaInput name="area" value={area} onChange={setArea} placeholder={t("request.anyPlace")} />
         </Field>
         <div>
           <div className="mb-1.5 flex items-center justify-between px-1">
-            <span className="text-sm font-medium">Land size</span>
+            <span className="text-sm font-medium">{t("common.landSize")}</span>
             <UnitSwitch unit={sizeUnit} onChange={setSizeUnit} />
           </div>
           <div className="flex items-center gap-2">
-            <SizeInput name="min_cents" unit={sizeUnit} hint={false} className="min-w-0 flex-1" placeholder={sizeUnit === "acres" ? "1" : "5"} aria-label="Land size from" />
+            <SizeInput name="min_cents" unit={sizeUnit} hint={false} className="min-w-0 flex-1" placeholder={sizeUnit === "acres" ? "1" : "5"} aria-label={t("request.sizeFrom")} />
             <span className="text-sub">–</span>
-            <SizeInput name="max_cents" unit={sizeUnit} hint={false} className="min-w-0 flex-1" placeholder={sizeUnit === "acres" ? "2" : "10"} aria-label="Land size to" />
+            <SizeInput name="max_cents" unit={sizeUnit} hint={false} className="min-w-0 flex-1" placeholder={sizeUnit === "acres" ? "2" : "10"} aria-label={t("request.sizeTo")} />
           </div>
         </div>
         {type === "house" && (
-          <Field label="House size">
-            <AffixInput name="sqft" suffix="sq ft" inputMode="numeric" placeholder="1200" pattern="\d+" />
+          <Field label={t("request.houseSize")}>
+            <AffixInput name="sqft" suffix={t("unit.sqft")} inputMode="numeric" placeholder="1200" pattern="\d+" />
           </Field>
         )}
-        <Field label="Budget">
-          <AffixInput name="budget_lakh" prefix="₹" suffix="lakh" inputMode="decimal" placeholder={EXAMPLES[type].budget} pattern="\d+(\.\d{1,2})?" />
+        <Field label={t("common.budget")}>
+          <AffixInput name="budget_lakh" prefix="₹" suffix={t("unit.lakh")} inputMode="decimal" placeholder={EXAMPLES[type].budget} pattern="\d+(\.\d{1,2})?" />
         </Field>
-        <Field label="Anything else">
+        <Field label={t("request.anythingElse")}>
           <Input name="note" maxLength={500} placeholder={EXAMPLES[type].wants} />
         </Field>
       </FormCard>
 
-      <FormCard title="Help">
+      <FormCard title={t("request.help")}>
         <AssistanceOption info={FINANCE_HELP} checked={finance} onChange={setFinance} />
       </FormCard>
 
-      <FormCard title="Your details">
-        <Field label="Name">
-          <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Full name" />
+      <FormCard title={t("common.yourDetails")}>
+        <Field label={t("common.name")}>
+          <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder={t("common.fullName")} />
         </Field>
-        <Field label="Phone">
+        <Field label={t("common.phone")}>
           <PhoneInput name="phone" required autoComplete="tel" />
         </Field>
         <ExtraPhone name="phone2" />
@@ -122,7 +123,7 @@ export default function RequestProperty() {
 
       {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm font-medium text-sold">{error}</p>}
       <Button type="submit" variant="accent" size="lg" disabled={busy}>
-        {busy ? "Sending…" : "Submit requirement"}
+        {busy ? t("common.sending") : t("request.submit")}
       </Button>
     </form>
   );

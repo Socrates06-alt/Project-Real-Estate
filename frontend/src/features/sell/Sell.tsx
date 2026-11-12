@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { getConfig, uploadForm, type PropertyType } from "@/shared/api/client";
 import { useSubmit } from "@/shared/lib/useSubmit";
@@ -96,12 +97,12 @@ export default function Sell() {
       for (const original of Array.from(files)) {
         if (next.length >= max) break;
         if (!ACCEPT.includes(original.type)) {
-          toast("Use JPEG, PNG or WebP photos");
+          toast(t("sell.badType"));
           continue;
         }
         const file = await shrinkImage(original); // checked after shrinking: big camera photos are fine
         if (file.size > limit) {
-          toast("This photo is too large. Please choose another.");
+          toast(t("sell.tooLarge"));
           continue;
         }
         next.push({ file, url: URL.createObjectURL(file) });
@@ -115,7 +116,7 @@ export default function Sell() {
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!config) return;
-    if (!agree) return fail("Please accept the brokerage terms");
+    if (!agree) return fail(t("sell.acceptTerms"));
     const f = new FormData(e.currentTarget);
     f.set("property_type", type);
     f.set("negotiable", String(negotiable));
@@ -144,39 +145,39 @@ export default function Sell() {
 
   return (
     <form key={draft.formKey} ref={formRef} onSubmit={submit} onInput={draft.onTyping} className="space-y-4">
-      <PageHeader title="List your property" subtitle="Free listing · pay only when it sells" />
-      <QuickContact want="sell" label="Don't want to fill the form?" className="card-sm p-3" />
+      <PageHeader title={t("sell.title")} subtitle={t("sell.subtitle")} />
+      <QuickContact want="sell" label={t("common.notFillForm")} className="card-sm p-3" />
       {draft.restored && (
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand">
-          <span>Continuing your unfinished listing</span>
+          <span>{t("sell.continuing")}</span>
           <button type="button" onClick={startOver} className="shrink-0 font-semibold underline underline-offset-2">
-            Start over
+            {t("sell.startOver")}
           </button>
         </div>
       )}
 
       <PhotoPicker photos={photos} max={max} preparing={preparing} onAdd={addPhotos} onRemove={(p) => setPhotos(photos.filter((x) => x !== p))} />
 
-      <FormCard title="Property">
+      <FormCard title={t("sell.property")}>
         <Segmented
           value={type}
           onChange={setType}
           options={[
-            { value: "house", label: "House" },
-            { value: "land", label: "Land" },
-            { value: "commercial", label: "Commercial" },
+            { value: "house", label: t("type.house") },
+            { value: "land", label: t("type.land") },
+            { value: "commercial", label: t("type.commercial") },
           ]}
         />
-        <Field label="Land size">
+        <Field label={t("common.landSize")}>
           <SizeInput name="land_area_cents" defaultCents={saved.land_area_cents} required placeholder={EXAMPLES[type].cents} />
         </Field>
-        <Field label="Location">
+        <Field label={t("sell.location")}>
           <AreaInput name="location" required value={area} onChange={setArea} />
         </Field>
-        <Field label="Full address">
-          <Textarea name="address" defaultValue={saved.address} maxLength={300} rows={2} className="min-h-0" placeholder="House name, street, PIN" />
+        <Field label={t("sell.address")}>
+          <Textarea name="address" defaultValue={saved.address} maxLength={300} rows={2} className="min-h-0" placeholder={t("sell.addressPh")} />
         </Field>
-        <Field label="Description">
+        <Field label={t("sell.description")}>
           <Textarea
             name="description"
             defaultValue={saved.description}
@@ -186,19 +187,19 @@ export default function Sell() {
         </Field>
       </FormCard>
 
-      <FormCard title="Price & documents">
+      <FormCard title={t("sell.priceDocs")}>
         <ExpectedPrice type={type} defaultTotal={Number(saved.expected_price?.replace(/\D/g, "")) || undefined} defaultPerCent={saved.price_per_cent} />
-        <Switch checked={negotiable} onChange={setNegotiable} label="Negotiable" />
-        <Switch checked={docs} onChange={setDocs} label="Legal documents available" />
+        <Switch checked={negotiable} onChange={setNegotiable} label={t("common.negotiable")} />
+        <Switch checked={docs} onChange={setDocs} label={t("sell.docsAvailable")} />
         <AssistanceOption info={DOC_HELP} checked={docHelp} onChange={setDocHelp} />
         <AssistanceOption info={DEV_HELP} checked={devHelp} onChange={setDevHelp} />
       </FormCard>
 
-      <FormCard title="Your details">
-        <Field label="Name">
-          <Input name="seller_name" defaultValue={saved.seller_name} required minLength={2} maxLength={80} autoComplete="name" placeholder="Full name" />
+      <FormCard title={t("common.yourDetails")}>
+        <Field label={t("common.name")}>
+          <Input name="seller_name" defaultValue={saved.seller_name} required minLength={2} maxLength={80} autoComplete="name" placeholder={t("common.fullName")} />
         </Field>
-        <Field label="Phone">
+        <Field label={t("common.phone")}>
           <PhoneInput name="seller_phone" defaultValue={saved.seller_phone} required autoComplete="tel" />
         </Field>
         <ExtraPhone defaultValue={saved.seller_phone2} />
@@ -209,7 +210,7 @@ export default function Sell() {
       {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm font-medium text-sold">{error}</p>}
       {progress != null && <UploadProgress progress={progress} />}
       <Button type="submit" variant="accent" size="lg" disabled={busy || preparing || !config}>
-        {busy ? (progress != null && progress < 100 ? `Uploading ${progress}%` : "Submitting…") : "Submit property"}
+        {busy ? (progress != null && progress < 100 ? t("sell.uploading", { pct: progress }) : t("sell.submitting")) : t("sell.submit")}
       </Button>
     </form>
   );

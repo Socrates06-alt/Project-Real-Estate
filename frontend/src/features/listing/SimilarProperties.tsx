@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LayoutGrid, MapPin, SearchCheck } from "lucide-react";
@@ -5,7 +6,6 @@ import { api, mediaUrl, type Listing } from "@/shared/api/client";
 import { cents, priceDisplay, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { TYPE_ICON } from "@/shared/lib/propertyType";
-import { REQUEST_LABEL } from "@/shared/lib/labels";
 import { buttonVariants } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 
@@ -21,7 +21,7 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
     <div className="mt-6 space-y-5">
       {data.similar.length > 0 && (
         <section>
-          <h2 className="mb-2 px-1 text-base font-semibold">Similar properties</h2>
+          <h2 className="mb-2 px-1 text-base font-semibold">{t("similar.title")}</h2>
           <div className="-mx-4 flex snap-x scroll-px-4 items-start gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
             {data.similar.map((s) => (
               <SimilarCard key={s.id} s={s} />
@@ -39,7 +39,7 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
           >
             <MapPin size={22} className="shrink-0 text-brand" />
             <span className="min-w-0 leading-tight">
-              <span className="block text-xs text-sub">More in</span>
+              <span className="block text-xs text-sub">{t("similar.moreIn")}</span>
               <span className="block truncate text-base font-semibold">{here.place}</span>
             </span>
           </Link>
@@ -47,8 +47,8 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
         <Link to="/" className="card flex min-h-[64px] items-center gap-3 px-4 py-3 active:scale-[0.99]">
           <LayoutGrid size={22} className="shrink-0 text-brand" />
           <span className="min-w-0 leading-tight">
-            <span className="block text-xs text-sub">See all</span>
-            <span className="block text-base font-semibold">Properties</span>
+            <span className="block text-xs text-sub">{t("similar.seeAll")}</span>
+            <span className="block text-base font-semibold">{t("similar.properties")}</span>
           </span>
         </Link>
       </div>
@@ -60,12 +60,12 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
             <SearchCheck size={24} />
           </span>
           <div>
-            <p className="text-lg leading-snug font-semibold">Didn't find what you need?</p>
-            <p className="mt-0.5 text-[15px] text-sub">Tell us what you're looking for. We'll call you.</p>
+            <p className="text-lg leading-snug font-semibold">{t("similar.didntFind")}</p>
+            <p className="mt-0.5 text-[15px] text-sub">{t("similar.tellUs")}</p>
           </div>
         </div>
         <Link to="/request" className={cn(buttonVariants({ variant: "primary", size: "lg" }), "mt-4")}>
-          {REQUEST_LABEL}
+          {t("request.post")}
         </Link>
       </section>
     </div>

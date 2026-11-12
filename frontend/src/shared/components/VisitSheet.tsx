@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { type FormEvent } from "react";
 import { useSubmit } from "@/shared/lib/useSubmit";
 import { cameFrom } from "@/shared/lib/source";
@@ -32,36 +33,36 @@ export function VisitSheet({ listingId, open, onClose }: { listingId: string; op
   };
 
   return (
-    <Sheet open={open} onClose={close} title={done ? "Request sent" : "Request a visit"}>
+    <Sheet open={open} onClose={close} title={done ? t("visit.sent") : t("visit.title")}>
       {done ? (
         <div className="py-6 text-center">
           <CheckCircle2 className="mx-auto mb-3 text-brand" size={56} />
-          <p className="font-semibold">We'll message you on WhatsApp</p>
-          <p className="mt-1 text-sm text-sub">We fix a time and come with you.</p>
+          <p className="font-semibold">{t("visit.waMessage")}</p>
+          <p className="mt-1 text-sm text-sub">{t("visit.comeWith")}</p>
           <Button size="lg" className="mt-6" onClick={close}>
-            Done
+            {t("common.done")}
           </Button>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
-          <p className="-mt-2 text-sm text-sub">We confirm on WhatsApp and join every visit.</p>
-          <Field label="Your name">
-            <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder="Your full name" />
+          <p className="-mt-2 text-sm text-sub">{t("visit.intro")}</p>
+          <Field label={t("visit.yourName")}>
+            <Input name="name" required minLength={2} maxLength={80} autoComplete="name" placeholder={t("visit.namePh")} />
           </Field>
-          <Field label="Phone">
-            <Input name="phone" required inputMode="tel" autoComplete="tel" placeholder="10-digit mobile number" />
+          <Field label={t("common.phone")}>
+            <Input name="phone" required inputMode="tel" autoComplete="tel" placeholder={t("visit.phonePh")} />
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Preferred time">
-              <Input name="when" maxLength={120} placeholder="Sat morning" />
+            <Field label={t("visit.time")}>
+              <Input name="when" maxLength={120} placeholder={t("visit.timePh")} />
             </Field>
-            <Field label="Budget">
+            <Field label={t("common.budget")}>
               <Input name="budget" maxLength={60} placeholder="₹50–60 L" />
             </Field>
           </div>
           {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm text-sold">{error}</p>}
           <Button type="submit" size="lg" disabled={busy}>
-            {busy ? "Sending…" : "Send request"}
+            {busy ? t("common.sending") : t("visit.send")}
           </Button>
         </form>
       )}

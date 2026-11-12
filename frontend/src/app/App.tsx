@@ -1,3 +1,4 @@
+import { useLang } from "@/shared/i18n";
 import { lazy, Suspense, useEffect } from "react";
 import { Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { BottomNav } from "@/app/BottomNav";
@@ -56,6 +57,7 @@ function PageTracker() {
 }
 
 export default function App() {
+  useLang(); // re-render everything when the language changes
   usePrefetch();
   return (
     <>

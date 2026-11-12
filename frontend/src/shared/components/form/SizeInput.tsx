@@ -1,8 +1,10 @@
+import { t } from "@/shared/i18n";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 
 export type SizeUnit = "cents" | "acres";
 const CENTS_PER_ACRE = 100;
+const UNIT_KEY = { cents: "unit.cents", acres: "unit.acres" } as const;
 
 const tidy = (n: number) => String(Number(n.toFixed(4)));
 
@@ -16,7 +18,7 @@ export function toCents(text: string, unit: SizeUnit): number | null {
 /** Small "cents | acres" switch. */
 export function UnitSwitch({ unit, onChange }: { unit: SizeUnit; onChange: (u: SizeUnit) => void }) {
   return (
-    <div role="group" aria-label="Unit" className="flex shrink-0 rounded-full bg-surface p-0.5 text-xs font-semibold shadow-[0_0_0_1px_var(--hairline)]">
+    <div role="group" aria-label={t("form.unit")} className="flex shrink-0 rounded-full bg-surface p-0.5 text-xs font-semibold shadow-[0_0_0_1px_var(--hairline)]">
       {(["cents", "acres"] as const).map((u) => (
         <button
           key={u}
@@ -25,7 +27,7 @@ export function UnitSwitch({ unit, onChange }: { unit: SizeUnit; onChange: (u: S
           onClick={() => onChange(u)}
           className={cn("rounded-full px-2.5 py-1 transition-colors", unit === u ? "bg-brand text-brand-ink" : "text-sub")}
         >
-          {u}
+          {t(UNIT_KEY[u])}
         </button>
       ))}
     </div>
@@ -95,11 +97,11 @@ export function SizeInput({ name, defaultCents, unit: sharedUnit, onCents, requi
           aria-label={rest["aria-label"]}
           className="h-full min-w-0 flex-1 bg-transparent px-4 text-ink outline-none placeholder:text-sub/70"
         />
-        {sharedUnit ? <span className="pr-2.5 text-sm text-sub">{unit}</span> : <UnitSwitch unit={unit} onChange={setOwnUnit} />}
+        {sharedUnit ? <span className="pr-2.5 text-sm text-sub">{t(UNIT_KEY[unit])}</span> : <UnitSwitch unit={unit} onChange={setOwnUnit} />}
       </div>
       {name && <input ref={hidden} type="hidden" name={name} value={cents ?? ""} readOnly />}
       {hint && cents != null && (unit === "acres" || cents >= CENTS_PER_ACRE) && (
-        <p className="mt-1 px-1 text-xs text-sub">= {unit === "acres" ? `${tidy(cents)} cents` : `${tidy(cents / CENTS_PER_ACRE)} acres`}</p>
+        <p className="mt-1 px-1 text-xs text-sub">= {unit === "acres" ? `${tidy(cents)} ${t("unit.cents")}` : `${tidy(cents / CENTS_PER_ACRE)} ${t("unit.acres")}`}</p>
       )}
     </div>
   );

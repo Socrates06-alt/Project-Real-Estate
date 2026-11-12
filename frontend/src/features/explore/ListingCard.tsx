@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BadgeCheck, CalendarDays, FileCheck2, Handshake, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
@@ -34,15 +35,15 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
             <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3">
               <div className="flex flex-wrap gap-1.5">
                 <span className={cn(tag, sold ? "bg-sold-soft text-sold" : TYPE_TAG[listing.property_type])}>
-                  {sold ? "Sold" : typeLabel(listing.property_type)}
+                  {sold ? t("common.sold") : typeLabel(listing.property_type)}
                 </span>
-                {!sold && isNew(listing.listed_at) && <span className={cn(tag, outlineTag)}>New</span>}
-                {!sold && listing.price_reduced && <span className={cn(tag, outlineTag)}>Price reduced</span>}
+                {!sold && isNew(listing.listed_at) && <span className={cn(tag, outlineTag)}>{t("common.new")}</span>}
+                {!sold && listing.price_reduced && <span className={cn(tag, outlineTag)}>{t("common.priceReduced")}</span>}
               </div>
             </div>
             {!sold && (
               <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-verified-soft px-2.5 py-1 text-[12px] font-semibold text-verified shadow-sm">
-                <BadgeCheck size={14} /> Verified by LandFinder
+                <BadgeCheck size={14} /> {t("common.verified")}
               </span>
             )}
           </>
@@ -67,16 +68,16 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
           </span>
           {listing.documents_available && (
             <span className={cn(fact, "bg-verified-soft text-verified")}>
-              <FileCheck2 size={14} /> Documents ready
+              <FileCheck2 size={14} /> {t("card.docsReady")}
             </span>
           )}
           {listing.negotiable && !sold && (
             <span className={fact}>
-              <Handshake size={14} className="text-brand" /> Negotiable
+              <Handshake size={14} className="text-brand" /> {t("common.negotiable")}
             </span>
           )}
         </div>
-        {rera && <p className="mt-2 text-xs text-sub">Kerala RERA {rera}</p>}
+        {rera && <p className="mt-2 text-xs text-sub">{t("common.rera")} {rera}</p>}
       </button>
 
       {sold ? (
@@ -84,13 +85,13 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
       ) : (
         <div className="mt-3 grid grid-cols-3 gap-2">
           <a href={telLink(contact)} className={cn(action, "btn-accent font-semibold")}>
-            <Phone size={20} /> Call
+            <Phone size={20} /> {t("common.call")}
           </a>
           <a href={waLink(contact, listing)} target="_blank" rel="noreferrer" className={cn(action, "bg-muted")}>
-            <MessageCircle size={20} className="text-wa" /> WhatsApp
+            <MessageCircle size={20} className="text-wa" /> {t("common.whatsapp")}
           </a>
           <button type="button" onClick={() => setVisitOpen(true)} className={cn(action, "bg-muted")}>
-            <CalendarDays size={20} className="text-brand" /> Visit
+            <CalendarDays size={20} className="text-brand" /> {t("common.visit")}
           </button>
         </div>
       )}

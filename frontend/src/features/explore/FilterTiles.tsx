@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { Home, LayoutGrid, Store, Trees } from "lucide-react";
 import type { PropertyType } from "@/shared/api/client";
 
@@ -11,10 +12,10 @@ export function FilterTiles(props: { type: PropertyFilter; onType: (t: PropertyF
   const { type, onType } = props;
   const pick = (t: PropertyFilter) => () => onType(type === t ? "all" : t);
   const tiles: Tile[] = [
-    { key: "all", label: "All", icon: <LayoutGrid size={18} />, tone: "bg-brand-soft text-brand", on: type === "all", onClick: () => onType("all") },
-    { key: "house", label: "Houses", icon: <Home size={18} />, tone: "bg-house-soft text-house", on: type === "house", onClick: pick("house") },
-    { key: "land", label: "Land", icon: <Trees size={18} />, tone: "bg-land-soft text-land", on: type === "land", onClick: pick("land") },
-    { key: "commercial", label: "Commercial", icon: <Store size={18} />, tone: "bg-commercial-soft text-commercial", on: type === "commercial", onClick: pick("commercial") },
+    { key: "all", label: t("filter.all"), icon: <LayoutGrid size={18} />, tone: "bg-brand-soft text-brand", on: type === "all", onClick: () => onType("all") },
+    { key: "house", label: t("filter.houses"), icon: <Home size={18} />, tone: "bg-house-soft text-house", on: type === "house", onClick: pick("house") },
+    { key: "land", label: t("filter.land"), icon: <Trees size={18} />, tone: "bg-land-soft text-land", on: type === "land", onClick: pick("land") },
+    { key: "commercial", label: t("filter.commercial"), icon: <Store size={18} />, tone: "bg-commercial-soft text-commercial", on: type === "commercial", onClick: pick("commercial") },
   ];
   return (
     <section className="grid grid-cols-4 gap-2">
@@ -29,7 +30,7 @@ export function FilterTiles(props: { type: PropertyFilter; onType: (t: PropertyF
           )}
         >
           <span className={cn("grid h-8 w-8 place-items-center rounded-[11px]", t.tone)}>{t.icon}</span>
-          <span className={cn("text-[12px] leading-tight font-medium", t.on ? "text-brand" : "text-ink")}>{t.label}</span>
+          <span className={cn("w-full truncate text-[12px] leading-tight font-medium", t.on ? "text-brand" : "text-ink")}>{t.label}</span>
         </button>
       ))}
     </section>

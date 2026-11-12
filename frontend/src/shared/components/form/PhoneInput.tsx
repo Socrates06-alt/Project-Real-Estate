@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Search } from "lucide-react";
@@ -45,14 +46,14 @@ export function PhoneInput({ name, defaultValue, value, onChange, required, plac
         onChange={(e) => update(iso, e.target.value)}
         required={required}
         autoComplete={autoComplete}
-        placeholder={placeholder ?? "Mobile number"}
+        placeholder={placeholder ?? t("form.mobile")}
         aria-label={rest["aria-label"]}
         className={cn("h-full min-w-0 flex-1 bg-transparent px-3 text-ink outline-none placeholder:text-sub/70")}
       />
       <button
         type="button"
         onClick={() => setPicking(true)}
-        aria-label={`Country code +${country.dial}, change`}
+        aria-label={t("form.countryAria", { dial: country.dial })}
         className="order-first flex h-full shrink-0 items-center gap-1 border-r border-line pr-2 pl-3 font-medium"
       >
         +{country.dial}
@@ -80,11 +81,11 @@ export function ExtraPhone({ defaultValue, name = "seller_phone2", placeholder }
   if (!open)
     return (
       <button type="button" onClick={() => setOpen(true)} className="px-1 text-sm font-semibold text-brand">
-        + Add another number
+        {t("form.addNumber")}
       </button>
     );
   return (
-    <Field label="Another number (optional)">
+    <Field label={t("form.anotherNumber")}>
       <PhoneInput name={name} defaultValue={defaultValue} placeholder={placeholder} />
     </Field>
   );
@@ -98,15 +99,15 @@ function CountryPicker({ onPick, onClose }: { onPick: (iso: string) => void; onC
     ? COUNTRIES.filter((c) => c.name.toLowerCase().includes(term) || c.dial.startsWith(term) || c.iso.toLowerCase() === term)
     : COUNTRIES;
   return (
-    <Sheet open onClose={onClose} title="Country code">
+    <Sheet open onClose={onClose} title={t("form.countryCode")}>
       <div className="relative">
         <Search size={17} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-sub" />
         <input
           autoFocus
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search country or code"
-          aria-label="Search country or code"
+          placeholder={t("form.searchCountry")}
+          aria-label={t("form.searchCountry")}
           className="h-12 w-full rounded-[18px] bg-muted pr-4 pl-11 text-[15px] outline-none focus:ring-4 focus:ring-brand/12"
         />
       </div>
@@ -120,7 +121,7 @@ function CountryPicker({ onPick, onClose }: { onPick: (iso: string) => void; onC
             </button>
           </li>
         ))}
-        {!list.length && <li className="px-2 py-6 text-center text-sm text-sub">No country found</li>}
+        {!list.length && <li className="px-2 py-6 text-center text-sm text-sub">{t("form.noCountry")}</li>}
       </ul>
     </Sheet>
   );

@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useState } from "react";
 import { TYPE_TONE } from "@/shared/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
@@ -46,8 +47,8 @@ export default function ListingDetail() {
   }
 
   async function copyLink() {
-    if (await copyText(shareUrl)) toast("Link copied");
-    else toast("Couldn't copy. Copy it from the address bar.");
+    if (await copyText(shareUrl)) toast(t("listing.copied"));
+    else toast(t("listing.copyFailed"));
     setShareOpen(false);
   }
 
@@ -74,12 +75,12 @@ export default function ListingDetail() {
         className="-mx-4 aspect-[4/3.6] sm:mx-0 sm:mt-4 sm:rounded-3xl"
         overlay={
           <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between bg-gradient-to-b from-black/45 via-black/15 to-transparent p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-10">
-            <button onClick={back} aria-label="Back" className={`${overBtn} w-11`}>
+            <button onClick={back} aria-label={t("listing.back")} className={`${overBtn} w-11`}>
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
-            <button onClick={share} aria-label="Share" className={`${overBtn} gap-2 px-4 text-[15px] font-semibold`}>
+            <button onClick={share} aria-label={t("listing.share")} className={`${overBtn} gap-2 px-4 text-[15px] font-semibold`}>
               <Share2 size={18} strokeWidth={2.5} className="text-brand" />
-              Share
+              {t("listing.share")}
             </button>
           </div>
         }
@@ -87,13 +88,13 @@ export default function ListingDetail() {
 
       <section className="pt-5">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge tone={sold ? "sold" : "brand"}>{sold ? "Sold" : "Available"}</Badge>
+          <Badge tone={sold ? "sold" : "brand"}>{sold ? t("common.sold") : t("listing.available")}</Badge>
           {!sold && (
             <Badge tone="verified">
-              <BadgeCheck size={13} /> Verified by LandFinder
+              <BadgeCheck size={13} /> {t("common.verified")}
             </Badge>
           )}
-          {!sold && l.price_reduced && <Badge tone="brand">Price reduced</Badge>}
+          {!sold && l.price_reduced && <Badge tone="brand">{t("common.priceReduced")}</Badge>}
           <Badge tone={TYPE_TONE[l.property_type]}>{typeLabel(l.property_type)}</Badge>
         </div>
         <div className="mt-3 flex items-baseline gap-3">
@@ -101,7 +102,7 @@ export default function ListingDetail() {
             {price.main}
             {price.unit && <span className="ml-0.5 text-lg font-semibold">{price.unit}</span>}
           </h1>
-          {l.negotiable && !sold && <span className="text-sm font-semibold text-brand">Negotiable</span>}
+          {l.negotiable && !sold && <span className="text-sm font-semibold text-brand">{t("common.negotiable")}</span>}
           {price.side && !sold && <span className="ml-auto text-sm font-medium text-sub">{price.side}</span>}
         </div>
         {!isAutoTitle(l.title) && <p className="mt-2 text-lg font-medium">{l.title}</p>}
@@ -112,22 +113,22 @@ export default function ListingDetail() {
 
       {/* Only what's actually known is shown; nothing empty or "not yet". */}
       <section className="mt-5 grid grid-cols-2 gap-3">
-        <Fact tone="bg-land-soft text-land" icon={<Ruler size={18} />} label="Area" value={cents(l.land_area_cents)} />
+        <Fact tone="bg-land-soft text-land" icon={<Ruler size={18} />} label={t("listing.area")} value={cents(l.land_area_cents)} />
         {l.documents_available && (
-          <Fact tone="bg-verified-soft text-verified" icon={<FileCheck2 size={18} />} label="Documents" value="Available" />
+          <Fact tone="bg-verified-soft text-verified" icon={<FileCheck2 size={18} />} label={t("listing.documents")} value={t("listing.docsReady")} />
         )}
       </section>
 
       <section className="mt-3 card p-5">
-        <h2 className="text-base font-semibold">About this property</h2>
+        <h2 className="text-base font-semibold">{t("listing.about")}</h2>
         {l.description && <p className="mt-2 text-[15px] leading-relaxed whitespace-pre-line">{l.description}</p>}
         <dl className="mt-3 divide-y divide-line rounded-2xl bg-muted/60 text-sm">
           {l.documents_note && (
-            <InfoRow icon={<FileCheck2 size={17} className="text-verified" />} label="Documents" value={l.documents_note} />
+            <InfoRow icon={<FileCheck2 size={17} className="text-verified" />} label={t("listing.documents")} value={l.documents_note} />
           )}
-          <InfoRow icon={<CalendarDays size={17} className="text-brand" />} label="Listed on" value={shortDate(l.listed_at)} />
+          <InfoRow icon={<CalendarDays size={17} className="text-brand" />} label={t("listing.listedOn")} value={shortDate(l.listed_at)} />
           {config.data?.rera_number && (
-            <InfoRow icon={<BadgeCheck size={17} className="text-verified" />} label="Kerala RERA" value={config.data.rera_number} />
+            <InfoRow icon={<BadgeCheck size={17} className="text-verified" />} label={t("common.rera")} value={config.data.rera_number} />
           )}
         </dl>
       </section>
@@ -136,8 +137,8 @@ export default function ListingDetail() {
       <section className="mt-3 flex gap-3 rounded-[28px] bg-sky p-5 text-sm">
         <Info size={18} className="mt-0.5 shrink-0 text-sky-ink" />
         <p>
-          <span className="font-semibold">Buyer brokerage: {l.brokerage.buyer_pct}%</span>
-          <span className="block text-sub">Paid only when the sale closes.</span>
+          <span className="font-semibold">{t("listing.buyerBrokerage", { pct: l.brokerage.buyer_pct })}</span>
+          <span className="block text-sub">{t("listing.paidOnClose")}</span>
         </p>
       </section>
 
@@ -147,27 +148,27 @@ export default function ListingDetail() {
         <div className="glass flex w-full max-w-sm items-center gap-1 rounded-full p-1 shadow-float">
           {sold ? (
             <a href={waLink(l.contact)} target="_blank" rel="noreferrer" className={cn(buttonVariants({ variant: "primary" }), "h-[52px] flex-1 rounded-full")}>
-              <MessageCircle size={19} /> Ask about similar properties
+              <MessageCircle size={19} /> {t("listing.askSimilar")}
             </a>
           ) : (
             <>
               <a href={telLink(l.contact)} className={cn(buttonVariants({ variant: "accent" }), "h-[52px] flex-[1.6] rounded-full text-base")}>
-                <Phone size={19} /> Call
+                <Phone size={19} /> {t("common.call")}
               </a>
               <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
                 <MessageCircle size={21} className="text-wa" />
-                WhatsApp
+                {t("common.whatsapp")}
               </a>
               <button onClick={() => setParams({ visit: "1" }, { replace: true })} className={pillAction}>
                 <CalendarDays size={20} className="text-brand" />
-                Visit
+                {t("common.visit")}
               </button>
             </>
           )}
         </div>
       </div>
 
-      <Sheet open={shareOpen} onClose={() => setShareOpen(false)} title="Share this property">
+      <Sheet open={shareOpen} onClose={() => setShareOpen(false)} title={t("listing.shareTitle")}>
         <div className="grid gap-2">
           <a
             href={`https://wa.me/?text=${encodeURIComponent(`${l.title} · ${l.location}\n${shareUrl}`)}`}
@@ -176,10 +177,10 @@ export default function ListingDetail() {
             onClick={() => setShareOpen(false)}
             className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
           >
-            <MessageCircle size={19} className="text-wa" /> Share on WhatsApp
+            <MessageCircle size={19} className="text-wa" /> {t("listing.shareWa")}
           </a>
           <button onClick={copyLink} className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-            <Link2 size={19} className="text-brand" /> Copy link
+            <Link2 size={19} className="text-brand" /> {t("listing.copyLink")}
           </button>
         </div>
       </Sheet>

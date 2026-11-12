@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { TYPE_ICON } from "@/shared/lib/propertyType";
 import { useRef, useState, type ReactNode } from "react";
 import { mediaUrl, type PropertyType } from "@/shared/api/client";
@@ -33,7 +34,7 @@ export function PhotoCarousel({
       <div ref={ref} onScroll={onScroll} className="no-scrollbar flex h-full snap-x snap-mandatory overflow-x-auto">
         {photos.length ? (
           photos.map((src, i) => (
-            <Photo key={src} src={src} small={small} alt={`Photo ${i + 1}`} eager={i === 0} onClick={onOpen} />
+            <Photo key={src} src={src} small={small} alt={t("listing.photo", { n: i + 1 })} eager={i === 0} onClick={onOpen} />
           ))
         ) : (
           <Placeholder type={type} onClick={onOpen} />

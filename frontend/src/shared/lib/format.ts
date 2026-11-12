@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 /** ₹62 L, ₹1.25 Cr */
 export function inr(n: number): string {
   if (n >= 1e7) return `₹${trim(n / 1e7, 2)} Cr`;
@@ -14,9 +15,9 @@ export function cents(v: number | string) {
   const n = Number(v);
   if (n >= 100) {
     const acres = Number((n / 100).toFixed(2));
-    return `${acres.toLocaleString("en-IN", { maximumFractionDigits: 2 })} ${acres === 1 ? "acre" : "acres"}`;
+    return `${acres.toLocaleString("en-IN", { maximumFractionDigits: 2 })} ${acres === 1 ? t("unit.acre") : t("unit.acres")}`;
   }
-  return `${n.toLocaleString("en-IN", { maximumFractionDigits: 2 })} cents`;
+  return `${n.toLocaleString("en-IN", { maximumFractionDigits: 2 })} ${t("unit.cents")}`;
 }
 
 export function shortDate(iso: string) {
@@ -31,14 +32,15 @@ export function timeAgo(iso: string) {
   return shortDate(iso);
 }
 
-export const typeLabel = (t: string) => ({ house: "House", land: "Land", commercial: "Commercial" })[t] ?? t;
+export const typeLabel = (type: string) =>
+  ({ house: t("type.house"), land: t("type.land"), commercial: t("type.commercial") })[type] ?? type;
 
 /**
  * How a listing's price is shown. Land is quoted per cent in Kerala, so for land the per-cent price is the main
  * figure and the total is secondary; houses and commercial show the total.
  */
 export function priceDisplay(price: number, type: string, landCents: number): { main: string; unit: string; side: string | null } {
-  if (type === "land" && landCents > 0) return { main: inr(price / landCents), unit: "/cent", side: `${inr(price)} total` };
+  if (type === "land" && landCents > 0) return { main: inr(price / landCents), unit: t("unit.perCent"), side: t("unit.total", { price: inr(price) }) };
   return { main: inr(price), unit: "", side: null };
 }
 

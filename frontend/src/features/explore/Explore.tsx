@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowUp, ChevronDown, ChevronRight, House, LocateFixed, MapPin, Search, SearchX, X, SearchCheck } from "lucide-react";
@@ -13,8 +14,8 @@ import { useAsync } from "@/shared/lib/useAsync";
 import { useNewListings } from "./useNewListings";
 import { ListingCard, ListingCardSkeleton } from "@/features/explore/ListingCard";
 import { EmptyState, ErrorState } from "@/shared/components/States";
-import { REQUEST_LABEL } from "@/shared/lib/labels";
 import { QuickContact } from "@/shared/components/QuickContact";
+import { LanguageMenu, LanguageStrip } from "@/shared/components/LanguageMenu";
 import { Button } from "@/shared/ui/button";
 
 type TypeFilter = PropertyFilter;
@@ -31,7 +32,7 @@ export default function Explore() {
   const [params, setParams] = useSearchParams();
   const area =
     params.get("lat") && params.get("lng")
-      ? { lat: params.get("lat")!, lng: params.get("lng")!, r: params.get("r") || "5", place: params.get("place") || "Selected area" }
+      ? { lat: params.get("lat")!, lng: params.get("lng")!, r: params.get("r") || "5", place: params.get("place") || t("home.selectedArea") }
       : null;
   const areaKey = area ? `${area.lat},${area.lng},${area.r}` : "";
 
@@ -96,7 +97,7 @@ export default function Explore() {
         <div className="mb-3 flex items-center justify-between gap-3">
           <button
             type="button"
-            aria-label="LandFinder home: show all properties"
+            aria-label={t("home.homeAria")}
             onClick={() => {
               setInput("");
               setType("all");
@@ -107,19 +108,22 @@ export default function Explore() {
           >
             <Logo light />
           </button>
-          <LocationButton area={area} onClear={() => setArea(null)} />
+          <div className="flex min-w-0 items-center gap-2">
+            <LanguageMenu />
+            <LocationButton area={area} onClear={() => setArea(null)} />
+          </div>
         </div>
         <div className="search-pill flex h-[52px] min-w-0 items-center gap-3 rounded-full px-5">
           <Search size={20} className="shrink-0 text-brand" />
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Search area, budget or type"
-            aria-label="Search properties"
+            placeholder={t("home.searchPlaceholder")}
+            aria-label={t("home.searchAria")}
             className="min-w-0 flex-1 bg-transparent text-base text-ink caret-[var(--brand)] outline-none"
           />
           {input && (
-            <button aria-label="Clear search" onClick={() => setInput("")} className="grid h-8 w-8 place-items-center rounded-full text-sub hover:bg-muted">
+            <button aria-label={t("home.clearSearch")} onClick={() => setInput("")} className="grid h-8 w-8 place-items-center rounded-full text-sub hover:bg-muted">
               <X size={16} />
             </button>
           )}
@@ -132,12 +136,13 @@ export default function Explore() {
             onClick={fresh.showNew}
             className="animate-fade pointer-events-auto mt-2 flex h-10 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-semibold text-brand-ink shadow-float"
           >
-            <ArrowUp size={16} strokeWidth={2.5} /> New properties
+            <ArrowUp size={16} strokeWidth={2.5} /> {t("home.newProperties")}
           </button>
         </div>
       )}
 
       <div className="space-y-4 pt-4">
+        <LanguageStrip />
         <FilterTiles type={type} onType={setType} />
         {!area && <NearYouPopup onArea={setArea} />}
         {isHome && <SellBuyCard />}
@@ -147,14 +152,14 @@ export default function Explore() {
         {data && !items.length && (
           <EmptyState
             icon={<SearchX size={28} />}
-            title={area ? "No properties in this area" : "Nothing matches yet"}
-            text="Try a nearby area or a wider budget. New properties are added every week."
+            title={area ? t("home.noneInArea") : t("home.noMatch")}
+            text={t("home.emptyText")}
           />
         )}
         {data && !items.length && <RequestBanner />}
         {hasMore && (
           <Button variant="outline" size="lg" disabled={loadingMore} onClick={loadMore}>
-            {loadingMore ? "Loading…" : "Show more"}
+            {loadingMore ? t("home.loading") : t("home.showMore")}
           </Button>
         )}
         {data && items.length > 0 && !hasMore && <RequestBanner />}
@@ -171,8 +176,8 @@ function RequestBanner() {
         <SearchCheck size={22} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-semibold">Didn't find it?</p>
-        <p className="text-sm text-sub">{REQUEST_LABEL}. We'll call you.</p>
+        <p className="font-semibold">{t("home.didntFind")}</p>
+        <p className="text-sm text-sub">{t("request.post")}. {t("common.weCallYou")}</p>
       </div>
       <ChevronRight size={20} className="shrink-0 text-sub" />
     </Link>
@@ -190,8 +195,8 @@ function SellBuyCard() {
             <House size={18} />
           </span>
           <span className="min-w-0">
-            <span className="block text-[15px] font-semibold">Sell</span>
-            <span className="block truncate text-xs text-sub">List it free</span>
+            <span className="block text-[15px] font-semibold">{t("nav.sell")}</span>
+            <span className="block truncate text-xs text-sub">{t("home.sellSub")}</span>
           </span>
         </Link>
         <Link to="/request" className={half}>
@@ -199,8 +204,8 @@ function SellBuyCard() {
             <SearchCheck size={18} />
           </span>
           <span className="min-w-0">
-            <span className="block text-[15px] font-semibold">Buy</span>
-            <span className="block truncate text-xs text-sub">Post requirement</span>
+            <span className="block text-[15px] font-semibold">{t("nav.buy")}</span>
+            <span className="block truncate text-xs text-sub">{t("home.buySub")}</span>
           </span>
         </Link>
       </div>
@@ -211,7 +216,7 @@ function SellBuyCard() {
 
 /** Top-right location: "All areas ▾" or "Puliyoor · 5 km ▾". Tap to choose on the map. */
 // Short label for the header chip (the full name shows on the map page).
-const chipPlace = (place: string) => (place === "Your location" ? "Near you" : place);
+const chipPlace = (place: string) => (place === "Your location" || place === "Near you" ? t("home.nearYou") : place);
 
 function LocationButton({ area, onClear }: { area: SavedArea | null; onClear: () => void }) {
   const to = area
@@ -226,14 +231,14 @@ function LocationButton({ area, onClear }: { area: SavedArea | null; onClear: ()
           : "bg-surface text-ink shadow-[0_0_0_1px_var(--hairline)]",
       )}
     >
-      <Link to={to} aria-label="Choose area" className={cn("flex min-w-0 items-center gap-1 py-2 pl-2.5", area ? "pr-0.5" : "pr-2")}>
+      <Link to={to} aria-label={t("home.chooseArea")} className={cn("flex min-w-0 items-center gap-1 py-2 pl-2.5", area ? "pr-0.5" : "pr-2")}>
         <MapPin size={15} className="shrink-0" />
         {/* A long place name shortens with "…"; the radius always stays visible. */}
-        <span className="truncate">{area ? chipPlace(area.place) : "All areas"}</span>
+        <span className="truncate">{area ? chipPlace(area.place) : t("home.allAreas")}</span>
         {area ? <span className="shrink-0 whitespace-nowrap opacity-75">{area.r} km</span> : <ChevronDown size={16} className="shrink-0" />}
       </Link>
       {area && (
-        <button aria-label="Show all areas" onClick={onClear} className="mr-0.5 grid h-8 w-7 shrink-0 place-items-center rounded-full hover:bg-brand/10">
+        <button aria-label={t("home.showAllAreas")} onClick={onClear} className="mr-0.5 grid h-8 w-7 shrink-0 place-items-center rounded-full hover:bg-brand/10">
           <X size={15} />
         </button>
       )}
@@ -263,9 +268,9 @@ function NearYouPopup({ onArea }: { onArea: (a: SavedArea) => void }) {
     try {
       const me = await getMyLocation();
       if (isNearTaluk(me)) onArea({ lat: me.lat.toFixed(5), lng: me.lng.toFixed(5), r: "5", place: "Near you" });
-      else toast("You're outside Chengannur — showing all areas");
+      else toast(t("home.outside"));
     } catch {
-      toast("Location not available — showing all areas");
+      toast(t("home.noLocation"));
     } finally {
       setBusy(false);
       close();
@@ -273,19 +278,19 @@ function NearYouPopup({ onArea }: { onArea: (a: SavedArea) => void }) {
   }
 
   return (
-    <Sheet open={open} onClose={close} title="Looking near where you are?">
+    <Sheet open={open} onClose={close} title={t("home.nearTitle")}>
       <div className="flex items-start gap-3">
         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-brand-soft text-brand">
           <LocateFixed size={22} />
         </span>
-        <p className="text-[15px] text-sub">See properties near you. Change the area anytime.</p>
+        <p className="text-[15px] text-sub">{t("home.nearText")}</p>
       </div>
       <div className="mt-5 grid gap-2">
         <Button size="lg" disabled={busy} onClick={useLocation}>
-          {busy ? "Finding you…" : "Use my location"}
+          {busy ? t("home.finding") : t("home.useLocation")}
         </Button>
         <Button size="lg" variant="ghost" onClick={close}>
-          No thanks
+          {t("home.noThanks")}
         </Button>
       </div>
     </Sheet>

@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { PropertyType } from "@/shared/api/client";
 import { inr, cents as centsLabel } from "@/shared/lib/format";
@@ -13,7 +14,8 @@ const indian = (v: string) => (digits(v) ? Number(digits(v)).toLocaleString("en-
  * The form sends "price_per_cent" for land; use expectedTotal() when submitting.
  */
 export function ExpectedPrice(props: { type: PropertyType; defaultTotal?: number; defaultPerCent?: string; label?: string; examples?: boolean }) {
-  const { type, defaultTotal, defaultPerCent, label = "Expected price", examples = true } = props;
+  const { type, defaultTotal, defaultPerCent, examples = true } = props;
+  const label = props.label ?? t("form.expectedPrice");
   const box = useRef<HTMLDivElement>(null);
   const [cents, setCents] = useState(0);
   const [perCent, setPerCent] = useState(defaultPerCent ? digits(defaultPerCent) : "");
@@ -39,10 +41,10 @@ export function ExpectedPrice(props: { type: PropertyType; defaultTotal?: number
     <div ref={box}>
       {type === "land" ? (
         <>
-          <Field label={`${label} per cent`}>
-            <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix="/ cent" required inputMode="numeric" placeholder={examples ? EXAMPLES.land.price : undefined} />
+          <Field label={t("form.perCentLabel", { label })}>
+            <AffixInput name="price_per_cent" value={indian(perCent)} onChange={(e) => setPerCent(digits(e.target.value))} prefix="₹" suffix={t("form.perCentSuffix")} required inputMode="numeric" placeholder={examples ? EXAMPLES.land.price : undefined} />
           </Field>
-          {total > 0 && <p className="mt-1.5 px-1 text-sm text-sub">Total {inr(total)} for {centsLabel(cents)}</p>}
+          {total > 0 && <p className="mt-1.5 px-1 text-sm text-sub">{t("form.totalFor", { price: inr(total), size: centsLabel(cents) })}</p>}
         </>
       ) : (
         <Field label={label}>

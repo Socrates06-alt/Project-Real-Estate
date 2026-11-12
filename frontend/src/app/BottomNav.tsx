@@ -1,12 +1,13 @@
+import { t } from "@/shared/i18n";
 import { NavLink } from "react-router-dom";
 import { PlusCircle, Search, UserRound } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 const ITEMS = [
-  { to: "/", label: "Buy", icon: Search, end: true }, // the property list is the buying page
-  { to: "/sell", label: "Sell", icon: PlusCircle, end: false },
-  { to: "/me", label: "Profile", icon: UserRound, end: false },
-];
+  { to: "/", label: "nav.buy", icon: Search, end: true }, // the property list is the buying page
+  { to: "/sell", label: "nav.sell", icon: PlusCircle, end: false },
+  { to: "/me", label: "nav.profile", icon: UserRound, end: false },
+] as const;
 
 /** Floating frosted pill: equal-width items, active item gets a soft highlight. */
 export function BottomNav() {
@@ -28,7 +29,7 @@ export function BottomNav() {
             {({ isActive }) => (
               <>
                 <Icon size={22} strokeWidth={isActive ? 2.2 : 1.8} />
-                {label}
+                {t(label)}
               </>
             )}
           </NavLink>

@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import type { ReactNode } from "react";
 import { Button } from "@/shared/ui/button";
 
@@ -15,11 +16,11 @@ export function EmptyState({ icon, title, text, action }: { icon: ReactNode; tit
 export function ErrorState({ message, retry }: { message: string; retry?: () => void }) {
   return (
     <div className="card px-6 py-10 text-center shadow-card">
-      <p className="font-semibold">Couldn't load</p>
+      <p className="font-semibold">{t("common.couldntLoad")}</p>
       <p className="mt-1 text-sm text-sub">{message}</p>
       {retry && (
         <Button variant="soft" size="sm" className="mt-4" onClick={retry}>
-          Try again
+          {t("common.tryAgain")}
         </Button>
       )}
     </div>

@@ -1,3 +1,4 @@
+import { t, type Key } from "@/shared/i18n";
 import { TYPE_ICON } from "@/shared/lib/propertyType";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -12,29 +13,36 @@ import { EmptyState, ErrorState } from "@/shared/components/States";
 import { telLink, waLink } from "@/shared/components/contact";
 import { cn } from "@/shared/lib/utils";
 import { ThemeSwitch } from "@/shared/components/ThemeSwitch";
+import { LanguageMenu } from "@/shared/components/LanguageMenu";
 import { PageHeader } from "@/shared/components/PageHeader";
 
-const STATUS: Record<SubmissionStatus, { label: string; tone: "sky" | "brand" | "sold" | "gray"; step: number }> = {
-  received: { label: "Submitted", tone: "sky", step: 0 },
-  under_review: { label: "Under review", tone: "sky", step: 1 },
-  listed: { label: "Live", tone: "brand", step: 2 },
-  sold: { label: "Sold", tone: "sold", step: 3 },
-  withdrawn: { label: "Not listed", tone: "gray", step: -1 },
-  rejected: { label: "Not listed", tone: "gray", step: -1 },
+// Labels are text keys, turned into words at render time so they follow the chosen language.
+const STATUS: Record<SubmissionStatus, { label: Key; tone: "sky" | "brand" | "sold" | "gray"; step: number }> = {
+  received: { label: "profile.submitted", tone: "sky", step: 0 },
+  under_review: { label: "profile.underReview", tone: "sky", step: 1 },
+  listed: { label: "profile.live", tone: "brand", step: 2 },
+  sold: { label: "common.sold", tone: "sold", step: 3 },
+  withdrawn: { label: "profile.notListed", tone: "gray", step: -1 },
+  rejected: { label: "profile.notListed", tone: "gray", step: -1 },
 };
-const STEPS = ["Submitted", "Review", "Live", "Sold"];
+const STEPS: Key[] = ["profile.submitted", "profile.review", "profile.live", "common.sold"];
 
 export default function Profile() {
   const [tab, setTab] = useState<"mine" | "how">("mine");
   return (
     <div className="space-y-4">
-      <PageHeader title="Profile" right={<ThemeSwitch />} />
+      <PageHeader title={t("profile.title")} right={
+          <div className="flex items-center gap-2">
+            <LanguageMenu />
+            <ThemeSwitch />
+          </div>
+        } />
       <Segmented
         value={tab}
         onChange={setTab}
         options={[
-          { value: "mine", label: "My listings" },
-          { value: "how", label: "How it works" },
+          { value: "mine", label: t("profile.mine") },
+          { value: "how", label: t("profile.how") },
         ]}
       />
       {tab === "mine" ? <MyListings /> : <HowItWorks />}
@@ -50,11 +58,11 @@ function MyListings() {
     return (
       <EmptyState
         icon={<Home size={28} />}
-        title="No listings yet"
-        text="Properties you list from your device show up here with their status."
+        title={t("profile.noListings")}
+        text={t("profile.noListingsText")}
         action={
           <Link to="/sell" className={buttonVariants({ size: "sm" })}>
-            List a property
+            {t("profile.listProperty")}
           </Link>
         }
       />
@@ -77,21 +85,21 @@ function MyListings() {
                   {inr(s.expected_price)} · {shortDate(s.created_at)}
                 </p>
               </div>
-              <Badge tone={st.tone}>{st.label}</Badge>
+              <Badge tone={st.tone}>{t(st.label)}</Badge>
             </div>
             {st.step >= 0 && (
               <div className="mt-4 grid grid-cols-4 gap-1.5">
                 {STEPS.map((label, i) => (
                   <div key={label}>
                     <div className={cn("h-1.5 rounded-full", i <= st.step ? "bg-brand" : "bg-muted")} />
-                    <p className={cn("mt-1.5 text-[11px]", i <= st.step ? "font-semibold text-ink" : "text-sub")}>{label}</p>
+                    <p className={cn("mt-1.5 text-[11px]", i <= st.step ? "font-semibold text-ink" : "text-sub")}>{t(label)}</p>
                   </div>
                 ))}
               </div>
             )}
             {s.listing_id && (
               <p className="mt-3 flex items-center justify-end text-xs font-semibold text-brand">
-                View listing <ChevronRight size={14} />
+                {t("profile.viewListing")} <ChevronRight size={14} />
               </p>
             )}
           </>
@@ -114,20 +122,20 @@ function MyListings() {
 function HowItWorks() {
   const { data: config } = useAsync(getConfig, []);
   const steps = [
-    ["List for free", "Add photos and details. We call to confirm."],
-    ["We verify & post", "Your listing goes live with our number, never yours."],
-    ["Buyers contact us", "We arrange and join every visit."],
-    ["Pay only on sale", "Brokerage is due only when the deal closes."],
+    [t("profile.step1"), t("profile.step1Text")],
+    [t("profile.step2"), t("profile.step2Text")],
+    [t("profile.step3"), t("profile.step3Text")],
+    [t("profile.step4"), t("profile.step4Text")],
   ];
   return (
     <div className="space-y-4">
       <div className="card p-5 shadow-card">
         <ol className="space-y-4">
-          {steps.map(([t, d], i) => (
-            <li key={t} className="flex gap-3.5">
+          {steps.map(([title, d], i) => (
+            <li key={title} className="flex gap-3.5">
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-brand-ink">{i + 1}</span>
               <div>
-                <p className="font-bold">{t}</p>
+                <p className="font-bold">{title}</p>
                 <p className="text-sm text-sub">{d}</p>
               </div>
             </li>
@@ -135,22 +143,22 @@ function HowItWorks() {
         </ol>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Fee label="Seller" tone="bg-peach-soft text-peach" value={`${config?.brokerage.seller_pct ?? 2}%`} />
-        <Fee label="Buyer" tone="bg-sky text-sky-ink" value={`${config?.brokerage.buyer_pct ?? 1}%`} />
+        <Fee label={t("profile.seller")} tone="bg-peach-soft text-peach" value={`${config?.brokerage.seller_pct ?? 2}%`} />
+        <Fee label={t("profile.buyer")} tone="bg-sky text-sky-ink" value={`${config?.brokerage.buyer_pct ?? 1}%`} />
       </div>
-      <p className="px-2 text-center text-xs text-sub">Listing is always free.</p>
+      <p className="px-2 text-center text-xs text-sub">{t("profile.alwaysFree")}</p>
       <p className="px-2 text-center text-xs text-sub">
-        <Link to="/terms" className="underline underline-offset-2">Terms of Service</Link>
+        <Link to="/terms" className="underline underline-offset-2">{t("common.terms")}</Link>
         {" · "}
-        <Link to="/privacy" className="underline underline-offset-2">Privacy Policy</Link>
+        <Link to="/privacy" className="underline underline-offset-2">{t("common.privacy")}</Link>
       </p>
       {config && (
         <div className="grid grid-cols-2 gap-3">
           <a href={waLink(config.contact)} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "wa" })}>
-            <MessageCircle size={18} /> WhatsApp
+            <MessageCircle size={18} /> {t("common.whatsapp")}
           </a>
           <a href={telLink(config.contact)} className={buttonVariants({ variant: "outline" })}>
-            <Phone size={18} /> Call
+            <Phone size={18} /> {t("common.call")}
           </a>
         </div>
       )}
@@ -162,7 +170,7 @@ function Fee({ label, value, tone }: { label: string; value: string; tone: strin
   return (
     <div className={cn("rounded-[28px] p-4 text-center", tone)}>
       <p className="text-3xl font-semibold">{value}</p>
-      <p className="text-sm text-sub">{label} brokerage</p>
+      <p className="text-sm text-sub">{t("profile.brokerage", { who: label })}</p>
     </div>
   );
 }

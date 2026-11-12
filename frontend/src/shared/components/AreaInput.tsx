@@ -1,3 +1,4 @@
+import { t } from "@/shared/i18n";
 import { useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { searchPlaces, type Place } from "@/shared/lib/geo";
@@ -14,7 +15,7 @@ export function AreaInput({
   onChange,
   name,
   required,
-  placeholder = "Place",
+  placeholder,
 }: {
   value: Area;
   onChange: (a: Area) => void;
@@ -49,7 +50,7 @@ export function AreaInput({
         minLength={2}
         maxLength={120}
         autoComplete="off"
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("form.place")}
         value={value.name}
         onChange={(e) => {
           onChange({ name: e.target.value, lat: null, lng: null }); // typed text: no position until picked
@@ -64,7 +65,7 @@ export function AreaInput({
         onBlur={() => setTimeout(() => setOpen(false), 150)}
       />
       {value.lat != null && (
-        <MapPin size={17} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-brand" aria-label="Area found on map" />
+        <MapPin size={17} className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-brand" aria-label={t("form.areaFound")} />
       )}
       {open && results.length > 0 && (
         <ul className="absolute inset-x-0 top-[52px] z-30 overflow-hidden card-sm shadow-float">
