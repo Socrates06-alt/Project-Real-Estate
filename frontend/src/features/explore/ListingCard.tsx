@@ -1,7 +1,7 @@
 import { t } from "@/shared/i18n";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { BadgeCheck, CalendarDays, FileCheck2, Handshake, MapPin, MessageCircle, Phone, Ruler, UserRound } from "lucide-react";
+import { BadgeCheck, CalendarDays, FileCheck2, Handshake, MapPin, MessageCircle, Phone, Ruler } from "lucide-react";
 import type { Contact, Listing } from "@/shared/api/client";
 import { cents, isNew, priceDisplay, typeLabel } from "@/shared/lib/format";
 import { PhotoCarousel } from "@/shared/components/PhotoCarousel";
@@ -16,9 +16,7 @@ const outlineTag = "bg-surface text-brand shadow-[inset_0_0_0_1.5px_var(--brand)
 const fact = "flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-ink";
 
 /** Feed post: photo, price and facts, then Call (main action), WhatsApp and Visit. */
-export function ListingCard({ listing, contact: ours, rera }: { listing: Listing; contact: Contact; rera?: string | null }) {
-  const byOwner = listing.listed_by === "owner";
-  const contact = listing.owner_contact ?? ours; // advertise plans: buyers contact the owner
+export function ListingCard({ listing, contact, rera }: { listing: Listing; contact: Contact; rera?: string | null }) {
   const nav = useNavigate();
   const sold = listing.status === "sold";
   const price = priceDisplay(listing.price, listing.property_type, listing.land_area_cents);
@@ -40,22 +38,16 @@ export function ListingCard({ listing, contact: ours, rera }: { listing: Listing
                 <span className={cn(tag, sold ? "bg-sold-soft text-sold" : TYPE_TAG[listing.property_type])}>
                   {sold ? t("common.sold") : typeLabel(listing.property_type)}
                 </span>
-                {!sold && listing.featured && <span className={cn(tag, "bg-accent text-accent-ink")}>⭐ {t("ad.featured")}</span>}
                 {!sold && isNew(listing.listed_at) && <span className={cn(tag, outlineTag)}>{t("common.new")}</span>}
                 {!sold && listing.price_reduced && <span className={cn(tag, outlineTag)}>{t("common.priceReduced")}</span>}
               </div>
               <SaveButton id={listing.id} className="h-10 w-10" />
             </div>
-            {!sold &&
-              (byOwner ? (
-                <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[12px] font-semibold text-ink shadow-sm">
-                  <UserRound size={14} /> {t("ad.byOwner")}
-                </span>
-              ) : (
-                <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-verified-soft px-2.5 py-1 text-[12px] font-semibold text-verified shadow-sm">
-                  <BadgeCheck size={14} /> {t("common.verified")}
-                </span>
-              ))}
+            {!sold && (
+              <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-verified-soft px-2.5 py-1 text-[12px] font-semibold text-verified shadow-sm">
+                <BadgeCheck size={14} /> {t("common.verified")}
+              </span>
+            )}
           </>
         }
       />
@@ -93,18 +85,16 @@ export function ListingCard({ listing, contact: ours, rera }: { listing: Listing
       {sold ? (
         <div className="h-3" />
       ) : (
-        <div className={cn("mt-3 grid gap-2", byOwner ? "grid-cols-2" : "grid-cols-3")}>
+        <div className="mt-3 grid grid-cols-3 gap-2">
           <a href={telLink(contact)} className={cn(action, "btn-accent font-semibold")}>
             <Phone size={20} /> {t("common.call")}
           </a>
           <a href={waLink(contact, listing)} target="_blank" rel="noreferrer" className={cn(action, "bg-muted")}>
             <MessageCircle size={20} className="text-wa" /> {t("common.whatsapp")}
           </a>
-          {!byOwner && (
-            <button type="button" onClick={() => setVisitOpen(true)} className={cn(action, "bg-muted")}>
-              <CalendarDays size={20} className="text-brand" /> {t("common.visit")}
-            </button>
-          )}
+          <button type="button" onClick={() => setVisitOpen(true)} className={cn(action, "bg-muted")}>
+            <CalendarDays size={20} className="text-brand" /> {t("common.visit")}
+          </button>
         </div>
       )}
       {/* Visit request opens right here, without leaving the list */}

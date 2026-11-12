@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, UploadFile
 
-from app.core.db import DB, many, now
+from app.core.db import DB, many
 from app.submissions import service
 from app.submissions.schemas import SubmissionForm
 
@@ -37,21 +37,8 @@ def my_submissions(device: Annotated[str, Depends(device_hash)], db: DB) -> list
     return many(
         db,
         """select s.id, s.number, s.property_type, s.location, s.expected_price, s.status, s.created_at,
-                  s.plan, s.paid_at, s.ad_expires_at, s.payment_claimed_at,
                   case when l.state in ('published', 'sold') then l.id end as listing_id
            from submissions s left join listings l on l.submission_id = s.id
            where s.device_hash = ? order by s.created_at desc, s.number desc limit 50""",
         device,
     )
-
-
-@router.post("/my/submissions/{submission_id}/payment-claim")
-def claim_payment(submission_id: str, device: Annotated[str, Depends(device_hash)], db: DB) -> dict:
-    """The seller says they paid (first time or a renewal); a founder checks the bank and confirms."""
-    cur = db.execute(
-        "update submissions set payment_claimed_at = ? where id = ? and device_hash = ? and plan != 'commission'",
-        (now(), submission_id, device),
-    )
-    if cur.rowcount == 0:
-        raise HTTPException(404, "Listing not found")
-    return {"ok": True}

@@ -37,13 +37,6 @@ def public_listing(row: dict) -> dict:
         "listed_at": row["listed_at"],
         "price_reduced": row["prev_price"] is not None and snap["price"] < row["prev_price"],
         "sold_at": row["sold_at"],
-        # Advertise plans: the owner talks to buyers directly (their number is part of the paid ad);
-        # "we sell it" listings are verified by LandFinder and use our number.
-        "listed_by": "landfinder" if row["plan"] == "commission" else "owner",
-        "featured": row["plan"] != "commission",
-        "owner_contact": None
-        if row["plan"] == "commission"
-        else {"phone": row["seller_phone"], "whatsapp": row["seller_phone"]},
     }
 
 
@@ -52,16 +45,9 @@ _LIVE_SELECT = """
            (select min(published_at) from published_versions f where f.listing_id = l.id) as listed_at,
            (select json_extract(p.snapshot, '$.price') from published_versions p
              where p.listing_id = l.id and p.version = l.current_version - 1) as prev_price
-           , s.plan, s.seller_phone
     from listings l
     join published_versions v on v.listing_id = l.id and v.version = l.current_version
-    join submissions s on s.id = l.submission_id
 """
-
-# Advertise listings are public only while paid and not expired.
-VISIBLE = (
-    "(s.plan = 'commission' or (s.paid_at is not null and s.ad_expires_at > strftime('%Y-%m-%dT%H:%M:%SZ', 'now')))"
-)
 
 
 def _rank_by_text(db, rows: list[dict], text: str) -> list[dict]:
@@ -102,7 +88,7 @@ def list_listings(
 ) -> dict:
     parsed = parse_query(q)
     states = _STATES[status]
-    where = [f"l.state in ({','.join('?' * len(states))})", VISIBLE]
+    where = [f"l.state in ({','.join('?' * len(states))})"]
     args: list = list(states)
 
     if docs:
@@ -121,8 +107,7 @@ def list_listings(
             args.append(value)
     rows = many(
         db,
-        f"{_LIVE_SELECT} where {' and '.join(where)}"
-        " order by l.state = 'published' desc, s.plan != 'commission' desc, v.published_at desc",  # featured first
+        f"{_LIVE_SELECT} where {' and '.join(where)} order by l.state = 'published' desc, v.published_at desc",
         *args,
     )
     has_text = bool(words(parsed.text))
@@ -156,11 +141,11 @@ def list_listings(
 def similar_listings(listing_id: str, db: DB) -> dict:
     """Below a property: similar live ones (same type, affordable, nearest first, any place), and every place with
     live properties, so a buyer keeps looking instead of leaving."""
-    me = one(db, f"{_LIVE_SELECT} where l.id = ? and l.state in ('published', 'sold') and {VISIBLE}", listing_id)
+    me = one(db, f"{_LIVE_SELECT} where l.id = ? and l.state in ('published', 'sold')", listing_id)
     if me is None:
         raise HTTPException(404, "Listing not found")
     mine = me["snapshot"]
-    everything_live = many(db, f"{_LIVE_SELECT} where l.state = 'published' and {VISIBLE}")
+    everything_live = many(db, f"{_LIVE_SELECT} where l.state = 'published'")
     live = [r for r in everything_live if r["id"] != listing_id]
 
     def km(r: dict) -> float | None:
@@ -198,7 +183,7 @@ def similar_listings(listing_id: str, db: DB) -> dict:
 
 @router.get("/listings/{listing_id}")
 def get_listing(listing_id: str, db: DB) -> dict:
-    row = one(db, f"{_LIVE_SELECT} where l.id = ? and l.state in ('published', 'sold') and {VISIBLE}", listing_id)
+    row = one(db, f"{_LIVE_SELECT} where l.id = ? and l.state in ('published', 'sold')", listing_id)
     if row is None:
         raise HTTPException(404, "Listing not found")
     s = get_settings()

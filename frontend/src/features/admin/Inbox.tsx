@@ -1,7 +1,7 @@
 import { cn } from "@/shared/lib/utils";
 import { Link } from "react-router-dom";
 import { ChevronRight, FileCheck2, Hammer, PartyPopper, Plus, UserPlus } from "lucide-react";
-import { inr, shortDate, timeAgo, typeLabel } from "@/shared/lib/format";
+import { inr, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
 import { Logo } from "@/shared/components/Logo";
@@ -62,51 +62,6 @@ export default function Inbox() {
       )}
 
       <Callbacks onChange={reload} />
-
-      {!!data?.ads_to_confirm.length && (
-        <section className="space-y-2">
-          <h2 className="px-1 font-semibold">Payments to confirm · {data.ads_to_confirm.length}</h2>
-          {data.ads_to_confirm.map((p) => (
-            <Link key={p.id} to={`/admin/p/${p.id}`} className="card flex items-center justify-between gap-3 p-3.5">
-              <span className="min-w-0">
-                <span className="block truncate font-semibold">
-                  #{p.number} · {p.seller_name}
-                </span>
-                <span className="block text-sm text-sub">
-                  {p.plan === "ad_social" ? "Ad + FB/IG" : "Ad: website"} · says paid {timeAgo(p.payment_claimed_at!)} ago
-                </span>
-              </span>
-              <span className="shrink-0 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand">Check & mark paid</span>
-            </Link>
-          ))}
-        </section>
-      )}
-
-      {!!data?.ads_ending.length && (
-        <section className="space-y-2">
-          <h2 className="px-1 font-semibold">Ads ending this week · {data.ads_ending.length}</h2>
-          {data.ads_ending.map((p) => (
-            <div key={p.id} className="card flex items-center justify-between gap-3 p-3.5">
-              <Link to={`/admin/p/${p.id}`} className="min-w-0">
-                <span className="block truncate font-semibold">
-                  #{p.number} · {p.seller_name}
-                </span>
-                <span className="block text-sm text-sub">Ends {shortDate(p.ad_expires_at!)}</span>
-              </Link>
-              <a
-                href={`https://wa.me/${p.seller_phone.replace(/\D/g, "")}?text=${encodeURIComponent(
-                  `Hi ${p.seller_name}, your LandFinder ad for property #${p.number} ends on ${shortDate(p.ad_expires_at!)}. Reply here to renew it for another month.`,
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="shrink-0 rounded-full bg-wa px-3 py-1.5 text-xs font-semibold text-white"
-              >
-                Remind on WhatsApp
-              </a>
-            </div>
-          ))}
-        </section>
-      )}
 
       <VisitorStats />
 

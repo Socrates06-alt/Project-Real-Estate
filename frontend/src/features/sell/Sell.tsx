@@ -1,6 +1,6 @@
 import { t } from "@/shared/i18n";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { getConfig, uploadForm, type PropertyType, type SellPlan } from "@/shared/api/client";
+import { getConfig, uploadForm, type PropertyType } from "@/shared/api/client";
 import { useSubmit } from "@/shared/lib/useSubmit";
 import { QuickContact } from "@/shared/components/QuickContact";
 import { shrinkImage } from "@/shared/lib/image";
@@ -25,8 +25,6 @@ import { UploadProgress } from "./UploadProgress";
 import { EXAMPLES } from "@/shared/lib/examples";
 import { SubmitDone } from "./SubmitDone";
 import { SizeInput } from "@/shared/components/form/SizeInput";
-import { AdPayment, adPrice } from "@/shared/components/AdPayment";
-import { PlanChooser } from "./PlanChooser";
 
 // Typed fields remembered in the draft (the consent tick is never remembered).
 const TEXT_FIELDS = ["land_area_cents", "address", "description", "expected_price", "price_per_cent", "seller_name", "seller_phone", "seller_phone2"];
@@ -45,8 +43,6 @@ export default function Sell() {
   const [agree, setAgree] = useState(false);
   const [area, setArea] = useState<Area>(NO_AREA);
   const { sending: busy, done, error, send, fail } = useSubmit();
-  const [plan, setPlan] = useState<SellPlan>("commission");
-  const [sent, setSent] = useState<{ id: string; number: number } | null>(null);
   const [preparing, setPreparing] = useState(false); // shrinking photos on the phone
   const [progress, setProgress] = useState<number | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -137,28 +133,20 @@ export default function Sell() {
     f.delete("price_per_cent");
     photos.forEach((p) => f.append("photos", p.file));
     setProgress(0);
-    f.set("plan", plan);
     await send(async () => {
-      setSent(await uploadForm<{ id: string; number: number }>("/api/submissions", f, setProgress, { device: true }));
+      await uploadForm<{ number: number }>("/api/submissions", f, setProgress, { device: true });
       await draft.discard();
       window.scrollTo({ top: 0 });
     });
     setProgress(null);
   }
 
-  if (done && plan !== "commission" && sent)
-    return (
-      <div className="pt-6">
-        <AdPayment submissionId={sent.id} number={sent.number} plan={plan} />
-      </div>
-    );
   if (done) return <SubmitDone contactWa={config ? waLink(config.contact) : undefined} />;
 
   return (
     <form key={draft.formKey} ref={formRef} onSubmit={submit} onInput={draft.onTyping} className="space-y-4">
       <PageHeader title={t("sell.title")} subtitle={t("sell.subtitle")} />
       <QuickContact want="sell" label={t("common.notFillForm")} className="card-sm p-3" />
-      {config && <PlanChooser plan={plan} onPlan={setPlan} config={config} />}
       {draft.restored && (
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand">
           <span>{t("sell.continuing")}</span>
@@ -222,13 +210,7 @@ export default function Sell() {
       {error && <p className="rounded-2xl bg-sold/10 px-4 py-3 text-sm font-medium text-sold">{error}</p>}
       {progress != null && <UploadProgress progress={progress} />}
       <Button type="submit" variant="accent" size="lg" disabled={busy || preparing || !config}>
-        {busy
-          ? progress != null && progress < 100
-            ? t("sell.uploading", { pct: progress })
-            : t("sell.submitting")
-          : plan !== "commission" && config
-            ? t("plan.continuePay", { price: adPrice(plan, config.ads) })
-            : t("sell.submit")}
+        {busy ? (progress != null && progress < 100 ? t("sell.uploading", { pct: progress }) : t("sell.submitting")) : t("sell.submit")}
       </Button>
     </form>
   );

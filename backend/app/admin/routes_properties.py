@@ -10,9 +10,9 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Respon
 from app.admin import lifecycle, service
 from app.admin.schemas import NoteIn, PublishIn, SellerDetailsIn
 from app.core.config import get_settings
-from app.core.db import DB, many, now, one
+from app.core.db import DB, many, one
 from app.core.security import require_admin
-from app.core.validation import OPEN_VISITS_SQL, Strict
+from app.core.validation import OPEN_VISITS_SQL
 from app.semantic import store as semantic
 from app.semantic.text import keyword_score, property_text, words
 from app.submissions import photos
@@ -25,7 +25,6 @@ _ROW = f"""
     select s.id, s.number, s.seller_name, s.seller_phone, s.property_type, s.location, s.status, s.created_at,
            s.removed_at,
            s.wants_doc_help, s.wants_dev_help,
-           s.plan, s.paid_at, s.ad_expires_at, s.payment_claimed_at, s.ad_posted,
            coalesce(l.price, s.expected_price) as price, l.id as listing_id,
            coalesce(l.title, '') as title,
            (select id from photos p where p.submission_id = s.id order by position limit 1) as cover_photo_id,
@@ -66,30 +65,11 @@ def inbox(db: DB) -> dict:
     # Buyers who asked on the website and no founder has looked at yet
     buyer_requests = one(db, "select count(*) as n from buyers where source = 'website' and seen = 0")["n"]
     callbacks = one(db, "select count(*) as n from callbacks where done_at is null")["n"]  # people waiting for a call
-    # Advertise plans: payments to confirm, and ads ending within 7 days (to remind the seller to renew)
-    ads_to_confirm = [
-        _row(r)
-        for r in many(
-            db,
-            f"{_ROW} where s.plan != 'commission' and s.removed_at is null and s.payment_claimed_at is not null"
-            " and (s.paid_at is null or s.payment_claimed_at > s.paid_at) order by s.payment_claimed_at",
-        )
-    ]
-    ads_ending = [
-        _row(r)
-        for r in many(
-            db,
-            f"{_ROW} where s.plan != 'commission' and s.removed_at is null and s.ad_expires_at is not null"
-            " and s.ad_expires_at <= strftime('%Y-%m-%dT%H:%M:%SZ', 'now', '+7 days') order by s.ad_expires_at",
-        )
-    ]
     return {
         "new": [_row(r) for r in new],
         "visits": visits,
         "counts": counts,
         "buyer_requests": buyer_requests,
-        "ads_to_confirm": ads_to_confirm,
-        "ads_ending": ads_ending,
         "callbacks": callbacks,
     }
 
@@ -342,48 +322,3 @@ def not_listed(submission_id: str, body: NoteIn, db: DB) -> dict:
     lifecycle.require(sub, "not_listed")
     service.set_status(db, submission_id, "rejected", body.note or None)
     return {"id": submission_id, "group": "not_listed"}
-
-
-# --- Advertise plans ----------------------------------------------------------
-
-
-class PlanIn(Strict):
-    plan: Literal["commission", "ad_web", "ad_social"]
-
-
-@router.put("/properties/{submission_id}/plan")
-def set_plan(submission_id: str, body: PlanIn, db: DB) -> dict:
-    """Switch between "we sell it" (commission) and an advertise plan (e.g. a seller changed their mind)."""
-    service.get_submission(db, submission_id)
-    db.execute("update submissions set plan = ? where id = ?", (body.plan, submission_id))
-    return {"id": submission_id, "plan": body.plan}
-
-
-@router.post("/properties/{submission_id}/paid")
-def confirm_payment(submission_id: str, db: DB) -> dict:
-    """Payment received: the ad runs for another period, from today or from its current end, whichever is later."""
-    sub = service.get_submission(db, submission_id)
-    if sub["plan"] == "commission":
-        raise HTTPException(409, "This property is on commission, not an advertise plan")
-    days = get_settings().ad_days
-    db.execute(
-        "update submissions set paid_at = ?,"
-        " ad_expires_at = strftime('%Y-%m-%dT%H:%M:%SZ',"
-        " max(coalesce(ad_expires_at, ''), strftime('%Y-%m-%dT%H:%M:%SZ', 'now')), ?)"
-        " where id = ?",
-        (now(), f"+{days} days", submission_id),
-    )
-    row = one(db, "select paid_at, ad_expires_at from submissions where id = ?", submission_id)
-    return {"id": submission_id, **row}
-
-
-class PostedIn(Strict):
-    posted: bool
-
-
-@router.put("/properties/{submission_id}/posted")
-def set_posted(submission_id: str, body: PostedIn, db: DB) -> dict:
-    """Ticked once the property is posted on Facebook and Instagram."""
-    service.get_submission(db, submission_id)
-    db.execute("update submissions set ad_posted = ? where id = ?", (body.posted, submission_id))
-    return {"id": submission_id, "posted": body.posted}

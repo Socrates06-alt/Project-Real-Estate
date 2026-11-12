@@ -264,7 +264,7 @@ UPGRADES[14] = [
 
 UPGRADES[15] = []  # callbacks table is created from SCHEMA
 
-UPGRADES[16] = [
+UPGRADES[16] = [  # seller ad plans (feature removed; columns kept, unused)
     _add_column(
         "submissions", "plan text not null default 'commission' check (plan in ('commission', 'ad_web', 'ad_social'))"
     ),

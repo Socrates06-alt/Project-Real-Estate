@@ -16,7 +16,6 @@ import { useAdmin } from "@/features/admin/auth";
 import { AreaInput } from "@/shared/components/AreaInput";
 import { GroupBadge, VisitCard } from "@/features/admin/ui";
 import { SellerCard } from "./property/SellerCard";
-import { AdPanel } from "./property/AdPanel";
 import { RephraseButton } from "./property/RephraseButton";
 import { EditSellerSheet } from "./property/EditSellerSheet";
 import { PhotoSelector } from "./property/PhotoSelector";
@@ -140,7 +139,6 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
       </header>
 
       <SellerCard seller={p.seller} onEdit={p.admin_entered ? () => setEditSeller(true) : undefined} />
-      <AdPanel p={p} reload={reload} />
 
       {/* What buyers see */}
       <fieldset disabled={readOnly} className="space-y-4 card p-4">

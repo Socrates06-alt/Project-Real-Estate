@@ -1,6 +1,6 @@
 """What a seller sends when listing a property."""
 
-from typing import Annotated, Literal
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -28,5 +28,4 @@ class SubmissionForm(BaseModel):
     wants_doc_help: bool = False  # paid documentation assistance
     wants_dev_help: bool = False  # paid property development assistance
     consent: bool
-    plan: Literal["commission", "ad_web", "ad_social"] = "commission"  # how the seller chose to sell
     consent_version: str

@@ -53,12 +53,12 @@ def create(db: sqlite3.Connection, form: SubmissionForm, device: str, images: li
     db.execute(
         """insert into submissions (id, number, device_hash, seller_name, seller_phone, seller_phone2, property_type,
                land_area_cents, location, area_lat, area_lng, address, description, expected_price, negotiable,
-               documents_available, documents_note, wants_doc_help, wants_dev_help, consent_version, plan)
-           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+               documents_available, documents_note, wants_doc_help, wants_dev_help, consent_version)
+           values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (sub_id, number, device, form.seller_name, form.seller_phone, form.seller_phone2, form.property_type,
          form.land_area_cents, form.location, form.area_lat, form.area_lng, form.address, form.description,
          form.expected_price, form.negotiable, form.documents_available, form.documents_note,
-         form.wants_doc_help, form.wants_dev_help, form.consent_version, form.plan),
+         form.wants_doc_help, form.wants_dev_help, form.consent_version),
     )  # fmt: skip
     saved: list[str] = []
     try:
