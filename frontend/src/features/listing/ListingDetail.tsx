@@ -14,6 +14,7 @@ import { buttonVariants } from "@/shared/ui/button";
 import { telLink, waLink } from "@/shared/components/contact";
 import { useToast } from "@/shared/ui/toast";
 import { cn } from "@/shared/lib/utils";
+import { SimilarProperties } from "./SimilarProperties";
 
 type Detail = Listing & { contact: Contact; brokerage: { buyer_pct: number; gst_extra: boolean } };
 
@@ -139,6 +140,8 @@ export default function ListingDetail() {
           <span className="block text-sub">Paid only when the sale closes.</span>
         </p>
       </section>
+
+      <SimilarProperties listingId={l.id} />
 
       <div className="fixed inset-x-0 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4">
         <div className="glass flex w-full max-w-sm items-center gap-1 rounded-full p-1 shadow-float">

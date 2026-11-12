@@ -137,6 +137,50 @@ def list_listings(
     }
 
 
+@router.get("/listings/{listing_id}/similar")
+def similar_listings(listing_id: str, db: DB) -> dict:
+    """Below a property: similar live ones (same type, affordable, nearest first, any place), and every place with
+    live properties, so a buyer keeps looking instead of leaving."""
+    me = one(db, f"{_LIVE_SELECT} where l.id = ? and l.state in ('published', 'sold')", listing_id)
+    if me is None:
+        raise HTTPException(404, "Listing not found")
+    mine = me["snapshot"]
+    everything_live = many(db, f"{_LIVE_SELECT} where l.state = 'published'")
+    live = [r for r in everything_live if r["id"] != listing_id]
+
+    def km(r: dict) -> float | None:
+        if None in (me["public_lat"], me["public_lng"], r["public_lat"], r["public_lng"]):
+            return None
+        return round(geo.distance_km(me["public_lat"], me["public_lng"], r["public_lat"], r["public_lng"]), 1)
+
+    same_type = [r for r in live if r["snapshot"]["property_type"] == mine["property_type"]]
+    price = mine["price"]
+    close = [r for r in same_type if 0.7 * price <= r["snapshot"]["price"] <= 1.3 * price]
+    nearest = sorted(close, key=lambda r: (km(r) is None, km(r) or 0))
+    # Too few in budget: fill with the others of the same type, closest in price first
+    rest = sorted((r for r in same_type if r not in close), key=lambda r: abs(r["snapshot"]["price"] - price))
+    picked = (nearest + rest)[:6]
+
+    places: dict[str, dict] = {}
+    for r in everything_live:
+        name = r["snapshot"]["location"]
+        p = places.setdefault(name, {"place": name, "count": 0, "lats": [], "lngs": []})
+        p["count"] += 1
+        if r["public_lat"] is not None:
+            p["lats"].append(r["public_lat"])
+            p["lngs"].append(r["public_lng"])
+    place_list = [
+        {
+            "place": p["place"],
+            "count": p["count"],
+            "lat": round(sum(p["lats"]) / len(p["lats"]), 5) if p["lats"] else None,
+            "lng": round(sum(p["lngs"]) / len(p["lngs"]), 5) if p["lngs"] else None,
+        }
+        for p in sorted(places.values(), key=lambda p: (-p["count"], p["place"]))
+    ]
+    return {"similar": [{**public_listing(r), "km": km(r)} for r in picked], "places": place_list}
+
+
 @router.get("/listings/{listing_id}")
 def get_listing(listing_id: str, db: DB) -> dict:
     row = one(db, f"{_LIVE_SELECT} where l.id = ? and l.state in ('published', 'sold')", listing_id)
