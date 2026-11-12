@@ -15,13 +15,12 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
   const { data } = useAsync(() => api<{ similar: Similar[]; places: Place[] }>(`/api/listings/${listingId}/similar`), [listingId]);
   if (!data) return null;
   const here = data.places.find((p) => p.place === place);
-  const total = data.places.reduce((n, p) => n + p.count, 0);
   return (
     <div className="mt-6 space-y-5">
       {data.similar.length > 0 && (
         <section>
           <h2 className="mb-2 px-1 text-base font-semibold">Similar properties</h2>
-          <div className="-mx-4 flex snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+          <div className="-mx-4 flex snap-x scroll-px-4 items-start gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
             {data.similar.map((s) => (
               <SimilarCard key={s.id} s={s} />
             ))}
@@ -34,13 +33,13 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
           to={here.lat != null ? `/?lat=${here.lat}&lng=${here.lng}&r=3&place=${encodeURIComponent(here.place)}` : "/"}
           className="flex items-center gap-2 px-1 text-[15px] font-semibold text-brand"
         >
-          <MapPin size={16} /> More in {here.place} ({here.count - 1})
+          <MapPin size={16} /> More in {here.place}
           <ChevronRight size={16} />
         </Link>
       )}
 
       <Link to="/" className="flex h-12 items-center justify-center rounded-full bg-brand-soft font-semibold text-brand">
-        See all {total} properties
+        See all properties
       </Link>
       <Link to="/request" className="flex items-center gap-3 rounded-2xl px-1 py-1 text-sm">
         <SearchCheck size={18} className="shrink-0 text-brand" />
@@ -59,20 +58,20 @@ function SimilarCard({ s }: { s: Similar }) {
   const full = s.photos[0] ? mediaUrl(s.photos[0]) : "";
   const [src, setSrc] = useState(full.replace(/\.webp$/, "-sm.webp"));
   return (
-    <Link to={`/p/${s.id}`} className="card w-[46%] min-w-[150px] shrink-0 snap-start overflow-hidden">
-      <div className="grid aspect-[4/3] place-items-center bg-brand-soft text-brand/50">
+    <Link to={`/p/${s.id}`} className="card w-[44%] min-w-[150px] max-w-[190px] shrink-0 snap-start overflow-hidden">
+      <div className="grid h-28 place-items-center overflow-hidden bg-brand-soft text-brand/50">
         {full ? (
           <img src={src} alt="" loading="lazy" onError={() => src !== full && setSrc(full)} className="h-full w-full object-cover" />
         ) : (
           <Icon size={26} />
         )}
       </div>
-      <div className="p-2.5">
+      <div className="space-y-0.5 px-3 pt-2.5 pb-3">
         <p className="text-[15px] leading-tight font-semibold">
           {price.main}
           <span className="text-xs font-normal text-sub">{price.unit}</span>
         </p>
-        <p className="mt-0.5 truncate text-xs text-sub">
+        <p className="truncate text-xs text-sub">
           {typeLabel(s.property_type)} · {cents(s.land_area_cents)}
         </p>
         <p className="truncate text-xs text-sub">

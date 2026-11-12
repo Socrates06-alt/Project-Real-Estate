@@ -93,7 +93,19 @@ export default function Explore() {
     <div>
       <header className="brand-header sticky top-0 z-30 -mx-4 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-4 shadow-float">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <Logo light className="shrink-0" />
+          <button
+            type="button"
+            aria-label="LandFinder home: show all properties"
+            onClick={() => {
+              setInput("");
+              setType("all");
+              setArea(null); // also forgets the saved area
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className="shrink-0"
+          >
+            <Logo light />
+          </button>
           <LocationButton area={area} onClear={() => setArea(null)} />
         </div>
         <div className="search-pill flex h-[52px] min-w-0 items-center gap-3 rounded-full px-5">
