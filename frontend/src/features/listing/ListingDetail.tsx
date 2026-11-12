@@ -2,7 +2,7 @@ import { t } from "@/shared/i18n";
 import { useState } from "react";
 import { TYPE_TONE } from "@/shared/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2, Users } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/shared/api/client";
 import { cents, priceDisplay, shortDate, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
@@ -16,6 +16,7 @@ import { telLink, waLink } from "@/shared/components/contact";
 import { useToast } from "@/shared/ui/toast";
 import { cn } from "@/shared/lib/utils";
 import { SimilarProperties } from "./SimilarProperties";
+import { SaveButton } from "@/shared/components/SaveButton";
 
 type Detail = Listing & { contact: Contact; brokerage: { buyer_pct: number; gst_extra: boolean } };
 
@@ -78,10 +79,13 @@ export default function ListingDetail() {
             <button onClick={back} aria-label={t("listing.back")} className={`${overBtn} w-11`}>
               <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
-            <button onClick={share} aria-label={t("listing.share")} className={`${overBtn} gap-2 px-4 text-[15px] font-semibold`}>
-              <Share2 size={18} strokeWidth={2.5} className="text-brand" />
-              {t("listing.share")}
-            </button>
+            <div className="flex gap-2">
+              <SaveButton id={l.id} />
+              <button onClick={share} aria-label={t("listing.share")} className={`${overBtn} gap-2 px-4 text-[15px] font-semibold`}>
+                <Share2 size={18} strokeWidth={2.5} className="text-brand" />
+                {t("listing.share")}
+              </button>
+            </div>
           </div>
         }
       />
@@ -110,6 +114,8 @@ export default function ListingDetail() {
           <MapPin size={15} /> {l.location}
         </p>
       </section>
+
+      {!sold && <ShareWithFamily listing={l} shareUrl={shareUrl} />}
 
       {/* Only what's actually known is shown; nothing empty or "not yet". */}
       <section className="mt-5 grid grid-cols-2 gap-3">
@@ -238,4 +244,32 @@ async function copyText(text: string): Promise<boolean> {
 // A title written by the admin ("Renovated 2BHK on a quiet road") is shown.
 function isAutoTitle(title: string) {
   return /^(house|land|commercial|commercial property)\s+for\s+sale\.?$/i.test(title.trim());
+}
+
+/** Indian buyers decide with family: one big, obvious WhatsApp share with a ready message. */
+function ShareWithFamily({ listing: l, shareUrl }: { listing: Listing; shareUrl: string }) {
+  const price = priceDisplay(l.price, l.property_type, l.land_area_cents);
+  const text = t("share.message", {
+    what: `${typeLabel(l.property_type)} · ${cents(l.land_area_cents)}`,
+    place: l.location,
+    price: `${price.main}${price.unit}`,
+    url: shareUrl,
+  });
+  return (
+    <a
+      href={`https://wa.me/?text=${encodeURIComponent(text)}`}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-4 flex items-center gap-3 rounded-[20px] bg-wa/10 p-3.5 transition active:scale-[0.99]"
+    >
+      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-wa text-white">
+        <Users size={21} />
+      </span>
+      <span className="min-w-0 flex-1 leading-tight">
+        <span className="block text-base font-semibold">{t("share.family")}</span>
+        <span className="block text-sm text-sub">{t("share.familySub")}</span>
+      </span>
+      <MessageCircle size={22} className="shrink-0 text-wa" />
+    </a>
+  );
 }

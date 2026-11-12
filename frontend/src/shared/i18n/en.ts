@@ -287,6 +287,20 @@ export const en = {
   "profile.buyer": "Buyer",
   "profile.brokerage": "{who} brokerage",
   "profile.alwaysFree": "Listing is always free.",
+  "saved.add": "Save property",
+  "saved.remove": "Remove from saved",
+  "saved.added": "Saved. Find it in Profile → Saved",
+  "saved.removed": "Removed from saved",
+  "saved.saveLabel": "Save",
+  "saved.savedLabel": "Saved",
+  "saved.tab": "Saved",
+  "saved.empty": "Nothing saved yet",
+  "saved.emptyText": "Tap ❤️ on any property to keep it here.",
+  "saved.browse": "See properties",
+  "saved.gone": "No longer available",
+  "share.family": "Share with family",
+  "share.familySub": "Send this property on WhatsApp",
+  "share.message": "Have a look at this property: {what} in {place}, {price}.\n{url}",
 } as const;
 
 export type Key = keyof typeof en;

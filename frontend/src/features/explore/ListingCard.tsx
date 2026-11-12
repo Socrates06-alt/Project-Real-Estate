@@ -9,6 +9,7 @@ import { cn } from "@/shared/lib/utils";
 import { TYPE_TAG } from "@/shared/lib/propertyType";
 import { telLink, waLink } from "@/shared/components/contact";
 import { VisitSheet } from "@/shared/components/VisitSheet";
+import { SaveButton } from "@/shared/components/SaveButton";
 
 const tag = "rounded-full px-3 py-1 text-[13px] font-semibold shadow-sm";
 const outlineTag = "bg-surface text-brand shadow-[inset_0_0_0_1.5px_var(--brand)]";
@@ -40,6 +41,7 @@ export function ListingCard({ listing, contact, rera }: { listing: Listing; cont
                 {!sold && isNew(listing.listed_at) && <span className={cn(tag, outlineTag)}>{t("common.new")}</span>}
                 {!sold && listing.price_reduced && <span className={cn(tag, outlineTag)}>{t("common.priceReduced")}</span>}
               </div>
+              <SaveButton id={listing.id} className="h-10 w-10" />
             </div>
             {!sold && (
               <span className="pointer-events-none absolute bottom-3 left-3 flex items-center gap-1 rounded-full bg-verified-soft px-2.5 py-1 text-[12px] font-semibold text-verified shadow-sm">

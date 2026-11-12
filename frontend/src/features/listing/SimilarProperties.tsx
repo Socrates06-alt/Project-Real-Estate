@@ -1,11 +1,9 @@
 import { t } from "@/shared/i18n";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LayoutGrid, MapPin, SearchCheck } from "lucide-react";
-import { api, mediaUrl, type Listing } from "@/shared/api/client";
-import { cents, priceDisplay, typeLabel } from "@/shared/lib/format";
+import { api, type Listing } from "@/shared/api/client";
+import { PropertyMiniCard } from "@/shared/components/PropertyMiniCard";
 import { useAsync } from "@/shared/lib/useAsync";
-import { TYPE_ICON } from "@/shared/lib/propertyType";
 import { buttonVariants } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 
@@ -24,7 +22,7 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
           <h2 className="mb-2 px-1 text-base font-semibold">{t("similar.title")}</h2>
           <div className="-mx-4 flex snap-x scroll-px-4 items-start gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
             {data.similar.map((s) => (
-              <SimilarCard key={s.id} s={s} />
+              <PropertyMiniCard key={s.id} p={s} km={s.km} className="w-[44%] min-w-[150px] max-w-[190px] shrink-0 snap-start" />
             ))}
           </div>
         </section>
@@ -69,36 +67,5 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
         </Link>
       </section>
     </div>
-  );
-}
-
-function SimilarCard({ s }: { s: Similar }) {
-  const price = priceDisplay(s.price, s.property_type, s.land_area_cents);
-  const Icon = TYPE_ICON[s.property_type];
-  const full = s.photos[0] ? mediaUrl(s.photos[0]) : "";
-  const [src, setSrc] = useState(full.replace(/\.webp$/, "-sm.webp"));
-  return (
-    <Link to={`/p/${s.id}`} className="card w-[44%] min-w-[150px] max-w-[190px] shrink-0 snap-start overflow-hidden">
-      <div className="grid h-28 place-items-center overflow-hidden bg-brand-soft text-brand/50">
-        {full ? (
-          <img src={src} alt="" loading="lazy" onError={() => src !== full && setSrc(full)} className="h-full w-full object-cover" />
-        ) : (
-          <Icon size={26} />
-        )}
-      </div>
-      <div className="space-y-0.5 px-3 pt-2.5 pb-3">
-        <p className="text-[15px] leading-tight font-semibold">
-          {price.main}
-          <span className="text-xs font-normal text-sub">{price.unit}</span>
-        </p>
-        <p className="truncate text-xs text-sub">
-          {typeLabel(s.property_type)} · {cents(s.land_area_cents)}
-        </p>
-        <p className="truncate text-xs text-sub">
-          {s.location}
-          {s.km != null && ` · ${s.km < 1 ? "<1" : Math.round(s.km)} km`}
-        </p>
-      </div>
-    </Link>
   );
 }

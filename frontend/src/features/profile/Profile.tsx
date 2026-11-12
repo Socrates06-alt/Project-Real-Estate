@@ -2,8 +2,8 @@ import { t, type Key } from "@/shared/i18n";
 import { TYPE_ICON } from "@/shared/lib/propertyType";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, Home, MessageCircle, Phone } from "lucide-react";
-import { api, getConfig, type MySubmission, type SubmissionStatus } from "@/shared/api/client";
+import { ChevronRight, Heart, Home, MessageCircle, Phone } from "lucide-react";
+import { api, getConfig, type Listing, type MySubmission, type SubmissionStatus } from "@/shared/api/client";
 import { inr, shortDate } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { Segmented } from "@/shared/ui/segmented";
@@ -15,6 +15,9 @@ import { cn } from "@/shared/lib/utils";
 import { ThemeSwitch } from "@/shared/components/ThemeSwitch";
 import { LanguageMenu } from "@/shared/components/LanguageMenu";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { PropertyMiniCard } from "@/shared/components/PropertyMiniCard";
+import { SaveButton } from "@/shared/components/SaveButton";
+import { removeSaved, useSavedIds } from "@/shared/lib/saved";
 
 // Labels are text keys, turned into words at render time so they follow the chosen language.
 const STATUS: Record<SubmissionStatus, { label: Key; tone: "sky" | "brand" | "sold" | "gray"; step: number }> = {
@@ -28,7 +31,8 @@ const STATUS: Record<SubmissionStatus, { label: Key; tone: "sky" | "brand" | "so
 const STEPS: Key[] = ["profile.submitted", "profile.review", "profile.live", "common.sold"];
 
 export default function Profile() {
-  const [tab, setTab] = useState<"mine" | "how">("mine");
+  const savedCount = useSavedIds().length;
+  const [tab, setTab] = useState<"saved" | "mine" | "how">(savedCount ? "saved" : "mine");
   return (
     <div className="space-y-4">
       <PageHeader title={t("profile.title")} right={
@@ -41,11 +45,12 @@ export default function Profile() {
         value={tab}
         onChange={setTab}
         options={[
+          { value: "saved", label: savedCount ? `${t("saved.tab")} · ${savedCount}` : t("saved.tab") },
           { value: "mine", label: t("profile.mine") },
           { value: "how", label: t("profile.how") },
         ]}
       />
-      {tab === "mine" ? <MyListings /> : <HowItWorks />}
+      {tab === "saved" ? <SavedList /> : tab === "mine" ? <MyListings /> : <HowItWorks />}
     </div>
   );
 }
@@ -171,6 +176,54 @@ function Fee({ label, value, tone }: { label: string; value: string; tone: strin
     <div className={cn("rounded-[28px] p-4 text-center", tone)}>
       <p className="text-3xl font-semibold">{value}</p>
       <p className="text-sm text-sub">{t("profile.brokerage", { who: label })}</p>
+    </div>
+  );
+}
+
+/** Properties saved with ❤️ on this phone (newest first). Sold or removed ones say so and can be cleared. */
+function SavedList() {
+  const ids = useSavedIds();
+  const key = ids.join(",");
+  const { data } = useAsync(
+    () =>
+      Promise.all(
+        ids.map((id) =>
+          api<Listing>(`/api/listings/${id}`).then(
+            (l) => ({ id, l }),
+            () => ({ id, l: null as Listing | null }),
+          ),
+        ),
+      ),
+    [key],
+  );
+  if (!ids.length)
+    return (
+      <EmptyState
+        icon={<Heart size={28} />}
+        title={t("saved.empty")}
+        text={t("saved.emptyText")}
+        action={
+          <Link to="/" className={buttonVariants({ variant: "primary", size: "md" })}>
+            {t("saved.browse")}
+          </Link>
+        }
+      />
+    );
+  if (!data) return <div className="h-32 animate-pulse card" />;
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {data.map(({ id, l }) =>
+        l ? (
+          <PropertyMiniCard key={id} p={l} corner={<SaveButton id={id} className="h-9 w-9" />} />
+        ) : (
+          <div key={id} className="card flex flex-col items-center justify-center gap-2 p-4 text-center text-sm text-sub">
+            {t("saved.gone")}
+            <button type="button" onClick={() => removeSaved(id)} className="font-semibold text-brand">
+              {t("saved.remove")}
+            </button>
+          </div>
+        ),
+      )}
     </div>
   );
 }
