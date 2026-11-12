@@ -1,4 +1,4 @@
-import type { PropertyType } from "@/shared/api/client";
+import type { PropertyType, SellPlan } from "@/shared/api/client";
 
 export type Group = "new" | "live" | "sold" | "not_listed" | "removed";
 /** What can be done to a property now; the server decides (backend/app/admin/lifecycle.py). */
@@ -21,6 +21,11 @@ export interface PropertyRow {
   wants_doc_help: boolean;
   wants_dev_help: boolean;
   created_at: string;
+  plan: SellPlan;
+  paid_at: string | null;
+  ad_expires_at: string | null;
+  payment_claimed_at: string | null;
+  ad_posted: number | boolean;
 }
 
 export interface Visit {
@@ -44,6 +49,8 @@ export interface Inbox {
   counts: Record<Group, number>;
   buyer_requests: number; // website requests no founder has seen yet
   callbacks: number; // people waiting for a call back
+  ads_to_confirm: PropertyRow[]; // seller says they paid an advertise plan
+  ads_ending: PropertyRow[]; // advertise plans ending within 7 days
 }
 
 export interface PublicForm {
@@ -72,6 +79,11 @@ export interface Property {
     seller_name: string;
     seller_phone: string;
     seller_phone2?: string;
+    plan: SellPlan;
+    paid_at: string | null;
+    ad_expires_at: string | null;
+    payment_claimed_at: string | null;
+    ad_posted: number | boolean;
     property_type: PropertyType;
     land_area_cents: number;
     location: string;

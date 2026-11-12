@@ -1,7 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronRight, Plus, Search, X, Languages } from "lucide-react";
-import { inr, shortTitle } from "@/shared/lib/format";
+import { inr, shortDate, shortTitle } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { ErrorState } from "@/shared/components/States";
 import { useAdmin } from "@/features/admin/auth";
@@ -96,6 +96,7 @@ export default function Properties() {
                   <CalendarDays size={14} /> {p.open_visits} visit request{p.open_visits > 1 ? "s" : ""}
                 </p>
               )}
+              {p.plan !== "commission" && <AdTag p={p} />}
               {p.via && <p className="mt-0.5 truncate text-sm font-medium text-brand">{p.via}</p>}
             </div>
             <ChevronRight size={20} className="shrink-0 text-sub" />
@@ -103,5 +104,16 @@ export default function Properties() {
         ))}
       </div>
     </div>
+  );
+}
+
+/** "Ad · paid ✓ · ends 12 Dec" / "Ad · not paid" on advertise-plan properties. */
+function AdTag({ p }: { p: PropertyRow }) {
+  const live = !!p.ad_expires_at && new Date(p.ad_expires_at).getTime() > Date.now();
+  return (
+    <p className={cn("mt-0.5 truncate text-sm font-medium", live ? "text-verified" : "text-sold")}>
+      Ad{p.plan === "ad_social" ? " + FB/IG" : ""} · {live ? `paid ✓ · ends ${shortDate(p.ad_expires_at!)}` : "not paid"}
+      {p.plan === "ad_social" && !p.ad_posted && live ? " · not posted" : ""}
+    </p>
   );
 }

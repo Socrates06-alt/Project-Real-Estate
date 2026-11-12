@@ -2,7 +2,7 @@ import { t } from "@/shared/i18n";
 import { useState } from "react";
 import { TYPE_TONE } from "@/shared/lib/propertyType";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2 } from "lucide-react";
+import { BadgeCheck, CalendarDays, Link2, ChevronLeft, FileCheck2, Info, MapPin, MessageCircle, Phone, Ruler, Share2, UserRound } from "lucide-react";
 import { api, getConfig, type Contact, type Listing } from "@/shared/api/client";
 import { cents, priceDisplay, shortDate, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
@@ -63,6 +63,7 @@ export default function ListingDetail() {
   if (!l) return <div className="-mx-4 aspect-square animate-pulse bg-muted" />;
 
   const sold = l.status === "sold";
+  const contact = l.owner_contact ?? l.contact; // advertise plans: buyers contact the owner
   const price = priceDisplay(l.price, l.property_type, l.land_area_cents);
   // Solid white buttons + a soft dark fade at the top: visible on any photo (bright sky, white walls, dark trees).
   const overBtn =
@@ -93,11 +94,17 @@ export default function ListingDetail() {
       <section className="pt-5">
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone={sold ? "sold" : "brand"}>{sold ? t("common.sold") : t("listing.available")}</Badge>
-          {!sold && (
-            <Badge tone="verified">
-              <BadgeCheck size={13} /> {t("common.verified")}
-            </Badge>
-          )}
+          {!sold && l.featured && <Badge tone="brand">⭐ {t("ad.featured")}</Badge>}
+          {!sold &&
+            (l.listed_by === "owner" ? (
+              <Badge tone="gray">
+                <UserRound size={13} /> {t("ad.byOwner")}
+              </Badge>
+            ) : (
+              <Badge tone="verified">
+                <BadgeCheck size={13} /> {t("common.verified")}
+              </Badge>
+            ))}
           {!sold && l.price_reduced && <Badge tone="brand">{t("common.priceReduced")}</Badge>}
           <Badge tone={TYPE_TONE[l.property_type]}>{typeLabel(l.property_type)}</Badge>
         </div>
@@ -113,6 +120,7 @@ export default function ListingDetail() {
         <p className={cn("flex items-center gap-1 text-sm text-sub", isAutoTitle(l.title) ? "mt-2" : "mt-1")}>
           <MapPin size={15} /> {l.location}
         </p>
+        {l.listed_by === "owner" && !sold && <p className="mt-2 text-sm text-sub">{t("ad.notVerified")}</p>}
       </section>
 
       {/* Only what's actually known is shown; nothing empty or "not yet". */}
@@ -156,17 +164,19 @@ export default function ListingDetail() {
             </a>
           ) : (
             <>
-              <a href={telLink(l.contact)} className={cn(buttonVariants({ variant: "accent" }), "h-[52px] flex-[1.6] rounded-full text-base")}>
+              <a href={telLink(contact)} className={cn(buttonVariants({ variant: "accent" }), "h-[52px] flex-[1.6] rounded-full text-base")}>
                 <Phone size={19} /> {t("common.call")}
               </a>
-              <a href={waLink(l.contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
+              <a href={waLink(contact, l)} target="_blank" rel="noreferrer" className={pillAction}>
                 <MessageCircle size={21} className="text-wa" />
                 {t("common.whatsapp")}
               </a>
-              <button onClick={() => setParams({ visit: "1" }, { replace: true })} className={pillAction}>
-                <CalendarDays size={20} className="text-brand" />
-                {t("common.visit")}
-              </button>
+              {l.listed_by !== "owner" && (
+                <button onClick={() => setParams({ visit: "1" }, { replace: true })} className={pillAction}>
+                  <CalendarDays size={20} className="text-brand" />
+                  {t("common.visit")}
+                </button>
+              )}
             </>
           )}
         </div>

@@ -27,4 +27,11 @@ def public_config() -> dict:
         "rera_number": s.rera_number or None,
         "max_photos": s.max_photos,
         "max_photo_bytes": s.max_photo_bytes,
+        "ads": {
+            "web": s.ad_price_web,
+            "social": s.ad_price_social,
+            "days": s.ad_days,
+            "upi_id": s.upi_id or None,
+            "upi_name": s.upi_name,
+        },
     }

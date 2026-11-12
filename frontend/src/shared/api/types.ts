@@ -21,7 +21,12 @@ export interface Listing {
   listed_at: string;
   price_reduced: boolean;
   sold_at: string | null;
+  listed_by: "landfinder" | "owner"; // owner: an advertise plan, buyers contact the owner directly
+  featured: boolean;
+  owner_contact: Contact | null;
 }
+
+export type SellPlan = "commission" | "ad_web" | "ad_social";
 
 export interface Contact {
   phone: string;
@@ -52,6 +57,7 @@ export interface PublicConfig {
   rera_number: string | null;
   max_photos: number;
   max_photo_bytes: number;
+  ads: { web: number; social: number; days: number; upi_id: string | null; upi_name: string };
 }
 
 export interface MySubmission {
@@ -63,6 +69,10 @@ export interface MySubmission {
   status: SubmissionStatus;
   created_at: string;
   listing_id: string | null;
+  plan: SellPlan;
+  paid_at: string | null;
+  ad_expires_at: string | null;
+  payment_claimed_at: string | null;
 }
 
 export type SubmissionStatus = "received" | "under_review" | "listed" | "sold" | "withdrawn" | "rejected";

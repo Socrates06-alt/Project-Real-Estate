@@ -35,6 +35,12 @@ class Settings(BaseSettings):
     sarvam_max_tokens: int = 8000  # room for the model's thinking plus the answer
 
     first_property_number: int = 1001
+    # Advertise plans (seller pays upfront, talks to buyers directly): price per period, in rupees
+    ad_price_web: int = 199  # featured on the website
+    ad_price_social: int = 599  # website + Facebook and Instagram posts
+    ad_days: int = 30
+    upi_id: str = ""  # where advertisers pay, e.g. landfinder@okaxis
+    upi_name: str = "LandFinder"
     max_photos: int = 3
     max_photo_bytes: int = 8 * 1024 * 1024
 

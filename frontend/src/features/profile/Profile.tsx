@@ -18,6 +18,9 @@ import { PageHeader } from "@/shared/components/PageHeader";
 import { PropertyMiniCard } from "@/shared/components/PropertyMiniCard";
 import { SaveButton } from "@/shared/components/SaveButton";
 import { removeSaved, useSavedIds } from "@/shared/lib/saved";
+import { createPortal } from "react-dom";
+import { Sheet } from "@/shared/ui/sheet";
+import { AdPayment, adPrice } from "@/shared/components/AdPayment";
 
 // Labels are text keys, turned into words at render time so they follow the chosen language.
 const STATUS: Record<SubmissionStatus, { label: Key; tone: "sky" | "brand" | "sold" | "gray"; step: number }> = {
@@ -102,6 +105,7 @@ function MyListings() {
                 ))}
               </div>
             )}
+            {s.plan !== "commission" && <AdStatus s={s} onChange={reload} />}
             {s.listing_id && (
               <p className="mt-3 flex items-center justify-end text-xs font-semibold text-brand">
                 {t("profile.viewListing")} <ChevronRight size={14} />
@@ -223,6 +227,59 @@ function SavedList() {
             </button>
           </div>
         ),
+      )}
+    </div>
+  );
+}
+
+/** Advertise plan on "My listings": live until a date, ending soon, waiting for payment check, or to pay; Renew. */
+function AdStatus({ s, onChange }: { s: MySubmission; onChange: () => void }) {
+  const { data: config } = useAsync(getConfig, []);
+  const [paying, setPaying] = useState(false);
+  if (!config) return null;
+  const price = adPrice(s.plan, config.ads);
+  const now = Date.now();
+  const ends = s.ad_expires_at ? new Date(s.ad_expires_at).getTime() : 0;
+  const live = ends > now;
+  const daysLeft = Math.ceil((ends - now) / 86400000);
+  const checking = !!s.payment_claimed_at && (!s.paid_at || s.payment_claimed_at > s.paid_at);
+  const label = checking
+    ? t("ad.waiting")
+    : live
+      ? daysLeft <= 5
+        ? t("ad.endsSoon", { days: daysLeft })
+        : t("ad.expires", { date: shortDate(s.ad_expires_at!) })
+      : t("ad.unpaid");
+  return (
+    <div
+      className="mt-3 flex items-center justify-between gap-2 rounded-2xl bg-muted/70 px-3 py-2.5 text-sm"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+      <span className="min-w-0">
+        <span className="block text-xs text-sub">{s.plan === "ad_social" ? t("ad.planSocial") : t("ad.planWeb")}</span>
+        <span className={cn("font-semibold", live && daysLeft <= 5 && "text-sold")}>{label}</span>
+      </span>
+      {!checking && (
+        <button type="button" onClick={() => setPaying(true)} className="h-9 shrink-0 rounded-full bg-brand px-4 text-sm font-semibold text-brand-ink">
+          {live ? t("ad.renew", { price }) : t("plan.continuePay", { price })}
+        </button>
+      )}
+      {createPortal(
+        <Sheet open={paying} onClose={() => setPaying(false)} title={t("plan.adTitle")}>
+          <AdPayment
+            submissionId={s.id}
+            number={s.number}
+            plan={s.plan}
+            onDone={() => {
+              setPaying(false);
+              onChange();
+            }}
+          />
+        </Sheet>,
+        document.body,
       )}
     </div>
   );

@@ -38,7 +38,14 @@ create table if not exists submissions (
         check (status in ('received', 'under_review', 'listed', 'sold', 'withdrawn', 'rejected')),
     status_note         text,
     status_updated_at   text not null default {NOW},
-    removed_at          text  -- founder removed it from the lists (record kept; can be restored)
+    removed_at          text,  -- founder removed it from the lists (record kept; can be restored)
+    -- How the seller chose to sell: 'commission' (we sell it) or an advertise plan paid upfront:
+    -- 'ad_web' (website) or 'ad_social' (website + Facebook/Instagram). Ads are public only while paid.
+    plan                text not null default 'commission' check (plan in ('commission', 'ad_web', 'ad_social')),
+    payment_claimed_at  text,  -- seller tapped "I've paid"
+    paid_at             text,  -- a founder confirmed the payment
+    ad_expires_at       text,  -- ad is shown until this time
+    ad_posted           integer not null default 0  -- posted on Facebook/Instagram
 );
 create index if not exists submissions_device on submissions (device_hash);
 
@@ -169,7 +176,7 @@ before delete on published_versions begin select raise(abort, 'published version
 
 
 # Bump when SCHEMA changes in a way old database files can't use.
-SCHEMA_VERSION = 15
+SCHEMA_VERSION = 16
 
 # Small in-place upgrades from older versions (no data lost).
 UPGRADES = {
@@ -256,6 +263,16 @@ UPGRADES[14] = [
 ]
 
 UPGRADES[15] = []  # callbacks table is created from SCHEMA
+
+UPGRADES[16] = [
+    _add_column(
+        "submissions", "plan text not null default 'commission' check (plan in ('commission', 'ad_web', 'ad_social'))"
+    ),
+    _add_column("submissions", "payment_claimed_at text"),
+    _add_column("submissions", "paid_at text"),
+    _add_column("submissions", "ad_expires_at text"),
+    _add_column("submissions", "ad_posted integer not null default 0"),
+]
 
 log = logging.getLogger("nilayam")
 
