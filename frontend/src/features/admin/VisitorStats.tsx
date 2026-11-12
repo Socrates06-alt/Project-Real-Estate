@@ -72,7 +72,7 @@ export function VisitorStats() {
             </thead>
             <tbody className="divide-y divide-line">
               {data.sources.map((s) => (
-                <tr key={s.source}>
+                <tr key={s.source} className={s.source === "before" ? "text-sub" : undefined}>
                   <td className="py-1.5">{sourceLabel(s.source)}</td>
                   <td className="py-1.5 text-right font-semibold">{n(s.visitors)}</td>
                   <td className="py-1.5 text-right">{n(s.requirements)}</td>

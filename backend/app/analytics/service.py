@@ -10,7 +10,7 @@ import sqlite3
 from datetime import UTC, datetime, timedelta
 
 from app.core.config import get_settings
-from app.core.db import many
+from app.core.db import many, one
 
 IST = timedelta(hours=5, minutes=30)  # India time, so "today" matches the founders' day
 KEEP_DAYS = 400
@@ -65,38 +65,39 @@ def source_group(src: str) -> str:
     return _GROUP.get(src or "", "other")
 
 
+def tracking_started(db: sqlite3.Connection) -> str | None:
+    """When visitor sources started being recorded: the first visit that has one."""
+    return one(db, "select min(created_at) as at from page_views where source != ''")["at"]
+
+
 def by_source(db: sqlite3.Connection, since: str) -> list[dict]:
-    """Last 30 days by where people came from (Facebook, Instagram, WhatsApp, Search, Direct; Other only if any):
-    visitors, requirements and visit requests."""
-    rows: dict[str, dict] = {
-        g: {"source": g, "visitors": 0, "requirements": 0, "visits": 0} for g in (*MAIN_SOURCES, "other")
-    }
+    """Last 30 days by where people came from: Facebook, Instagram, WhatsApp, Search, Direct (always shown), then
+    Other and Before tracking (visits from before sources were recorded) only if there are any."""
+    start = tracking_started(db) or "9999"  # nothing tracked yet: every visit so far is from before
+    groups = (*MAIN_SOURCES, "other", "before")
+    rows: dict[str, dict] = {g: {"source": g, "visitors": 0, "requirements": 0, "visits": 0} for g in groups}
 
-    def row(src: str) -> dict:
-        return rows[source_group(src)]
+    def row(src: str, at: str) -> dict:
+        return rows["before" if not src and at < start else source_group(src)]
 
+    visitors = """select source, early, sum(n) as visitors from (
+                      select day, source, created_at < ? as early, count(distinct visitor) as n
+                      from page_views where day >= ? group by day, source, early
+                  ) group by source, early"""
+    for r in many(db, visitors, start, since):
+        row(r["source"], "" if r["early"] else "~")["visitors"] += r["visitors"]  # "": before, "~": after
     for r in many(
         db,
-        """select source, sum(visitors) as visitors from (
-               select day, source, count(distinct visitor) as visitors
-               from page_views where day >= ? group by day, source
-           ) group by source""",
+        "select came_from, created_at from buyers where source = 'website' and created_at >= ?",
         since,
     ):
-        row(r["source"])["visitors"] += r["visitors"]
-    for r in many(
-        db,
-        "select came_from, count(*) as n from buyers where source = 'website' and created_at >= ? group by came_from",
-        since,
-    ):
-        row(r["came_from"])["requirements"] += r["n"]
-    for r in many(
-        db, "select came_from, count(*) as n from visit_requests where created_at >= ? group by came_from", since
-    ):
-        row(r["came_from"])["visits"] += r["n"]
-    other = rows["other"]
-    keep_other = other["visitors"] or other["requirements"] or other["visits"]
-    return [rows[g] for g in MAIN_SOURCES] + ([other] if keep_other else [])
+        row(r["came_from"], r["created_at"])["requirements"] += 1
+    for r in many(db, "select came_from, created_at from visit_requests where created_at >= ?", since):
+        row(r["came_from"], r["created_at"])["visits"] += 1
+    extra = [
+        rows[g] for g in ("other", "before") if rows[g]["visitors"] or rows[g]["requirements"] or rows[g]["visits"]
+    ]
+    return [rows[g] for g in MAIN_SOURCES] + extra
 
 
 def by_month(db: sqlite3.Connection) -> list[dict]:

@@ -81,3 +81,23 @@ def test_where_visitors_came_from(client, admin):
     assert sources["whatsapp"]["visitors"] == 0 and sources["search"]["visitors"] == 0  # always shown
     buyer = client.get("/api/admin/buyers", params={"q": "9847066666"}, headers=admin).json()[0]
     assert buyer["came_from"] == "ig-ad"
+
+
+def test_visits_from_before_tracking_have_their_own_row(client, admin):
+    from app.core.db import connect
+
+    db = connect()
+    with db:
+        db.execute("delete from page_views")
+        day = db.execute("select date('now', '+5 hours', '+30 minutes')").fetchone()[0]
+        db.execute(
+            "insert into page_views (day, visitor, page, source, created_at) values (?, 'old', 'home', '', ?)",
+            (day, day + "T00:00:00Z"),
+        )
+    db.close()
+    client.post("/api/track", json={"page": "home", "source": "fb"}, headers={"User-Agent": "Mozilla/5.0 a"})
+    client.post("/api/track", json={"page": "home", "source": ""}, headers={"User-Agent": "Mozilla/5.0 b"})
+    rows = {r["source"]: r for r in client.get("/api/admin/stats", headers=admin).json()["sources"]}
+    assert rows["before"]["visitors"] == 1  # unlabelled, from before the first labelled visit
+    assert rows["direct"]["visitors"] == 1  # unlabelled, after tracking started
+    assert rows["facebook"]["visitors"] == 1

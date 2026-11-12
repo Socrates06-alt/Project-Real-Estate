@@ -91,6 +91,7 @@ export function sourceLabel(src: string): string {
     whatsapp: "WhatsApp",
     search: "Search",
     direct: "Direct",
+    before: "Before tracking",
     other: "Other / direct",
   };
   return known[src] ?? src.charAt(0).toUpperCase() + src.slice(1).replace(/-/g, " ");
