@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, MapPin, SearchCheck } from "lucide-react";
+import { LayoutGrid, MapPin, SearchCheck } from "lucide-react";
 import { api, mediaUrl, type Listing } from "@/shared/api/client";
 import { cents, priceDisplay, typeLabel } from "@/shared/lib/format";
 import { useAsync } from "@/shared/lib/useAsync";
 import { TYPE_ICON } from "@/shared/lib/propertyType";
 import { REQUEST_LABEL } from "@/shared/lib/labels";
+import { buttonVariants } from "@/shared/ui/button";
+import { cn } from "@/shared/lib/utils";
 
 type Similar = Listing & { km: number | null };
 type Place = { place: string; count: number; lat: number | null; lng: number | null };
@@ -28,26 +30,44 @@ export function SimilarProperties({ listingId, place }: { listingId: string; pla
         </section>
       )}
 
-      {here && here.count > 1 && (
-        <Link
-          to={here.lat != null ? `/?lat=${here.lat}&lng=${here.lng}&r=3&place=${encodeURIComponent(here.place)}` : "/"}
-          className="flex items-center gap-2 px-1 text-[15px] font-semibold text-brand"
-        >
-          <MapPin size={16} /> More in {here.place}
-          <ChevronRight size={16} />
+      {/* Two clear, big choices: this place, or everything */}
+      <div className={cn("grid gap-2.5", here && here.count > 1 ? "grid-cols-2" : "grid-cols-1")}>
+        {here && here.count > 1 && (
+          <Link
+            to={here.lat != null ? `/?lat=${here.lat}&lng=${here.lng}&r=3&place=${encodeURIComponent(here.place)}` : "/"}
+            className="card flex min-h-[64px] items-center gap-3 px-4 py-3 active:scale-[0.99]"
+          >
+            <MapPin size={22} className="shrink-0 text-brand" />
+            <span className="min-w-0 leading-tight">
+              <span className="block text-xs text-sub">More in</span>
+              <span className="block truncate text-base font-semibold">{here.place}</span>
+            </span>
+          </Link>
+        )}
+        <Link to="/" className="card flex min-h-[64px] items-center gap-3 px-4 py-3 active:scale-[0.99]">
+          <LayoutGrid size={22} className="shrink-0 text-brand" />
+          <span className="min-w-0 leading-tight">
+            <span className="block text-xs text-sub">See all</span>
+            <span className="block text-base font-semibold">Properties</span>
+          </span>
         </Link>
-      )}
+      </div>
 
-      <Link to="/" className="flex h-12 items-center justify-center rounded-full bg-brand-soft font-semibold text-brand">
-        See all properties
-      </Link>
-      <Link to="/request" className="flex items-center gap-3 rounded-2xl px-1 py-1 text-sm">
-        <SearchCheck size={18} className="shrink-0 text-brand" />
-        <span className="flex-1">
-          <b>Didn't find it?</b> <span className="text-sub">{REQUEST_LABEL}. We'll call you.</span>
-        </span>
-        <ChevronRight size={16} className="text-sub" />
-      </Link>
+      {/* Didn't find it: a clear, friendly box with one obvious button */}
+      <section className="rounded-[24px] bg-brand-soft p-5">
+        <div className="flex items-start gap-3.5">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand text-brand-ink">
+            <SearchCheck size={24} />
+          </span>
+          <div>
+            <p className="text-lg leading-snug font-semibold">Didn't find what you need?</p>
+            <p className="mt-0.5 text-[15px] text-sub">Tell us what you're looking for. We'll call you.</p>
+          </div>
+        </div>
+        <Link to="/request" className={cn(buttonVariants({ variant: "primary", size: "lg" }), "mt-4")}>
+          {REQUEST_LABEL}
+        </Link>
+      </section>
     </div>
   );
 }
