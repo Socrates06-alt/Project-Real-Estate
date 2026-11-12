@@ -19,6 +19,10 @@ function platform(): "fb" | "ig" | "" {
   const ref = document.referrer;
   if (/Instagram/i.test(ua) || /instagram\.com/i.test(ref)) return "ig";
   if (/FBAN|FBAV|FB_IAB|FB4A|FBIOS/.test(ua) || /(facebook|fb)\.com/i.test(ref)) return "fb";
+  // Facebook (and Instagram) add "fbclid" to every link they open, even when the phone opens it in Chrome.
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("fbclid")) return "fb";
+  if (params.has("igshid") || params.has("igsh")) return "ig";
   return "";
 }
 
