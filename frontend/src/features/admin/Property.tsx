@@ -41,6 +41,10 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   const toast = useToast();
   const nav = useNavigate();
   const [f, setF] = useState<PublicForm>(p.form);
+  // Land is priced per cent (as quoted locally); the total is stored.
+  const perCentMode = f.property_type === "land" && f.land_area_cents > 0;
+  const perCent = perCentMode ? Math.round(f.price / f.land_area_cents) : 0;
+  const setPerCent = (v: number) => set("price", Math.round(v * f.land_area_cents));
   const [sellerConfirmed, setSellerConfirmed] = useState(false);
   const [forcePriceCheck, setForcePriceCheck] = useState(false);
   const [dontListOpen, setDontListOpen] = useState(false);
@@ -156,9 +160,15 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           onDelete={deletePhoto}
         />
 
-        <Field label="Price" hint={inr(f.price || 0)}>
-          <AffixInput prefix="₹" inputMode="numeric" value={f.price ? f.price.toLocaleString("en-IN") : ""} onChange={(e) => set("price", Number(e.target.value.replace(/\D/g, "")))} />
-        </Field>
+        {perCentMode ? (
+          <Field label="Price per cent" hint={`${inr(f.price || 0)} total`}>
+            <AffixInput prefix="₹" suffix="/cent" inputMode="numeric" value={perCent ? perCent.toLocaleString("en-IN") : ""} onChange={(e) => setPerCent(Number(e.target.value.replace(/\D/g, "")))} />
+          </Field>
+        ) : (
+          <Field label="Price" hint={inr(f.price || 0)}>
+            <AffixInput prefix="₹" inputMode="numeric" value={f.price ? f.price.toLocaleString("en-IN") : ""} onChange={(e) => set("price", Number(e.target.value.replace(/\D/g, "")))} />
+          </Field>
+        )}
 
         {needsConfirm && !readOnly && (
           <button
@@ -190,7 +200,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           ]}
         />
         <Field label="Land size">
-          <SizeInput defaultCents={p.form.land_area_cents} onCents={(c) => set("land_area_cents", c ?? 0)} />
+          <SizeInput defaultCents={p.form.land_area_cents} onCents={(c) => setF((x) => ({ ...x, land_area_cents: c ?? 0, price: x.property_type === "land" && x.land_area_cents > 0 && c ? Math.round((x.price / x.land_area_cents) * c) : x.price }))} />
         </Field>
         <Field label="Location" hint={f.lat != null ? "On map search" : "Not on map search"}>
           <AreaInput
