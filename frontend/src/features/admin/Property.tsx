@@ -204,7 +204,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           ]}
         />
         <Field label="Land size">
-          <SizeInput defaultCents={p.form.land_area_cents} onCents={(c) => setF((x) => ({ ...x, land_area_cents: c ?? 0, price: x.property_type === "land" && perCent > 0 && c ? Math.round(perCent * c) : x.price }))} />
+          <SizeInput defaultCents={p.form.land_area_cents} onCents={(c) => set("land_area_cents", c ?? 0)} />
         </Field>
         <Field label="Location" hint={f.lat != null ? "On map search" : "Not on map search"}>
           <AreaInput
