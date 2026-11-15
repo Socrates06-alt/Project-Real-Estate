@@ -43,8 +43,12 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
   const [f, setF] = useState<PublicForm>(p.form);
   // Land is priced per cent (as quoted locally); the total is stored.
   const perCentMode = f.property_type === "land" && f.land_area_cents > 0;
-  const perCent = perCentMode ? Math.round(f.price / f.land_area_cents) : 0;
-  const setPerCent = (v: number) => set("price", Math.round(v * f.land_area_cents));
+  // Kept on its own so clearing and retyping the size never loses it.
+  const [perCent, setPerCentRaw] = useState(() => (p.form.land_area_cents > 0 ? Math.round(p.form.price / p.form.land_area_cents) : 0));
+  const setPerCent = (v: number) => {
+    setPerCentRaw(v);
+    set("price", Math.round(v * f.land_area_cents));
+  };
   const [sellerConfirmed, setSellerConfirmed] = useState(false);
   const [forcePriceCheck, setForcePriceCheck] = useState(false);
   const [dontListOpen, setDontListOpen] = useState(false);
@@ -200,7 +204,7 @@ function Editor({ p, reload }: { p: Property; reload: () => void }) {
           ]}
         />
         <Field label="Land size">
-          <SizeInput defaultCents={p.form.land_area_cents} onCents={(c) => setF((x) => ({ ...x, land_area_cents: c ?? 0, price: x.property_type === "land" && x.land_area_cents > 0 && c ? Math.round((x.price / x.land_area_cents) * c) : x.price }))} />
+          <SizeInput defaultCents={p.form.land_area_cents} onCents={(c) => setF((x) => ({ ...x, land_area_cents: c ?? 0, price: x.property_type === "land" && perCent > 0 && c ? Math.round(perCent * c) : x.price }))} />
         </Field>
         <Field label="Location" hint={f.lat != null ? "On map search" : "Not on map search"}>
           <AreaInput
