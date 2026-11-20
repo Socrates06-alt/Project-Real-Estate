@@ -7,7 +7,7 @@ closes. Sellers' details are never shown publicly; buyers contact LandFinder.
 backend/    FastAPI + SQLite API          → backend/README.md
 frontend/   React + Vite + Tailwind app   → frontend/README.md
 deploy/     server setup, update, backup and restore scripts
-docs/       guides and plans
+docs/       guides
 ```
 
 ## Guides
@@ -16,7 +16,7 @@ docs/       guides and plans
 |---|---|
 | [docs/RUN_WINDOWS.md](docs/RUN_WINDOWS.md) | Run it on a Windows laptop (or double-click `start.bat`) |
 | [docs/DEPLOY.md](docs/DEPLOY.md) | Put it online on AWS Lightsail, update it, back it up |
-| [docs/V1_PLAN.md](docs/V1_PLAN.md) | Product plan |
+| [docs/SERVER_CHECKS.md](docs/SERVER_CHECKS.md) | Server memory/speed checks over time |
 | [docs/STATE_MACHINES.md](docs/STATE_MACHINES.md) | Every step-by-step flow (property, visit, search model, Sell form) and where its rules live |
 
 ## Checks

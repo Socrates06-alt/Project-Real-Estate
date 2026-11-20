@@ -8,28 +8,20 @@ Organised by feature. Each feature folder has its own `routes.py` (HTTP only), a
 
 ```
 app/
-  main.py               app setup: routers, CORS, startup, published photos
-  core/                 shared by every feature
-    config.py           settings from .env, LandFinder's public contact
-    db.py               SQLite connection per request + row helpers
-    migrations.py       schema, immutability triggers, in-place upgrades
-    security.py         admin tokens, login attempt limit, live-server checks
-    ratelimit.py        small in-memory rate limiter
-    validation.py       shared field types (Indian phone, price, cents...)
-  site/routes.py        /api/health, /api/config
-  listings/             buyers: browse, search, one listing
-    routes.py  search.py ("house under 40 lakh Mulakuzha" -> filters)  geo.py (distance, area flag)
-  submissions/          sellers: submit a property, My listings
-    routes.py  schemas.py  photos.py (strip GPS, resize, private originals, public copies)
-  visits/               visit requests (buyers) and their updates (admin)
-    routes.py  schemas.py
-  admin/                founders only
-    routes_auth.py      login
-    routes_properties.py inbox, properties, editor actions
-    service.py          publish rules, groups, sold / take down
-    schemas.py
-seed_demo.py            sample listings
-tests/                  one file per feature; shared setup in conftest.py, helpers.py
+  main.py         app setup, routers, startup (search model loads in background)
+  core/           config, db, migrations (schema + upgrades), security, ratelimit, validation
+  site/           /api/health, /api/config
+  listings/       public browse/search (search.py: "house under 40 lakh" -> filters), geo
+  submissions/    Sell form, My listings, photos (GPS stripped, resized)
+  visits/         visit requests
+  callbacks/      "call me back"
+  buyers/         buyer list, website requests, CSV import, property matching
+  analytics/      visitor counter and sources
+  semantic/       search by meaning (fastembed model, vectors in SQLite)
+  cleanup/        one-time English tidy-up (Sarvam)
+  admin/          login, inbox, property editor; lifecycle.py = allowed property moves
+seed_demo.py  renumber.py  semantic_check.py   one-off scripts
+tests/          one file per feature
 ```
 
 ## Run
@@ -49,5 +41,3 @@ Sample data (API running): `python seed_demo.py` · Tests: `pytest -q`
 Seller identity never public, photo GPS stripping, immutable original submissions and published
 versions, versioned publishing, seller confirmation for big price changes, admin login limit,
 area-search rate limit, production setting checks.
-
-Later (see `docs/V1_PLAN.md`): PostgreSQL, cloud photo storage, audit log.
